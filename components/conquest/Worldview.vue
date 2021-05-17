@@ -31,7 +31,7 @@
       // Add thecoop.group domain name to it
       // TODO: Add the sphere
 
-      const sunGeometry = new THREE.SphereGeometry(15, 8, 8);
+      const sunGeometry = new THREE.SphereGeometry(13, 8, 8);
       const sunMaterial = new THREE.MeshBasicMaterial({
         color: 0xffff00,
         wireframe: true
@@ -39,7 +39,7 @@
       const sunSphere = new THREE.Mesh(sunGeometry, sunMaterial);
       scene.add(sunSphere);
 
-      const earthGeometry = new THREE.SphereGeometry(5, 12, 12);
+      const earthGeometry = new THREE.SphereGeometry(6, 12, 12);
       const earthMaterial = new THREE.MeshBasicMaterial({
         color: 0x48a868,
         wireframe: true
@@ -47,7 +47,7 @@
       const earthSphere = new THREE.Mesh(earthGeometry, earthMaterial);
       scene.add(earthSphere);
 
-      const moonGeometry = new THREE.SphereGeometry(2, 6, 6);
+      const moonGeometry = new THREE.SphereGeometry(2, 5, 5);
       const moonMaterial = new THREE.MeshBasicMaterial({
         color: 0xf6f6f6,
         wireframe: true
@@ -56,12 +56,47 @@
       scene.add(moonSphere);
 
 
-      earthSphere.position.x = 10;
-      moonSphere.position.x = -10;
+      const sunPivot = new THREE.Group();
+      const earthPivot = new THREE.Group();
 
-      camera.position.z = 25;
+      // Add all to sun pivot (not sun to avoid rotating the sun...???)
+      sunPivot.add(earthPivot);
+      // sunPivot.add(sunSphere);
+      
+      earthPivot.add(earthSphere);
+      earthPivot.add(moonSphere);
+
+      scene.add(sunPivot);
+      scene.add(earthPivot);
+
+
+
+      earthSphere.position.x = 40;
+      moonSphere.position.x = 57;
+
+      camera.position.z = 60;
 
       function animate() {
+        // Orbit the Earth around the sun.
+
+        // Orbit the moon around the Earth.
+
+        earthPivot.rotation.z += 0.01;
+        sunPivot.rotation.z += 0.01;
+        earthSphere.rotation.z += 0.01;
+        moonSphere.rotation.z += 0.01;
+        sunSphere.rotation.z += 0.01;
+        // earthPivot.rotation.x += 0.01;
+        // sunPivot.rotation.x += 0.01;
+        // earthSphere.rotation.x += 0.01;
+        // moonSphere.rotation.x += 0.01;
+        // sunSphere.rotation.x += 0.01;
+        // earthPivot.rotation.y += 0.01;
+        // sunPivot.rotation.y += 0.01;
+        // earthSphere.rotation.y += 0.01;
+        // moonSphere.rotation.y += 0.01;
+        // sunSphere.rotation.y += 0.01;
+
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
       }

@@ -8,7 +8,7 @@
       return {
         title: 'Coop conquest',
         script: [
-          { hid: '3js', src: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', defer: true }
+          { hid: '3js', src: 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js' }
         ]
       }
     }

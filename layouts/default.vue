@@ -12,6 +12,12 @@
       </nav>
     </div>
     <Nuxt />
+
+    <footer class="footer">
+      <NuxtLink to="/conquest">
+        Conquest
+      </NuxtLink>
+    </footer>
   </div>
 </template>
 
@@ -33,7 +39,24 @@
     padding: 2.5em 0;
   }
 
-  .navigation {}
+  /* Temporary until someone can do better. */
+  .footer {
+    display: inline-block;
+    position: absolute;
+
+    right: 5rem;
+    bottom: 1.25rem;
+  }
+
+  .footer a {
+    text-decoration: none;
+    font-size: 1.25em;
+    color: silver;
+  }
+
+  .navigation {
+    
+  }
 
   .nav-link {
     color: #4a4a4a;
