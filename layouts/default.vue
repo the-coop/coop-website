@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="default">
     <div class="header">
       <div class="brand">
         <Logo />
@@ -19,7 +19,7 @@
     background-color: #111;
   }
 
-  body {
+  .default {
     padding: 0 5em;
   }
 
