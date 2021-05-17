@@ -1,29 +1,13 @@
 <template>
-  <svg class="NuxtLogo" width="245" height="180" viewBox="0 0 452 342" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M139 330l-1-2c-2-4-2-8-1-13H29L189 31l67 121 22-16-67-121c-1-2-9-14-22-14-6 0-15 2-22 15L5 303c-1 3-8 16-2 27 4 6 10 12 24 12h136c-14 0-21-6-24-12z"
-      fill="#00C58E"
-    />
-    <path
-      d="M447 304L317 70c-2-2-9-15-22-15-6 0-15 3-22 15l-17 28v54l39-67 129 230h-49a23 23 0 0 1-2 14l-1 1c-6 11-21 12-23 12h76c3 0 17-1 24-12 3-5 5-14-2-26z"
-      fill="#108775"
-    />
-    <path
-      d="M376 330v-1l1-2c1-4 2-8 1-12l-4-12-102-178-15-27h-1l-15 27-102 178-4 12a24 24 0 0 0 2 15c4 6 10 12 24 12h190c3 0 18-1 25-12zM256 152l93 163H163l93-163z"
-      fill="#2F495E"
-    />
+  <svg class="header_logo__2G1RE" width="41" height="50" viewBox="0 0 41 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="13.285" cy="24.2351" r="4.02576" fill="white"></circle>
+    <path d="M28.583 14.1707H40.6603L34.0178 20.2093L40.6603 26.2479H28.583V14.1707Z" fill="white"></path>
+    <path d="M1.93237 16.103H24.6377V46.0547H1.93237V16.103Z" stroke="white" stroke-width="3.86473"></path>
+    <path d="M28.583 28.261L40.6603 39.9357V47.9872H28.583V28.261Z" fill="#FF6565"></path>
+    <path d="M0 12.0774L11.6747 9.91821e-05L19.7262 9.91821e-05V12.0774L0 12.0774Z" fill="#FF6565"></path>
   </svg>
 </template>
 
 <style>
-.NuxtLogo {
-  animation: 1s appear;
-  margin: auto;
-}
-
-@keyframes appear {
-  0% {
-    opacity: 0;
-  }
-}
+  
 </style>
