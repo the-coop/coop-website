@@ -31,8 +31,6 @@
     margin: 1rem 0;
   }
 
-
-
   .hero .title {
     color: #4a4a4a;
     font-size: clamp(18px,4vw,20px);
@@ -68,12 +66,21 @@
     font-size: 1.15em;
 
     font-weight: 500;
-    transition: background-color .2s,border .2s;
+    transition: background-color .2s;
+  }
+
+  .button:hover {
+    background-color: transparent;
   }
 
   .button.secondary {
     background-color: transparent;
     color: #ff6565;
+  }
+
+  .button.secondary:hover {
+    background-color: #ff6565;
+    color: white;
   }
 
   .decoration {

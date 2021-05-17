@@ -5,8 +5,10 @@
         <Logo />
       </div>
       <nav class="navigation">
-        <a href="/" class="nav-link current">Home</a>
-        <a href="" target="_blank" class="nav-link">Apply</a>
+        <NuxtLink to="/" class="nav-link current">
+          Home
+        </NuxtLink>
+        <a href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
       </nav>
     </div>
     <Nuxt />
@@ -31,14 +33,16 @@
     padding: 2.5em 0;
   }
 
-  .navigation {
-
-  }
+  .navigation {}
 
   .nav-link {
     color: #4a4a4a;
     margin-left: 3.5em;
     text-decoration: none;
+  }
+
+  .nav-link:hover {
+    color: white;
   }
 
   .nav-link.current {

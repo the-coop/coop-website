@@ -7,7 +7,3 @@
     <path d="M0 12.0774L11.6747 9.91821e-05L19.7262 9.91821e-05V12.0774L0 12.0774Z" fill="#FF6565"></path>
   </svg>
 </template>
-
-<style>
-  
-</style>

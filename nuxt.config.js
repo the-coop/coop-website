@@ -4,7 +4,7 @@ export default {
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'coopwebsite',
+    title: 'The Coop',
     htmlAttrs: {
       lang: 'en'
     },
@@ -14,7 +14,9 @@ export default {
       { hid: 'description', name: 'description', content: '' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: '/favicon.svg' },
+      { rel: 'image/svg+xml', type: 'image/x-icon', href: '/favicon.svg' },
+      { rel: 'mask-icon', color: '#ff8a01', href: '/favicon.svg' }
     ]
   },
 
