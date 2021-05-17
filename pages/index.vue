@@ -8,8 +8,7 @@
       </h2>
 
       <div class="actions">
-        <button class="button">Apply Now</button>
-        <button class="button secondary">Know More</button>
+        <NuxtLink to="/" class="button">Apply Now</NuxtLink>
       </div>
     </div>
 
@@ -28,7 +27,7 @@
   }
 
   .hero > * {
-    margin: 1rem 0;
+    margin: 2rem 0;
   }
 
   .hero .title {
@@ -44,6 +43,10 @@
     line-height: 150%;
 
     width: 50vw;
+  }
+
+  .actions {
+    margin-top: 3rem;
   }
 
   .actions .button {
@@ -64,6 +67,7 @@
     color: #fefefe;
 
     font-size: 1.15em;
+    text-decoration: none;
 
     font-weight: 500;
     transition: background-color .2s;
@@ -92,5 +96,39 @@
     height: 15em;
     transform: scaleX(-1);
     opacity: .2;
+  }
+
+  .decoration .beak {
+    animation-duration: 3s;
+    animation-name: moveMouth;
+    /* animation-direction: alternate-reverse; */
+    animation-iteration-count: infinite;
+  }
+
+  .decoration .beard {
+    animation-duration: 3s;
+    animation-name: moveWeirdChickenBeard;
+    /* animation-direction: alternate-reverse; */
+    animation-iteration-count: infinite;
+  }
+
+  @keyframes moveMouth {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(5px);
+    }
+  }
+
+  @keyframes moveWeirdChickenBeard {
+    from {
+      transform: translateY(0);
+    }
+
+    to {
+      transform: translateY(5px);
+    }
   }
 </style>

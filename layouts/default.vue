@@ -71,4 +71,43 @@
   .nav-link.current {
     color: white;
   }
+
+
+
+
+  /* Convert to SVG animation for more krisp' */
+
+  .brand:hover .beak {
+    animation-duration: 3s;
+    animation-name: moveMouth;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
+  }
+
+  .brand:hover .beard {
+    animation-duration: 3s;
+    animation-name: moveWeirdChickenBeard;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
+  }
+
+  @keyframes moveMouth {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(5px);
+    }
+  }
+
+  @keyframes moveWeirdChickenBeard {
+    from {
+      transform: translateY(0);
+    }
+
+    to {
+      transform: translateY(5px);
+    }
+  }
 </style>
