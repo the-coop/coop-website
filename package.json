@@ -9,7 +9,8 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
-    "nuxt": "^2.15.3"
+    "nuxt": "^2.15.6",
+    "nuxt-webfontloader": "^1.1.0"
   },
   "devDependencies": {}
 }

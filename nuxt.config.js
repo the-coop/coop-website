@@ -24,6 +24,13 @@ export default {
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [],
 
+
+  webfontloader: {
+    google: {
+      families: ['Poppins:400,700']
+    }
+  },
+
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
 
@@ -34,7 +41,9 @@ export default {
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
-  modules: [],
+  modules: [
+    'nuxt-webfontloader'
+  ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {}
