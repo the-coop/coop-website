@@ -8,7 +8,7 @@
       </h2>
 
       <div class="actions">
-        <NuxtLink to="/" class="button">Apply Now</NuxtLink>
+        <a href="https://discord.gg/2gTTUZbRVD" target="_blank" class="button">Apply Now</a>
       </div>
     </div>
 
