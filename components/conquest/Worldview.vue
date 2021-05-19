@@ -1,5 +1,6 @@
 <template>
   <div class="worldview">
+    <h1>Loading conquest map...</h1>
   </div>
 </template>
 
@@ -26,7 +27,8 @@
     methods: {
       onScriptLoaded() {
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const resolution = window.innerWidth / window.innerHeight;
+        const camera = new THREE.PerspectiveCamera(75, resolution, 0.1, 1000);
 
         const renderer = new THREE.WebGLRenderer();
 
@@ -35,27 +37,27 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         wrapper.appendChild(renderer.domElement);
 
-        const sunGeometry = new THREE.SphereGeometry(13, 8, 8);
+        const sunGeometry = new THREE.IcosahedronGeometry(20, 2);
         const sunMaterial = new THREE.MeshBasicMaterial({
           color: 0xffff00,
-          // wireframe: true
+          wireframe: true
         });
         const sunSphere = new THREE.Mesh(sunGeometry, sunMaterial);
         scene.add(sunSphere);
 
-        const earthRadius = 6;
-        const earthGeometry = new THREE.SphereGeometry(earthRadius, 12, 12);
+        const earthRadius = 5;
+        const earthGeometry = new THREE.IcosahedronGeometry(earthRadius, 5);
         const earthMaterial = new THREE.MeshBasicMaterial({
           color: 0x48a868,
-          // wireframe: true
+          wireframe: true
         });
         const earthSphere = new THREE.Mesh(earthGeometry, earthMaterial);
         scene.add(earthSphere);
 
-        const moonGeometry = new THREE.SphereGeometry(2, 5, 5);
+        const moonGeometry = new THREE.IcosahedronGeometry(1, 1);
         const moonMaterial = new THREE.MeshBasicMaterial({
           color: 0xf6f6f6,
-          // wireframe: true
+          wireframe: true
         });
         const moonSphere = new THREE.Mesh(moonGeometry, moonMaterial);
         scene.add(moonSphere);
@@ -77,7 +79,7 @@
         scene.add(earthPivot);
 
         // Impart Earth's orbital offset from the sun.
-        earthSphere.position.x = 40;
+        earthSphere.position.x = 80;
 
         // Impart moon's orbital offset from the Earth.
         moonSphere.position.x = earthSphere.position.x + 17;
@@ -93,8 +95,12 @@
 
 
         // Position the camera for initial placement.
-        camera.position.z = earthRadius;
-        camera.position.x = earthSphere.position.x;
+        // camera.position.z = earthRadius;
+        // camera.position.x = earthSphere.position.x;
+
+
+
+        camera.position.z = 100;
 
         const clock = new THREE.Clock();
         let timeIncrement = Date.now() / 1000;

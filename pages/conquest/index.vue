@@ -14,7 +14,5 @@
 
 <template>
   <!-- Load map -->
-  <client-only placeholder="Loading conquest map...">
-    <Worldview />
-  </client-only>
+  <client-only><Worldview /></client-only>
 </template>
