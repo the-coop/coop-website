@@ -1,6 +1,7 @@
 <template>
   <div class="worldview">
-    <h1>Loading conquest map...</h1>
+    <h1 class="loading-text" v-if="!loaded">Loading conquest map...</h1>
+    <h1 class="error-text" v-if="noWebGL">Error WebGL not supported...</h1>
   </div>
 </template>
 
@@ -9,11 +10,55 @@
     width: 100%;
     height: 100%;
   }
+
+  .loading-text, .error-text {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .loading-text {
+    animation: loadingPulse 5s infinite;
+  }
+
+  .error-text {
+    animation: errorPulse 5s infinite;
+  }
+
+  @keyframes loadingPulse {
+    from {
+      color: #c7c7c7;
+      font-size: 1.25em;
+    }
+
+    to {
+      color: white;
+      font-size: 1.5em;
+    }
+  }
+
+  @keyframes errorPulse {
+    from {
+      color: #a70000;
+      font-size: 1.25em;
+    }
+
+    to {
+      color: #b91818;
+      font-size: 1.5em;
+    }
+  }
 </style>
 
 <script>
   export default {
     name: 'Worldview',
+    data: () => ({
+      loaded: false,
+      noWebGL: false
+    }),
     mounted() {
       if (!process.server && !window.THREE) {
         const scriptElem = document.createElement("script");
@@ -21,17 +66,26 @@
         scriptElem.type = "text/javascript";
         scriptElem.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
         document.head.appendChild(scriptElem);
-      } else
-        this.onScriptLoaded();
+      } else this.onScriptLoaded();
     },
     methods: {
       onScriptLoaded() {
-        const scene = new THREE.Scene();
-        const resolution = window.innerWidth / window.innerHeight;
-        const camera = new THREE.PerspectiveCamera(75, resolution, 0.1, 1000);
+        // Stop the loading.
+        this.loaded = true;
+
+        // Check if WebGL is supported.
+        const canvas = document.createElement('canvas');
+        const supportsWebGL = !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+        if (!supportsWebGL) return this.noWebGL = true;
 
         const renderer = new THREE.WebGLRenderer();
+        
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x111111);
 
+        const resolution = window.innerWidth / window.innerHeight;
+        const camera = new THREE.PerspectiveCamera(75, resolution, 0.1, 1000);
+        
         const wrapper = document.querySelector('.worldview');
 
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -62,12 +116,12 @@
         const moonSphere = new THREE.Mesh(moonGeometry, moonMaterial);
         scene.add(moonSphere);
 
-
+        // Create the pivots for rotation as groups.
         const sunPivot = new THREE.Group();
         const earthPivot = new THREE.Group();
 
         // Add the ambient light where the sun is... the sun never moves. :D
-        scene.add(new THREE.PointLight(0xffffff, 0.1)); // optional
+        scene.add(new THREE.PointLight(0xffffff, 0.1));
 
         // Add all to sun pivot (not sun to avoid rotating the sun...???)
         sunPivot.add(earthPivot);
@@ -87,21 +141,16 @@
         // Deterministic time variable.
 
         // Orbital parameters in seconds.
-        const earthPivotPeriod = 50;
-        const sunPivotPeriod = 100;
-        const earthSpherePeriod = 10;
-        const moonSpherePeriod = 10;
-        const sunSpherePeriod = 10;
-
+        const earthPivotPeriod = 50 * 10;
+        const sunPivotPeriod = 100 * 10;
+        const earthSpherePeriod = 10 * 10;
+        const moonSpherePeriod = 10 * 10;
+        const sunSpherePeriod = 10 * 10;
 
         // Position the camera for initial placement.
-        // camera.position.z = earthRadius;
-        // camera.position.x = earthSphere.position.x;
-
-
-
         camera.position.z = 100;
 
+        // Time delta
         const clock = new THREE.Clock();
         let timeIncrement = Date.now() / 1000;
 
