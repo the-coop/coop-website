@@ -79,6 +79,8 @@
       function animate() {
         // Orbit the Earth around the sun.
 
+        // Test change
+
         // Orbit the moon around the Earth.
 
         earthPivot.rotation.z += 0.01;
