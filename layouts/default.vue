@@ -115,16 +115,11 @@
     }
   }
 
-
-
-
-
-
   @media screen and (min-width: 666px) {
     .header {
       justify-content: space-between;
     }
-    
+
       .navigation {
         display: block;
       }

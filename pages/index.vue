@@ -24,6 +24,7 @@
 <style>
   .hero {
     margin: 3rem 0;
+    z-index: 1;
   }
 
   .hero > * {
