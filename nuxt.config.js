@@ -11,7 +11,7 @@ export default {
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: '' }
+      { hid: 'description', name: 'description', content: 'The Coop is a community oriented server that focuses on programming, business, and art/design. We welcome everyone — from professionals to hobbyists — who are interested in these topics. For our system of government, our community abides by a democratic system; all server decisions are made by the community.' }
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.svg' },

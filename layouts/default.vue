@@ -23,7 +23,7 @@
 
 <style>
   .default {
-    padding: 0 5em 7.5em;
+    padding: 0 1.5em 7.5em;
   }
 
   .header {
@@ -109,6 +109,10 @@
   }
 
   @media screen and (min-width: 666px) {
+    .default {
+      padding: 0 5em 7.5em;
+    }
+
     .header {
       justify-content: space-between;
     }
@@ -121,7 +125,7 @@
           height: 4em;
           width: 4em;
         }
-
+    
     .footer {
       position: absolute;
       right: 5em;
