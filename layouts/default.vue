@@ -23,7 +23,7 @@
 
 <style>
   .default {
-    padding: 0 5em;
+    padding: 0 5em 7.5em;
   }
 
   .header {
@@ -124,8 +124,9 @@
 
     .footer {
       position: absolute;
-      right: 0;
-      bottom: 0;
+      right: 5em;
+      bottom: -2.5em;
+      padding: 0;
     }
   }
 </style>
