@@ -1,17 +1,37 @@
+const metaName = 'The Coop';
+const metaDesc = 'The Coop is a discord server community that focuses on business, design, and programming. In our free and democratic system, you make the decisions!';
+const metaImage = 'https://thecoop.group/favicon.svg';
+
 export default {
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static',
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'The Coop',
+    title: metaName,
     htmlAttrs: {
       lang: 'en'
     },
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: 'The Coop is a discord server community that focuses on business, design, and programming. In our free and democratic system, you make the decisions!' }
+      { hid: 'description', name: 'description', content: metaDesc },
+
+
+      { hid: 'google-name', itemprop: 'name', content: metaName },
+      { hid: 'google-description', itemprop: 'description', content: metaDesc },
+      { hid: 'google-image', itemprop: 'image', content: metaImage },
+
+      { hid: 'facebook-url', property: 'og:url', content: 'https://thecoop.group' },
+      { hid: 'facebook-type', property: 'og:type', content: 'website' },
+      { hid: 'facebook-title', property: 'og:title', content: metaName },
+      { hid: 'facebook-desc', property: 'og:description', content: metaDesc },
+      { hid: 'facebook-image', property: 'og:image', content: metaImage },
+
+      { hid: 'twitter-card', name: 'twitter:card', content: 'summary_large_image' },
+      { hid: 'twitter-title', name: 'twitter:title', content: metaName },
+      { hid: 'twitter-desc', name: 'twitter:description', content: metaDesc },
+      { hid: 'twitter-image', name: 'twitter:image', content: metaImage }
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.svg' },
