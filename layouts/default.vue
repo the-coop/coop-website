@@ -24,6 +24,12 @@
 <style>
   .default {
     padding: 0 1.5em 7.5em;
+
+    position: relative;
+    overflow: hidden;
+    width: 100vw;
+    box-sizing: border-box;
+    min-height: 100vh;
   }
 
   .header {
@@ -127,9 +133,6 @@
         }
     
     .footer {
-      position: absolute;
-      right: 5em;
-      bottom: -2.5em;
       padding: 0;
     }
   }

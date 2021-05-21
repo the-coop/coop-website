@@ -68,6 +68,8 @@
     height: 23em;
     transform: scaleX(-1);
     opacity: .2;
+
+    pointer-events: none;
   }
 
   .decoration .beak {
