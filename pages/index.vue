@@ -64,8 +64,8 @@
     z-index: 0;
     right: 3em;
     bottom: 3em;
-    width: 15em;
-    height: 15em;
+    width: 26em;
+    height: 23em;
     transform: scaleX(-1);
     opacity: .2;
   }
