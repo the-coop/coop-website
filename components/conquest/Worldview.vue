@@ -108,7 +108,7 @@
 
         const sunGeometry = new THREE.IcosahedronGeometry(20, 2);
         const sunMaterial = new THREE.MeshBasicMaterial({
-          color: 0xffff00,
+          color: 0xf6c801,
           wireframe: true
         });
         const sunSphere = new THREE.Mesh(sunGeometry, sunMaterial);
@@ -117,7 +117,7 @@
         const earthRadius = 5;
         const earthGeometry = new THREE.IcosahedronGeometry(earthRadius, 5);
         const earthMaterial = new THREE.MeshBasicMaterial({
-          color: 0x48a868,
+          color: 0x4cff00,
           wireframe: true
         });
         const earthSphere = new THREE.Mesh(earthGeometry, earthMaterial);
@@ -125,7 +125,7 @@
 
         const moonGeometry = new THREE.IcosahedronGeometry(.75, 1);
         const moonMaterial = new THREE.MeshBasicMaterial({
-          color: 0xf6f6f6,
+          color: 0xfffff1,
           wireframe: true
         });
         const moonSphere = new THREE.Mesh(moonGeometry, moonMaterial);
