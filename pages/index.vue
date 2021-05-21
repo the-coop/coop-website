@@ -1,5 +1,5 @@
 <template>
-  <div class="page">
+  <div class="page home">
     <div class="hero">      
       <h1 class="title">WHAT IS THE COOP?</h1>
 
@@ -49,12 +49,14 @@
     margin-right: 0;
   }
 
-  .worldview {
+  .page.home .worldview.loaded {
     position: absolute;
     top: 0;
     left: 0;
 
     z-index: -1;
+
+    opacity: .125;
   }
 
   .decoration {

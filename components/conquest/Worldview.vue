@@ -1,5 +1,5 @@
 <template>
-  <div class="worldview">
+  <div :class="`worldview ${loaded ? 'loaded' : ''}`">
     <h1 class="loading-text" v-if="!loaded && !silent">Loading conquest map...</h1>
     <h1 class="error-text" v-if="noWebGL && !silent">Error WebGL not supported...</h1>
   </div>
@@ -9,6 +9,13 @@
   .worldview {
     width: 100%;
     height: 100%;
+
+    opacity: 0;
+    transition: opacity 1s ease-in;
+  }
+
+  .worldview.loaded {
+    opacity: 1;
   }
 
   .loading-text, .error-text {
