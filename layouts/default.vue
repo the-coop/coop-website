@@ -14,6 +14,9 @@
     <Nuxt />
 
     <footer class="footer">
+      <h2 class="subtitle">
+        Other Links
+      </h2>
       <NuxtLink to="/conquest">
         Conquest
       </NuxtLink>
@@ -42,15 +45,16 @@
   /* Temporary until someone can do better. */
   .footer {
     padding: 2.5rem 0rem;
-    text-align: right;
   }
 
-  .footer a {
-    text-decoration: none;
-    font-size: 1.25em;
-    color: silver;
-
-  }
+    .footer a {
+      text-decoration: none;
+      font-size: 1.25em;
+      color: silver;
+    }
+      .footer a:hover {
+        color: white;
+      }
 
       .brand svg {
         height: 9em;
@@ -131,9 +135,5 @@
           height: 4em;
           width: 4em;
         }
-    
-    .footer {
-      padding: 0;
-    }
   }
 </style>

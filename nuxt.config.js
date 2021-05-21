@@ -1,6 +1,7 @@
 const metaName = 'The Coop';
 const metaDesc = 'The Coop is a discord server community that focuses on business, design, and programming. In our free and democratic system, you make the decisions!';
 const metaImage = 'https://thecoop.group/favicon.svg';
+const metaPreviewImage = 'https://thecoop.group/link-preview.png';
 
 export default {
   // Target: https://go.nuxtjs.dev/config-target
@@ -26,12 +27,12 @@ export default {
       { hid: 'facebook-type', property: 'og:type', content: 'website' },
       { hid: 'facebook-title', property: 'og:title', content: metaName },
       { hid: 'facebook-desc', property: 'og:description', content: metaDesc },
-      { hid: 'facebook-image', property: 'og:image', content: metaImage },
+      { hid: 'facebook-image', property: 'og:image', content: metaPreviewImage },
 
       { hid: 'twitter-card', name: 'twitter:card', content: 'summary_large_image' },
       { hid: 'twitter-title', name: 'twitter:title', content: metaName },
       { hid: 'twitter-desc', name: 'twitter:description', content: metaDesc },
-      { hid: 'twitter-image', name: 'twitter:image', content: metaImage }
+      { hid: 'twitter-image', name: 'twitter:image', content: metaPreviewImage }
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.svg' },
