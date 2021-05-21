@@ -22,11 +22,6 @@
 </template>
 
 <style>
-  body, html {
-    font-family: Poppins, sans-serif;
-    background-color: #111;
-  }
-
   .default {
     padding: 0 5em;
   }
@@ -40,17 +35,15 @@
 
   /* Temporary until someone can do better. */
   .footer {
-    display: inline-block;
-    position: absolute;
-
-    right: 5rem;
-    bottom: 1.25rem;
+    padding: 2.5rem 0rem;
+    text-align: right;
   }
 
   .footer a {
     text-decoration: none;
     font-size: 1.25em;
     color: silver;
+
   }
 
       .brand svg {
@@ -128,7 +121,11 @@
           height: 4em;
           width: 4em;
         }
+
+    .footer {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+    }
   }
-
-
 </style>

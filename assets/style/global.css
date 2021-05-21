@@ -1,7 +1,11 @@
-html, body {
+body {
     margin: 0;
+    font-family: Poppins, sans-serif;
 }
 
+html {
+  background-color: #111;
+}
 
 .title {
     color: #4a4a4a;
@@ -54,3 +58,4 @@ html, body {
         width: 50vw;
     }
 }
+

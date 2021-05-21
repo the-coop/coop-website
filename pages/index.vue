@@ -13,12 +13,17 @@
     </div>
 
     <Logo class="decoration" />
+
+    <client-only><Worldview /></client-only>
   </div>
 </template>
 
 <script>
-  // import Vue from 'vue'
-  // export default Vue.extend({})
+  export default {
+    components: {
+      'Worldview': () => import('@/components/conquest/Worldview.vue')
+    }
+  }
 </script>
 
 <style>
@@ -42,6 +47,14 @@
 
   .actions .button:last-child {
     margin-right: 0;
+  }
+
+  .worldview {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    z-index: -1;
   }
 
   .decoration {

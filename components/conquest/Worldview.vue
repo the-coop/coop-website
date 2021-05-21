@@ -91,6 +91,15 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         wrapper.appendChild(renderer.domElement);
 
+        
+        const debuggingSatelite = new THREE.IcosahedronGeometry(0.15, 1);
+        const debuggingSateliteMaterial = new THREE.MeshBasicMaterial({
+          color: 0xfdcf29,
+          wireframe: true
+        });
+        const sateliteSphere = new THREE.Mesh(debuggingSatelite, debuggingSateliteMaterial);
+        scene.add(sateliteSphere);
+
         const sunGeometry = new THREE.IcosahedronGeometry(20, 2);
         const sunMaterial = new THREE.MeshBasicMaterial({
           color: 0xffff00,
@@ -108,7 +117,7 @@
         const earthSphere = new THREE.Mesh(earthGeometry, earthMaterial);
         scene.add(earthSphere);
 
-        const moonGeometry = new THREE.IcosahedronGeometry(1, 1);
+        const moonGeometry = new THREE.IcosahedronGeometry(.75, 1);
         const moonMaterial = new THREE.MeshBasicMaterial({
           color: 0xf6f6f6,
           wireframe: true
@@ -138,21 +147,27 @@
         // Impart moon's orbital offset from the Earth.
         moonSphere.position.x = earthSphere.position.x + 17;
 
-        // Deterministic time variable.
+        // Modifier for overall orbit speed.
+        const orbitBaseSpeed = 10;
 
         // Orbital parameters in seconds.
-        const earthPivotPeriod = 50 * 10;
-        const sunPivotPeriod = 100 * 10;
-        const earthSpherePeriod = 10 * 10;
-        const moonSpherePeriod = 10 * 10;
-        const sunSpherePeriod = 10 * 10;
+        const earthPivotPeriod = 50 * orbitBaseSpeed;
+        const sunPivotPeriod = 100 * orbitBaseSpeed;
+        const earthSpherePeriod = 10 * orbitBaseSpeed;
+        const moonSpherePeriod = 10 * orbitBaseSpeed;
+        const sunSpherePeriod = 10 * orbitBaseSpeed;
 
         // Position the camera for initial placement.
         camera.position.z = 100;
 
         // Time delta
         const clock = new THREE.Clock();
-        let timeIncrement = Date.now() / 1000;
+
+        // Deterministic time variable.
+        // let timeIncrement = Date.now() / 1000;
+        let timeIncrement = 0;
+
+        let didLog = false;
 
         function animate() {
           timeIncrement += clock.getDelta();
@@ -165,6 +180,7 @@
 
           // Rotate the planets under their own motion/weight.
           earthSphere.rotation.z = 2 * Math.PI * timeIncrement / earthSpherePeriod;
+
           // @ISO, you're saying moon sun and earth rotate roughly the same?
           moonSphere.rotation.z = 2 * Math.PI * timeIncrement / moonSpherePeriod;
           sunSphere.rotation.z = 2 * Math.PI * timeIncrement / sunSpherePeriod;
@@ -175,13 +191,32 @@
           const earthTarget = new THREE.Vector3(0, 0, 0);
           earthSphere.getWorldPosition(earthTarget);
 
+          const sateliteTarget = new THREE.Vector3(0, 0, 0);
+          sateliteSphere.getWorldPosition(sateliteTarget);
+
           // Move the camera to the Earth, with some buffering distance.
-          camera.position.z = earthTarget.z + (earthRadius * 1.5);
           camera.position.x = earthTarget.x + (earthRadius * 1.5);
           camera.position.y = earthTarget.y + (earthRadius * 1.5);
+          camera.position.z = earthTarget.z + (earthRadius * 1.5);
 
           // Point the camera at the Earth.
-          camera.lookAt(earthTarget);
+          camera.lookAt(sateliteTarget);
+
+
+
+
+
+          // Move the artifical satelite to the center of the Earth.
+          sateliteSphere.position.x = earthTarget.x;
+          sateliteSphere.position.y = earthTarget.y;
+          sateliteSphere.position.z = earthTarget.z + earthRadius;
+
+          // Move the artificial satelite to the edge of the Earth over a specific tile.
+          sateliteSphere.rotation.z = 2 * Math.PI * timeIncrement / earthSpherePeriod;
+
+          // Log the data of the 
+
+
 
           // Render the scenes, planets, and other objects.
           requestAnimationFrame(animate);
