@@ -1,7 +1,7 @@
 <template>
   <div class="worldview">
-    <h1 class="loading-text" v-if="!loaded">Loading conquest map...</h1>
-    <h1 class="error-text" v-if="noWebGL">Error WebGL not supported...</h1>
+    <h1 class="loading-text" v-if="!loaded && !silent">Loading conquest map...</h1>
+    <h1 class="error-text" v-if="noWebGL && !silent">Error WebGL not supported...</h1>
   </div>
 </template>
 
@@ -55,6 +55,12 @@
 <script>
   export default {
     name: 'Worldview',
+    props: {
+      silent: {
+        type: Boolean,
+        default: false
+      }
+    },
     data: () => ({
       loaded: false,
       noWebGL: false

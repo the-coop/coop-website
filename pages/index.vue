@@ -14,7 +14,7 @@
 
     <Logo class="decoration" />
 
-    <client-only><Worldview /></client-only>
+    <client-only><Worldview silent="true" /></client-only>
   </div>
 </template>
 
