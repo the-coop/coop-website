@@ -179,11 +179,14 @@
         // let timeIncrement = Date.now() / 1000;
         let timeIncrement = 0;
         let focusTarget = null;
+        // Makes lock animation gradually faster over time. Must always be reset to 0 for every new focus
+        let focusTargetLockIteration = 0;
         let lookatNeeded = false;
 
         let didLog = false;
         setTimeout(() => {
           focusTarget = earthSphere;
+          focusTargetLockIteration = 0;
           lookatNeeded = true;
         }, 10000);
 
@@ -209,6 +212,8 @@
 
 
           if (focusTarget) {
+            focusTargetLockIteration += 0.05;
+            console.log(timeIncrement, focusTargetLockIteration);
             // Create a vector towards the Earth target.
             const focusTargetVector = new THREE.Vector3(0, 0, 0);
             earthSphere.getWorldPosition(focusTargetVector);
@@ -218,11 +223,14 @@
 
             // Move the camera to the Earth, with some buffering distance.
             if (camera.position.x < focusTargetVector.x + (earthRadius * 1.5))
-              camera.position.x += timeIncrement / 100;
+              camera.position.x += focusTargetLockIteration;
 
             if (camera.position.y < focusTargetVector.y + (earthRadius * 1.5))
-              camera.position.y += timeIncrement / 100;
-            
+              camera.position.y += focusTargetLockIteration;
+
+            if(camera.position.x > focusTargetVector.x + (earthRadius* 1.5) &&
+              camera.position.y > focusTargetVector.y + (earthRadius * 1.5))
+                focusTarget = null;
             // camera.position.y = focusTargetVector.y + (earthRadius * 1.5);
             // camera.position.z = focusTargetVector.z + (earthRadius * 1.5);
 
