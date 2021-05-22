@@ -170,8 +170,7 @@
         const moonSpherePeriod = 10 * orbitBaseSpeed;
         const sunSpherePeriod = 10 * orbitBaseSpeed;
 
-        // Position the camera for initial placement.
-        camera.position.z = 100;
+
 
         // Time delta
         const clock = new THREE.Clock();
@@ -179,14 +178,22 @@
         // Deterministic time variable.
         // let timeIncrement = Date.now() / 1000;
         let timeIncrement = 0;
+        let focusTarget = null;
+        let lookatNeeded = false;
 
         let didLog = false;
+        setTimeout(() => {
+          focusTarget = earthSphere;
+          lookatNeeded = true;
+        }, 10000);
 
-        function animate() {
+        camera.position.z = 35;
+
+        const animate = () => {
           timeIncrement += clock.getDelta();
 
           // Orbit the Earth around the sun.
-          sunPivot.rotation.z = 2 *  Math.PI * timeIncrement / sunPivotPeriod;
+          sunPivot.rotation.z = 2 * Math.PI * timeIncrement / sunPivotPeriod;
 
           // Orbit the moon around the Earth.
           earthPivot.rotation.z = 2 * Math.PI * timeIncrement / earthPivotPeriod;
@@ -200,34 +207,46 @@
 
           // @ISO, does the moon actually orbit this Earth? lmao
 
-          // Create a vector towards the Earth target.
-          const earthTarget = new THREE.Vector3(0, 0, 0);
-          earthSphere.getWorldPosition(earthTarget);
 
-          const sateliteTarget = new THREE.Vector3(0, 0, 0);
-          sateliteSphere.getWorldPosition(sateliteTarget);
+          if (focusTarget) {
+            // Create a vector towards the Earth target.
+            const focusTargetVector = new THREE.Vector3(0, 0, 0);
+            earthSphere.getWorldPosition(focusTargetVector);
+  
+            const sateliteTarget = new THREE.Vector3(0, 0, 0);
+            sateliteSphere.getWorldPosition(sateliteTarget);
 
-          // Move the camera to the Earth, with some buffering distance.
-          camera.position.x = earthTarget.x + (earthRadius * 1.5);
-          camera.position.y = earthTarget.y + (earthRadius * 1.5);
-          camera.position.z = earthTarget.z + (earthRadius * 1.5);
+            // Move the camera to the Earth, with some buffering distance.
+            if (camera.position.x < focusTargetVector.x + (earthRadius * 1.5))
+              camera.position.x += timeIncrement / 100;
 
-          // Point the camera at the Earth.
-          camera.lookAt(sateliteTarget);
+            if (camera.position.y < focusTargetVector.y + (earthRadius * 1.5))
+              camera.position.y += timeIncrement / 100;
+            
+            // camera.position.y = focusTargetVector.y + (earthRadius * 1.5);
+            // camera.position.z = focusTargetVector.z + (earthRadius * 1.5);
+
+            // Position the camera for initial placement.
+            // camera.position.z = 50;
+
+            // Point the camera at the target.
+            // camera.lookAt(sateliteTarget);
+
+            // Move the artifical satelite to the center of the Earth.
+            sateliteSphere.position.x = focusTargetVector.x;
+            sateliteSphere.position.y = focusTargetVector.y;
+            sateliteSphere.position.z = focusTargetVector.z + earthRadius;
+          }
 
 
 
+          // Log the data of the of faces
+          if (!didLog) {
 
+            console.log(earthSphere);
 
-          // Move the artifical satelite to the center of the Earth.
-          sateliteSphere.position.x = earthTarget.x;
-          sateliteSphere.position.y = earthTarget.y;
-          sateliteSphere.position.z = earthTarget.z + earthRadius;
-
-          // Move the artificial satelite to the edge of the Earth over a specific tile.
-          sateliteSphere.rotation.z = 2 * Math.PI * timeIncrement / earthSpherePeriod;
-
-          // Log the data of the 
+            didLog = true;
+          }
 
 
 
