@@ -211,21 +211,29 @@
 
 
           if (focusTarget) {
-            focusLockAnimationIncrementor += 0.05;
+            focusLockAnimationIncrementor = 1;
  
-            // Create a vector towards the Earth target.
+            // Create a vector towards the focus target.
             const focusTargetVector = new THREE.Vector3(0, 0, 0);
-            earthSphere.getWorldPosition(focusTargetVector);
+            focusTarget.getWorldPosition(focusTargetVector);
+            
+            const focusTargetRadius = focusTarget.geometry.parameters.radius;
   
             const sateliteTarget = new THREE.Vector3(0, 0, 0);
             sateliteSphere.getWorldPosition(sateliteTarget);
+            // Check if Camera is locked to camera
+            if(camera.position.clone().floor() === focusTargetVector.clone().floor()) {
+              camera.position.copy(focusTargetVector.clone().floor());
+              resetFocusTarget();
+            }
             // Move the camera to the Earth, with some buffering distance.
-            if (camera.position.x < focusTargetVector.x + (earthRadius * 1.5))
+            if (camera.position.x < focusTargetVector.x + (focusTargetRadius * 1.5))
               camera.position.x += focusLockAnimationIncrementor;
-            if (camera.position.y < focusTargetVector.y + (earthRadius * 1.5))
+            if (camera.position.y < focusTargetVector.y + (focusTargetRadius * 1.5))
               camera.position.y += focusLockAnimationIncrementor;
-            if(camera.position.x > focusTargetVector.x + (earthRadius* 1.5) &&
-              camera.position.y > focusTargetVector.y + (earthRadius * 1.5))
+            if(camera.position.x > focusTargetVector.x + (focusTargetRadius * 1.5))
+              camera.position.x -= 1;
+            if(camera.position.y > focusTargetVector.y + (focusTargetRadius * 1.5))
   
             // Move the artifical satelite to the center of the Earth.
             sateliteSphere.position.x = focusTargetVector.x;
@@ -259,6 +267,10 @@
           lookatNeeded = true;
         }
 
+        function resetFocusTarget() {
+          focusTarget = null;
+          lookatNeeded = false;
+        }
         function checkForClickedPlanets(clickEvent) {
           // Only works if canvas is full screen.
           mouse.x = (clickEvent.clientX / window.innerWidth) * 2 - 1
