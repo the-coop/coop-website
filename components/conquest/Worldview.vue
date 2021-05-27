@@ -79,19 +79,20 @@
         scriptElem.type = "text/javascript";
         scriptElem.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
         document.head.appendChild(scriptElem);
+
       } else this.onScriptLoaded();
     },
     methods: {
       onScriptLoaded() {
         // Stop the loading.
         this.loaded = true;
-
         // Check if WebGL is supported.
         const canvas = document.createElement('canvas');
         const supportsWebGL = !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
         if (!supportsWebGL) return this.noWebGL = true;
 
         const renderer = new THREE.WebGLRenderer();
+        renderer.setPixelRatio(window.devicePixelRatio);
         
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x111111);
@@ -170,7 +171,10 @@
         const moonSpherePeriod = 10 * orbitBaseSpeed;
         const sunSpherePeriod = 10 * orbitBaseSpeed;
 
-
+        // Make camera zoom to planet onclick.
+        const mouse = new THREE.Vector2();
+        const  raycaster = new THREE.Raycaster();
+        document.addEventListener('click', checkForClickedPlanets);
 
         // Time delta
         const clock = new THREE.Clock();
@@ -180,15 +184,10 @@
         let timeIncrement = 0;
         let focusTarget = null;
         // Makes lock animation gradually faster over time. Must always be reset to 0 for every new focus
-        let focusTargetLockIteration = 0;
+        let focusLockAnimationIncrementor = 0;
         let lookatNeeded = false;
 
         let didLog = false;
-        setTimeout(() => {
-          focusTarget = earthSphere;
-          focusTargetLockIteration = 0;
-          lookatNeeded = true;
-        }, 10000);
 
         camera.position.z = 35;
 
@@ -212,34 +211,30 @@
 
 
           if (focusTarget) {
-            focusTargetLockIteration += 0.05;
-            console.log(timeIncrement, focusTargetLockIteration);
-            // Create a vector towards the Earth target.
+            focusLockAnimationIncrementor = 1;
+ 
+            // Create a vector towards the focus target.
             const focusTargetVector = new THREE.Vector3(0, 0, 0);
-            earthSphere.getWorldPosition(focusTargetVector);
+            focusTarget.getWorldPosition(focusTargetVector);
+            
+            const focusTargetRadius = focusTarget.geometry.parameters.radius;
   
             const sateliteTarget = new THREE.Vector3(0, 0, 0);
             sateliteSphere.getWorldPosition(sateliteTarget);
-
+            // Check if Camera is locked to camera
+            if(camera.position.clone().floor() === focusTargetVector.clone().floor()) {
+              camera.position.copy(focusTargetVector.clone().floor());
+              resetFocusTarget();
+            }
             // Move the camera to the Earth, with some buffering distance.
-            if (camera.position.x < focusTargetVector.x + (earthRadius * 1.5))
-              camera.position.x += focusTargetLockIteration;
-
-            if (camera.position.y < focusTargetVector.y + (earthRadius * 1.5))
-              camera.position.y += focusTargetLockIteration;
-
-            if(camera.position.x > focusTargetVector.x + (earthRadius* 1.5) &&
-              camera.position.y > focusTargetVector.y + (earthRadius * 1.5))
-                focusTarget = null;
-            // camera.position.y = focusTargetVector.y + (earthRadius * 1.5);
-            // camera.position.z = focusTargetVector.z + (earthRadius * 1.5);
-
-            // Position the camera for initial placement.
-            // camera.position.z = 50;
-
-            // Point the camera at the target.
-            // camera.lookAt(sateliteTarget);
-
+            if (camera.position.x < focusTargetVector.x + (focusTargetRadius * 1.5))
+              camera.position.x += focusLockAnimationIncrementor;
+            if (camera.position.y < focusTargetVector.y + (focusTargetRadius * 1.5))
+              camera.position.y += focusLockAnimationIncrementor;
+            if(camera.position.x > focusTargetVector.x + (focusTargetRadius * 1.5))
+              camera.position.x -= 1;
+            if(camera.position.y > focusTargetVector.y + (focusTargetRadius * 1.5))
+              camera.position.y -= 1;
             // Move the artifical satelite to the center of the Earth.
             sateliteSphere.position.x = focusTargetVector.x;
             sateliteSphere.position.y = focusTargetVector.y;
@@ -264,6 +259,28 @@
         }
 
         animate();
+
+        function setFocusTarget(target) {
+          console.log({...target.position})
+          focusTarget = target;
+          focusLockAnimationIncrementor = 0;
+          lookatNeeded = true;
+        }
+
+        function resetFocusTarget() {
+          focusTarget = null;
+          lookatNeeded = false;
+        }
+        function checkForClickedPlanets(clickEvent) {
+          // Only works if canvas is full screen.
+          mouse.x = (clickEvent.clientX / window.innerWidth) * 2 - 1
+          mouse.y = - (clickEvent.clientY / window.innerHeight) * 2 + 1;
+          raycaster.setFromCamera(mouse, camera);
+          const intersections = raycaster.intersectObjects(scene.children, true);
+          if(intersections.length) {
+            setFocusTarget(intersections[0].object);
+          }
+        }
       }
     }
   }
