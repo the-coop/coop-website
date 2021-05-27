@@ -234,7 +234,7 @@
             if(camera.position.x > focusTargetVector.x + (focusTargetRadius * 1.5))
               camera.position.x -= 1;
             if(camera.position.y > focusTargetVector.y + (focusTargetRadius * 1.5))
-  
+              camera.position.y -= 1;
             // Move the artifical satelite to the center of the Earth.
             sateliteSphere.position.x = focusTargetVector.x;
             sateliteSphere.position.y = focusTargetVector.y;
