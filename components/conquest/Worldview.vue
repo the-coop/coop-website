@@ -62,6 +62,7 @@
 <script>
   import { Tween, Easing } from '@tweenjs/tween.js';
   import * as THREE from 'three';
+  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
   export default {
     name: 'Worldview',
@@ -168,6 +169,7 @@
       const mouse = new THREE.Vector2();
       const  raycaster = new THREE.Raycaster();
       let cameraTween = null;
+      const cameraControls = new OrbitControls(camera, renderer.domElement);
       document.addEventListener('click', checkForClickedPlanets);
 
       // Time delta
@@ -187,7 +189,7 @@
 
       const animate = () => {
         timeIncrement += clock.getDelta();
-
+        
         // Orbit the Earth around the sun.
         sunPivot.rotation.z = 2 * Math.PI * timeIncrement / sunPivotPeriod;
 
@@ -205,6 +207,8 @@
 
 
         if (focusTarget) {
+          // Update camera.
+          cameraControls.update();
           // Create a vector towards the focus target.
           const focusTargetVector = new THREE.Vector3(0, 0, 0);
           focusTarget.getWorldPosition(focusTargetVector);
@@ -241,6 +245,7 @@
 
       function setFocusTarget(target) {
         focusTarget = target.object;
+        cameraControls.target = focusTarget.position;
         lookatNeeded = true;
         const currentPosition = {
           x: camera.position.x,
@@ -251,7 +256,7 @@
           y: target.point.y
         }
         cameraTween = new Tween(currentPosition)
-        .to(endPosition, 1000)
+        .to(endPosition, 1500)
         .easing(Easing.Quadratic.Out)
         .onUpdate(() => {
           camera.position.x = currentPosition.x;
