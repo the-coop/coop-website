@@ -61,7 +61,7 @@
 
 <script>
   import { Tween, Easing } from '@tweenjs/tween.js';
-  import THREE from 'three';
+  import * as THREE from 'three';
 
   export default {
     name: 'Worldview',
