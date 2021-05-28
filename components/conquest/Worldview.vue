@@ -52,9 +52,6 @@
 </style>
 
 <script>
-  import { Tween, Easing } from '@tweenjs/tween.js';
-  import * as THREE from 'three';
-  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
   import createEngine from '../../lib/conquest/engine/createEngine';  
   import runEngine from '../../lib/conquest/engine/runEngine';
   import createSolarSystemGeometry from '../../lib/conquest/engine/createSolarSystemGeometry';  
