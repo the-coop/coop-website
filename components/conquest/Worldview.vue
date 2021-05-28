@@ -167,6 +167,7 @@
       // Make camera zoom to planet onclick.
       const mouse = new THREE.Vector2();
       const  raycaster = new THREE.Raycaster();
+      let cameraTween = null;
       document.addEventListener('click', checkForClickedPlanets);
 
       // Time delta
@@ -204,30 +205,15 @@
 
 
         if (focusTarget) {
-          focusLockAnimationIncrementor = 1;
-
           // Create a vector towards the focus target.
           const focusTargetVector = new THREE.Vector3(0, 0, 0);
           focusTarget.getWorldPosition(focusTargetVector);
-          
-          const focusTargetRadius = focusTarget.geometry.parameters.radius;
 
           const sateliteTarget = new THREE.Vector3(0, 0, 0);
           sateliteSphere.getWorldPosition(sateliteTarget);
-          // Check if Camera is locked to camera
-          if(camera.position.clone().floor() === focusTargetVector.clone().floor()) {
-            camera.position.copy(focusTargetVector.clone().floor());
-            resetFocusTarget();
-          }
+      
           // Move the camera to the Earth, with some buffering distance.
-          if (camera.position.x < focusTargetVector.x + (focusTargetRadius * 1.5))
-            camera.position.x += focusLockAnimationIncrementor;
-          if (camera.position.y < focusTargetVector.y + (focusTargetRadius * 1.5))
-            camera.position.y += focusLockAnimationIncrementor;
-          if(camera.position.x > focusTargetVector.x + (focusTargetRadius * 1.5))
-            camera.position.x -= 1;
-          if(camera.position.y > focusTargetVector.y + (focusTargetRadius * 1.5))
-            camera.position.y -= 1;
+          cameraTween.update();
           // Move the artifical satelite to the center of the Earth.
           sateliteSphere.position.x = focusTargetVector.x;
           sateliteSphere.position.y = focusTargetVector.y;
@@ -254,14 +240,28 @@
       animate();
 
       function setFocusTarget(target) {
-        console.log({...target.position})
-        focusTarget = target;
-        focusLockAnimationIncrementor = 0;
+        focusTarget = target.object;
         lookatNeeded = true;
+        const currentPosition = {
+          x: camera.position.x,
+          y: camera.position.y
+        };
+        const endPosition = {
+          x: target.point.x,
+          y: target.point.y
+        }
+        cameraTween = new Tween(currentPosition)
+        .to(endPosition, 1000)
+        .easing(Easing.Quadratic.Out)
+        .onUpdate(() => {
+          camera.position.x = currentPosition.x;
+          camera.position.y = currentPosition.y;
+        })
+        .onComplete(resetFocusTarget)
+        .start();
       }
 
       function resetFocusTarget() {
-        focusTarget = null;
         lookatNeeded = false;
       }
       function checkForClickedPlanets(clickEvent) {
@@ -271,7 +271,7 @@
         raycaster.setFromCamera(mouse, camera);
         const intersections = raycaster.intersectObjects(scene.children, true);
         if(intersections.length) {
-          setFocusTarget(intersections[0].object);
+          setFocusTarget(intersections[0]);
         }
       }
     }
