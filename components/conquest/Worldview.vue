@@ -55,6 +55,7 @@
   import createEngine from '../../lib/conquest/engine/createEngine';  
   import runEngine from '../../lib/conquest/engine/runEngine';
   import createSolarSystemGeometry from '../../lib/conquest/engine/createSolarSystemGeometry';  
+  import * as THREE from 'three';
 
   export default {
     name: 'Worldview',
@@ -68,21 +69,39 @@
       noWebGL: false
     }),
     mounted() {
+      // Used for shared state.
+      window.CONQUEST = {
+        BIOMES: ['grass','snow', 'sand', 'water'],
+        faces: {},
+
+
+        VIEW: {
+          focusTarget: null,
+          mouse: new THREE.Vector2(),
+          raycaster: new THREE.Raycaster(),
+          cameraTween: null
+        },
+
+        // Wrap these up in suitable sub-property 
+        // Deterministic time variable.
+        timeIncrement: 0,
+        focusTarget: null
+      };
+      
       // Check if WebGL is supported.
       const canvas = document.createElement('canvas');
       const supportsWebGL = !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
       if (!supportsWebGL) return this.noWebGL = true;
-
-      // TODO: Make these things all global on window
-
-      // Setup the engine.
-      const { renderer, scene, camera } = createEngine();
-      
-      // Setup the solar system geometry.
-      const { sunPivot, earthPivot, earthSphere, sunSphere, moonSphere, sateliteSphere, earthRadius } = createSolarSystemGeometry({ scene });
-
-      // Run the engine.
-      runEngine({ renderer, scene, camera, sunPivot, earthPivot, earthSphere, sunSphere, moonSphere, sateliteSphere, earthRadius });
+      else {
+        // Setup the engine.
+        createEngine();
+        
+        // Setup the solar system geometry.
+        createSolarSystemGeometry();
+  
+        // Run the engine.
+        runEngine();
+      }
     }
   }
 </script>
