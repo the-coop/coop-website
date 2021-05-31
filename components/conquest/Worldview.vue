@@ -6,8 +6,13 @@
 
 <style>
   .worldview {
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
   }
 
   .loading-text, .error-text {
@@ -73,7 +78,6 @@
       window.CONQUEST = {
         BIOMES: ['grass','snow', 'sand', 'water'],
         faces: {},
-
 
         VIEW: {
           focusTarget: null,
