@@ -8,19 +8,13 @@
         <NuxtLink to="/" class="nav-link current">
           Home
         </NuxtLink>
+        <NuxtLink to="/conquest" class="nav-link">
+          Conquest
+        </NuxtLink>
         <a href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
       </nav>
     </div>
     <Nuxt />
-
-    <footer class="footer">
-      <h2 class="subtitle">
-        Other Links
-      </h2>
-      <NuxtLink to="/conquest">
-        Conquest
-      </NuxtLink>
-    </footer>
   </div>
 </template>
 
@@ -32,7 +26,7 @@
     overflow: hidden;
     width: 100vw;
     box-sizing: border-box;
-    min-height: 100vh;
+    height: 100vh;
   }
 
   .header {

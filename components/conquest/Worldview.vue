@@ -88,8 +88,7 @@
 
         // Wrap these up in suitable sub-property 
         // Deterministic time variable.
-        timeIncrement: 0,
-        focusTarget: null
+        timeIncrement: 0
       };
       
       // Check if WebGL is supported.
