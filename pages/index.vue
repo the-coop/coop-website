@@ -12,8 +12,6 @@
       </div>
     </div>
 
-    <Logo class="decoration" />
-
     <client-only><Worldview :silent="true" /></client-only>
   </div>
 </template>
@@ -49,7 +47,7 @@
     margin-right: 0;
   }
 
-  .page.home .worldview.loaded {
+  .page.home .worldview {
     position: absolute;
     top: 0;
     left: 0;
@@ -59,32 +57,7 @@
     opacity: .125;
   }
 
-  .decoration {
-    position: absolute;
-    z-index: 0;
-    right: 3em;
-    bottom: 3em;
-    width: 26em;
-    height: 23em;
-    transform: scaleX(-1);
-    opacity: .2;
-
-    pointer-events: none;
-  }
-
-  .decoration .beak {
-    animation-duration: 3s;
-    animation-name: moveMouth;
-    /* animation-direction: alternate-reverse; */
-    animation-iteration-count: infinite;
-  }
-
-  .decoration .beard {
-    animation-duration: 3s;
-    animation-name: moveWeirdChickenBeard;
-    /* animation-direction: alternate-reverse; */
-    animation-iteration-count: infinite;
-  }
+  
 
   @keyframes moveMouth {
     from {
