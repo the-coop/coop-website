@@ -8,12 +8,14 @@ html {
 }
 
 .title {
+  margin: 0;
   font-size: clamp(26px, 4vw, 40px);
   color: #fefefe;
   font-weight: 600;
 }
 
 .subtitle {
+  margin: 0;
   font-size: clamp(18px,4vw,20px);
   font-weight: 500;
   color: #dadada;

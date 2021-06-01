@@ -87,7 +87,6 @@
           cameraTween: null
         },
 
-        // Wrap these up in suitable sub-property 
         // Deterministic time variable.
         timeIncrement: 0
       };

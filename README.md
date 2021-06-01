@@ -2,6 +2,11 @@
 
 ## Build Setup
 
+Increase lighting
+Change lighting colour
+Make buildings same texture
+
+
 ```bash
 # install dependencies
 $ yarn install

@@ -20,7 +20,7 @@
 
 <style>
   .default {
-    padding: 0 1.5em 7.5em;
+    padding: 0 1.5em;
 
     position: relative;
     overflow: hidden;
