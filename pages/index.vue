@@ -26,14 +26,8 @@
 
 <style>
   .hero {
-    /* margin: 3rem 0; */
     z-index: 1;
   }
-
-  .hero > * {
-    /* margin: 2rem 0; */
-  }
-
 
   .actions {
     margin-top: 3rem;
@@ -57,25 +51,14 @@
     opacity: .125;
   }
 
-  
 
   @keyframes moveMouth {
-    from {
-      transform: translateX(0);
-    }
-
-    to {
-      transform: translateX(5px);
-    }
+    from { transform: translateX(0); }
+    to { transform: translateX(5px); }
   }
 
   @keyframes moveWeirdChickenBeard {
-    from {
-      transform: translateY(0);
-    }
-
-    to {
-      transform: translateY(5px);
-    }
+    from { transform: translateY(0); }
+    to { transform: translateY(5px); }
   }
 </style>

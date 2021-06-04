@@ -63,6 +63,7 @@
   import * as THREE from 'three';
 
   import { BIOMES } from '../../lib/conquest/interfaces';
+import setFocusTarget from '~/lib/conquest/controls/setFocusTarget';
 
   export default {
     name: 'Worldview',
@@ -70,6 +71,10 @@
       silent: {
         type: Boolean,
         default: false
+      },
+      tile: {
+        type: String,
+        default: null
       }
     },
     data: () => ({
@@ -104,6 +109,12 @@
   
         // Run the engine.
         runEngine();
+
+        // If a tile specified on start, take me directly there.
+        if (this.tile) {
+          const face = window.CONQUEST.faces[this.tile];
+          setFocusTarget(face.structure.mesh);
+        }
       }
     }
   }

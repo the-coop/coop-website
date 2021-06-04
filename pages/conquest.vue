@@ -8,11 +8,19 @@
       return {
         title: 'Coop conquest'
       }
+    },
+    data() {
+      return {
+        tile: this.$nuxt.$route.query.tile
+      }
+    },
+    mounted() {
+      console.log(this.tile);
     }
   }
 </script>
 
 <template>
   <!-- Load map -->
-  <client-only><Worldview /></client-only>
+  <client-only><Worldview :tile="tile" /></client-only>
 </template>

@@ -4,19 +4,38 @@
       <div class="brand">
         <Logo />
       </div>
+      <svg @click="openMenu" class="mobile-nav-trigger" viewBox="0 0 100 80">
+        <rect width="100" height="20"></rect>
+        <rect y="30" width="100" height="20"></rect>
+        <rect y="60" width="100" height="20"></rect>
+      </svg>
       <nav class="navigation">
-        <NuxtLink to="/" class="nav-link current">
-          Home
-        </NuxtLink>
-        <NuxtLink to="/conquest" class="nav-link">
-          Conquest
-        </NuxtLink>
+        <NuxtLink to="/" class="nav-link current">Home</NuxtLink>
+        <NuxtLink to="/conquest" class="nav-link">Conquest</NuxtLink>
         <a href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
       </nav>
     </div>
     <Nuxt />
   </div>
 </template>
+
+<script>
+  import anime from 'animejs/lib/anime.es';
+
+  export default {
+    methods: {
+      openMenu() {
+        const menu = document.querySelector('.navigation');
+        const targetBottom = menu.style.bottom === '3vh' ? '-15vh' : '3vh';
+        anime({
+          targets: '.navigation',
+          bottom: targetBottom,
+          duration: 250
+        });
+      }
+    }
+  }
+</script>
 
 <style>
   .default {
@@ -74,8 +93,6 @@
       }
 
 
-
-
   /* Convert to SVG animation for more krisp' */
 
   .brand:hover .beak {
@@ -93,23 +110,13 @@
   }
 
   @keyframes moveMouth {
-    from {
-      transform: translateX(0);
-    }
-
-    to {
-      transform: translateX(5px);
-    }
+    from { transform: translateX(0); }
+    to { transform: translateX(5px); }
   }
 
   @keyframes moveWeirdChickenBeard {
-    from {
-      transform: translateY(0);
-    }
-
-    to {
-      transform: translateY(5px);
-    }
+    from { transform: translateY(0); }
+    to { transform: translateY(5px); }
   }
 
   @media screen and (min-width: 666px) {
@@ -129,5 +136,35 @@
           height: 4em;
           width: 4em;
         }
+
+
+    .mobile-nav-trigger {
+      display: none;
+    }
+  }
+
+  @media screen and (max-width: 665px) {
+    .nav-link {
+      text-align: right;
+      font-size: 1.3em;
+    }
+    .mobile-nav-trigger {
+      display: block;
+
+      margin-left: 1rem;
+      width: 3rem;  
+      height: 3rem;
+      fill: #ff6565;
+    }
+    .navigation {
+      display: flex;
+      position: fixed;
+      bottom: -15vh;
+      right: 1.75rem;
+      flex-direction: column;
+      transition: bottom .3s ease;
+    
+      /* bottom: 3vh; */
+    }
   }
 </style>
