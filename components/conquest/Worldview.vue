@@ -63,7 +63,7 @@
   import * as THREE from 'three';
 
   import { BIOMES } from '../../lib/conquest/interfaces';
-import setFocusTarget from '~/lib/conquest/controls/setFocusTarget';
+  import setFocusTarget from '~/lib/conquest/controls/setFocusTarget';
 
   export default {
     name: 'Worldview',
@@ -103,7 +103,7 @@ import setFocusTarget from '~/lib/conquest/controls/setFocusTarget';
       else {
         // Setup the engine.
         createEngine();
-        
+
         // Setup the solar system geometry.
         createSolarSystemGeometry();
   
