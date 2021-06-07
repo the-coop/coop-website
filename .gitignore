@@ -88,3 +88,5 @@ sw.*
 
 # Vim swap files
 *.swp
+.vs/slnx.sqlite-journal
+.vs/slnx.sqlite
