@@ -59,7 +59,7 @@
 <script>
   import createEngine from '../../lib/conquest/engine/createEngine';  
   import runEngine from '../../lib/conquest/engine/runEngine';
-  import createSolarSystemGeometry from '../../lib/conquest/engine/createSolarSystemGeometry';  
+  import createSolarSystem from '../../lib/conquest/engine/createSolarSystem';  
   import * as THREE from 'three';
 
   import { BIOMES } from '../../lib/conquest/interfaces';
@@ -105,7 +105,7 @@
         createEngine();
 
         // Setup the solar system geometry.
-        createSolarSystemGeometry();
+        createSolarSystem();
   
         // Run the engine.
         runEngine();
