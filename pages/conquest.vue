@@ -15,7 +15,7 @@
       }
     },
     mounted() {
-      console.log(this.tile);
+      // console.log(this.tile);
     }
   }
 </script>

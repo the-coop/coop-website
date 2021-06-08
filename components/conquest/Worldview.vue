@@ -1,6 +1,9 @@
 <template>
   <div class="worldview">
     <h1 class="error-text" v-if="noWebGL && !silent">Error WebGL not supported...</h1>
+    <!-- <div class="controls">
+      X
+    </div> -->
   </div>
 </template>
 

@@ -4,7 +4,7 @@
       <h1 class="title">WHAT IS THE COOP?</h1>
 
       <h2 class="subtitle">
-        The Coop is a <strong>discord server</strong> community that focuses on business, design, and programming. In our <strong>free and democratic</strong> system, you make the decisions!
+        The Coop <strong>discord server</strong> community supports those dedicated to business&amp;/design&amp;/programming (single/combination). We move the Earth and Moon for our <strong>free and democratic</strong> system.
       </h2>
 
       <div class="actions">
