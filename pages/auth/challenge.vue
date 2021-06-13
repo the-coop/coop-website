@@ -44,6 +44,8 @@ import Auth from '~/lib/auth/auth';
 
           console.log('access token exists');
 
+          console.log(Auth._token());
+
           // Assert that it's actually valid.
           const me = await API.get_json('https://discord.com/api/users/@me');
           console.log(me);
