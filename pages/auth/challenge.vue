@@ -3,64 +3,53 @@
     <h1>Authenticating</h1>
     <p>Attemping to verify your Discord account in exchange for greater access.</p>
     <div v-if="loaded">
-      <h2>Welcome ?!</h2>
+      <h2>Welcome {this.username}!</h2>
       <img class="profile-image" src="" />
+    </div>
+    <div v-if="error">
+      <h2>Error authenticating.</h2>
+      {error}
     </div>
   </div>
 </template>
 
 <script>
-  const API_GET_JSON = async (url) => {
-    const response = await fetch(url, { headers: { authorization: window.authorization }});
-    const result = await response.json();
-    return result;
-  }
+  import API from '../../lib/api/api';
 
   export default {
     mounted() {
+      // Attempt to authenticate, this page should only be arrived at during auth process.
       this.authenticate();
     },
     data() {
       return {
-        loaded: false
+        username: null,
+        loaded: false,
+        error: null
       }
     },
     methods: {
-       async authenticate() {
-        let error = null;
-
+      async authenticate() {
+        // Access the authorisation params provided by OAuth redirect.
         const fragment = new URLSearchParams(window.location.hash.slice(1));
-        const [ accessToken, tokenType ] = [fragment.get('access_token'), fragment.get('token_type')];
-        window.authorization = `${tokenType} ${accessToken}`;
-
-        // Exchange with Discord OAuth service for access token with data.
-
-
-        // Store globally.
-        
-
-        // Put the token in session storage unless they specify remember me then -> local storage.
-        // TODO: ^
-
-        if (!accessToken) error = 'No code passed.';
 
         try {
-          const result = await API_GET_JSON('https://discord.com/api/users/@me');
+          // Guard against no token at all.
+          if (!fragment.get('access_token')) throw new Error('No code passed.');
 
-          console.log(result);
+          // Assert that it's actually valid.
+          const me = await API.get_json('https://discord.com/api/users/@me');
+          console.log(me);
+          if (!me) throw new Error('Invalid user/token.');
 
-          const { username, discriminator } = result;
+          // Put the token in session storage unless they specify remember me then -> local storage.
+          localStorage.set('discord_access_token', fragment.get('access_token'));
 
-          console.log(username, discriminator);
+          // Set as loaded.
           this.loaded = true;
 
         } catch(e) {
-          error = e.message;
-        }
-
-        // If attempt failed
-        if (error) {
-          // Show error box and message.
+          this.error = e.message;
         }
       }
     }
