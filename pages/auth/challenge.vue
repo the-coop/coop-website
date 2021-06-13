@@ -4,6 +4,7 @@
     <p>Attemping to verify your Discord account in exchange for greater access.</p>
     <div v-if="loaded">
       <h2>Welcome {{this.username}}!</h2>
+      <p>We value privacy so this session will be forgotten/discarded when you close your browser, if you wish to be remembered for convenience - click here: <a href="upgrade-session">upgrade session/remember me.</a></p>
       <img class="profile-image" src="" />
     </div>
     <div v-if="error">
