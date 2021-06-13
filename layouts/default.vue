@@ -2,7 +2,9 @@
   <div class="default">
     <div class="header">
       <div class="brand">
-        <Logo />
+        <NuxtLink to="/">
+          <Logo />
+        </NuxtLink>
       </div>
       <svg @click="openMenu" class="mobile-nav-trigger" viewBox="0 0 100 80">
         <rect width="100" height="20"></rect>
