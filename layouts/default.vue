@@ -12,6 +12,7 @@
       <nav class="navigation">
         <NuxtLink to="/" class="nav-link current">Home</NuxtLink>
         <NuxtLink to="/conquest" class="nav-link">Conquest</NuxtLink>
+        <NuxtLink to="/auth/login" class="nav-link">Login</NuxtLink>
         <a href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
       </nav>
     </div>
