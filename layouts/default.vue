@@ -16,6 +16,7 @@
         <NuxtLink to="/conquest" class="nav-link">Conquest</NuxtLink>
         <NuxtLink v-if="!loggedIn" to="/auth/login" class="nav-link">Login</NuxtLink>
         <a v-if="!loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
+        <NuxtLink v-if="loggedIn" to="/profile" class="nav-link">Profile</NuxtLink>
         <button v-if="loggedIn" v-on:click="logout">Logout</button>
       </nav>
     </div>
@@ -30,8 +31,7 @@
   export default {
     async mounted() {
       const me = await Auth._me();
-      if (me) this.loggedIn = true;
-      console.log(me);
+      if (typeof me.id !== 'undefined' && me.id) this.loggedIn = true;
     },
     data() {
       return {
@@ -39,11 +39,9 @@
       }
     },
     methods: {
-      methods: {
-        logout() {
-          Auth.logout();
-          this.loggedIn = false;
-        }
+      logout() {
+        Auth.logout();
+        this.loggedIn = false;
       },
       openMenu() {
         const menu = document.querySelector('.navigation');
