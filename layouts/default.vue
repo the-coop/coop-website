@@ -16,6 +16,7 @@
         <NuxtLink to="/conquest" class="nav-link">Conquest</NuxtLink>
         <NuxtLink v-if="!loggedIn" to="/auth/login" class="nav-link">Login</NuxtLink>
         <a v-if="!loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
+        <button v-if="loggedIn" v-on:click="logout">Logout</button>
       </nav>
     </div>
     <Nuxt />
@@ -38,6 +39,12 @@
       }
     },
     methods: {
+      methods: {
+        logout() {
+          Auth.logout();
+          this.loggedIn = false;
+        }
+      },
       openMenu() {
         const menu = document.querySelector('.navigation');
         const targetBottom = menu.style.bottom === '3vh' ? '-15vh' : '3vh';
