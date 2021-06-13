@@ -49,7 +49,7 @@
           Auth.setToken(fragment.get('access_token'));
 
           // Assert that it's actually valid.
-          const me = await API.get_json('https://discord.com/api/users/@me');
+          const me = await Auth._me();
           if (!me) throw new Error('Invalid user/token.');
 
           // Set the username for a visual feedback.

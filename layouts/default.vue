@@ -14,8 +14,8 @@
       <nav class="navigation">
         <NuxtLink to="/" class="nav-link current">Home</NuxtLink>
         <NuxtLink to="/conquest" class="nav-link">Conquest</NuxtLink>
-        <NuxtLink to="/auth/login" class="nav-link">Login</NuxtLink>
-        <a href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
+        <NuxtLink v-if="!loggedIn" to="/auth/login" class="nav-link">Login</NuxtLink>
+        <a v-if="!loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
       </nav>
     </div>
     <Nuxt />
@@ -24,8 +24,19 @@
 
 <script>
   import anime from 'animejs/lib/anime.es';
+  import Auth from '~/lib/auth/auth';
 
   export default {
+    async mounted() {
+      const me = await Auth._me();
+      if (me) this.loggedIn = true;
+      console.log(me);
+    },
+    data() {
+      return {
+        loggedIn: false
+      }
+    },
     methods: {
       openMenu() {
         const menu = document.querySelector('.navigation');
