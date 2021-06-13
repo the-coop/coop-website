@@ -13,7 +13,7 @@
       </svg>
       <nav class="navigation">
         <NuxtLink to="/" class="nav-link current">Home</NuxtLink>
-        <NuxtLink to="/conquest" class="nav-link">Conquest</NuxtLink>
+        <NuxtLink to="/conquest/world" class="nav-link">Conquest</NuxtLink>
         <NuxtLink v-if="!loggedIn" to="/auth/login" class="nav-link">Login</NuxtLink>
         <a v-if="!loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
         <NuxtLink v-if="loggedIn" to="/profile" class="nav-link">Profile</NuxtLink>
