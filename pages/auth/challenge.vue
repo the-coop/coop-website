@@ -36,6 +36,8 @@
           // Access the authorisation params provided by OAuth redirect.
           const fragment = new URLSearchParams(window.location.hash.slice(1));
 
+          console.log(fragment.get('token_type'));
+
           // Guard against no token at all.
           if (!fragment.get('access_token')) throw new Error('No code passed.');
 
@@ -50,6 +52,7 @@
 
           // Set the username for a visual feedback.
           console.log('valid user', me);
+          this.username = me.username;
 
           // Set as loaded.
           this.loaded = true;
