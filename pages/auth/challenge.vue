@@ -14,6 +14,7 @@
 </template>
 
 <script>
+import Auth from '~/lib/auth/auth';
   import API from '../../lib/api/api';
 
   export default {
@@ -52,7 +53,7 @@
           console.log('valid user', me);
 
           // Put the token in session storage unless they specify remember me then -> local storage.
-          localStorage.set('discord_access_token', fragment.get('access_token'));
+          Auth.setToken(fragment.get('access_token'));
 
           // Set as loaded.
           this.loaded = true;
