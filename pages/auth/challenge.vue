@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import Auth from '~/lib/auth/auth';
+  import Auth from '~/lib/auth/auth';
   import API from '../../lib/api/api';
 
   export default {
@@ -32,19 +32,15 @@ import Auth from '~/lib/auth/auth';
     },
     methods: {
       async authenticate() {
-        // Access the authorisation params provided by OAuth redirect.
-        const fragment = new URLSearchParams(window.location.hash.slice(1));
-
-        console.log('authenticating');
-
         try {
+          // Access the authorisation params provided by OAuth redirect.
+          const fragment = new URLSearchParams(window.location.hash.slice(1));
+
           // Guard against no token at all.
-          console.log('testing access token');
           if (!fragment.get('access_token')) throw new Error('No code passed.');
 
-          console.log('access token exists');
-
-          console.log(Auth._token());
+          // Put the token in session storage unless they specify remember me then -> local storage.
+          Auth.setToken(fragment.get('access_token'));
 
           // Assert that it's actually valid.
           const me = await API.get_json('https://discord.com/api/users/@me');
@@ -54,9 +50,6 @@ import Auth from '~/lib/auth/auth';
 
           // Set the username for a visual feedback.
           console.log('valid user', me);
-
-          // Put the token in session storage unless they specify remember me then -> local storage.
-          Auth.setToken(fragment.get('access_token'));
 
           // Set as loaded.
           this.loaded = true;
