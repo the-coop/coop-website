@@ -13,7 +13,8 @@
     </div>
 
     <client-only>
-      <LazyWorldview :silent="true" />
+      <!-- TODO: Append after timeout. -->
+      <Worldview :silent="true" />
     </client-only>
   </div>
 </template>

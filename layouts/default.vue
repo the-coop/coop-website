@@ -37,8 +37,7 @@
 
   export default {
     async mounted() {
-      const me = await Auth._me();
-      if (typeof me.id !== 'undefined' && me.id) this.loggedIn = true;
+      if (Auth._isLoggedIn()) this.loggedIn = true;
     },
     data() {
       return {
