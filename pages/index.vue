@@ -12,7 +12,9 @@
       </div>
     </div>
 
-    <!-- <client-only><Worldview :silent="true" /></client-only> -->
+    <client-only>
+      <LazyWorldview :silent="true" />
+    </client-only>
   </div>
 </template>
 
