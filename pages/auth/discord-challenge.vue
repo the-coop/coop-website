@@ -1,6 +1,6 @@
 <template>
   <div class="challenge-wrapper content-container">
-    <div v-if="!loaded">
+    <div v-if="!loaded && !error">
       <h1 class="title">Authenticating</h1>
       <p>Attemping to verify your Discord account in exchange for greater access.</p>
     </div>
@@ -10,7 +10,7 @@
       <img class="profile-image" src="" />
     </h1>
 
-    <div v-if="loaded && error">
+    <div v-if="error">
       <h2 class="title">Error authenticating.</h2>
       {{error}}
     </div>

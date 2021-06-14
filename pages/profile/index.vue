@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="content-container">
     <h1 v-if="me">{{me.username}}</h1>
   </div>
 </template>
