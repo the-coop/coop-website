@@ -7,6 +7,12 @@ html {
   background-color: #111;
 }
 
+.content-container {
+  background-color: #4a4a4a;
+  padding: 1rem;
+  border-radius: 0 .5rem;
+}
+
 .title {
   margin: 0;
   font-size: clamp(26px, 4vw, 40px);

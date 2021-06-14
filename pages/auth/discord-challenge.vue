@@ -1,20 +1,17 @@
 <template>
-  <div class="challenge-wrapper">
+  <div class="challenge-wrapper content-container">
     <div v-if="!loaded">
-      <h1>Authenticating</h1>
+      <h1 class="title">Authenticating</h1>
       <p>Attemping to verify your Discord account in exchange for greater access.</p>
     </div>
 
     <h1 v-if="loaded && !error">
-      <h2>Welcome {{this.username}}!</h2>
-      <p>We value privacy so this session will be forgotten/discarded when you close your browser, if you wish to be remembered for convenience - click here:</p>
-      <button class="upgrade-session">Remember me! :D</button>
-
+      <h2 class="subtitle">Welcome {{this.username}}!</h2>
       <img class="profile-image" src="" />
     </h1>
 
     <div v-if="loaded && error">
-      <h2>Error authenticating.</h2>
+      <h2 class="title">Error authenticating.</h2>
       {{error}}
     </div>
   </div>
@@ -22,7 +19,6 @@
 
 <script>
   import Auth from '~/lib/auth/auth';
-  import API from '~/lib/api/api';
 
   export default {
     mounted() {

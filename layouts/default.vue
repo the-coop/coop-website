@@ -48,6 +48,11 @@
       logout() {
         Auth.logout();
         this.loggedIn = false;
+
+        // Redirect to logged out page.
+        this.$router.push({
+            path: '/auth/loggedout'
+        });
       },
       openMenu() {
         const menu = document.querySelector('.navigation');
