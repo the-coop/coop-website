@@ -1,7 +1,7 @@
 <template>
   <div class="worldview">
     <h1 class="error-text" v-if="noWebGL && !silent">Error WebGL not supported...</h1>
-    <!-- <div class="controls">
+      <!-- <div class="controls">
       X
       // TODO: toggle to locked/unlocked for camera
       </div> -->
@@ -84,7 +84,7 @@
     data: () => ({
       noWebGL: false
     }),
-    mounted() {
+    async mounted() {
       // Used for shared state.
       window.CONQUEST = {
         BIOMES,
@@ -109,7 +109,7 @@
         createEngine();
 
         // Setup the solar system geometry.
-        createSolarSystem();
+        await createSolarSystem();
   
         // Run the engine.
         runEngine();

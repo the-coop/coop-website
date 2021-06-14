@@ -110,6 +110,13 @@
         text-decoration: none;
       }
 
+      button.nav-link {
+        background: none;
+        outline: none;
+        border: none;
+        color: #ff6565;
+      }
+
       .nav-link:hover {
         color: white;
       }
