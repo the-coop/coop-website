@@ -18,7 +18,7 @@
         
         <!-- Actions for guests/non-users/logged out users -->
         <NuxtLink v-if="!loggedIn" to="/auth/login" class="nav-link">🔒 Login</NuxtLink>
-        <a v-if="!loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">📝 Apply</a>
+        <!-- <a v-if="!loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">📝 Apply</a> -->
 
         <!-- Actions for logged un users -->
         <NuxtLink v-if="loggedIn" to="/profile" class="nav-link">👤 Profile</NuxtLink>
@@ -57,7 +57,7 @@
       },
       openMenu() {
         const menu = document.querySelector('.navigation');
-        const targetBottom = menu.style.bottom === '3vh' ? '-15vh' : '3vh';
+        const targetBottom = menu.style.bottom === '3vh' ? '-35vh' : '3vh';
         anime({
           targets: '.navigation',
           bottom: targetBottom,

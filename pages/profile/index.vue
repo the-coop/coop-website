@@ -1,6 +1,7 @@
 <template>
   <div class="content-container">
     <h1 v-if="me">{{me.username}}</h1>
+    <NuxtLink to="/profile/settings">Profile settings</NuxtLink>
   </div>
 </template>
 
