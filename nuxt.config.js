@@ -93,10 +93,31 @@ export default {
       //   }
       // },
       discord: {
+        scheme: 'oauth2',
+        endpoints: {
+          authorization: 'https://discord.com/api/oauth2/authorize',
+          token: 'https://discord.com/api/oauth2/token',
+          userInfo: 'https://discord.com/api/users/@me'
+        },
+        token: {
+          property: 'access_token',
+          type: 'Bearer',
+          maxAge: 1800
+        },
+        refreshToken: {
+          property: 'refresh_token',
+          maxAge: 60 * 60 * 24 * 30
+        },
+        responseType: 'token',
+        grantType: 'authorization_code',
+        accessType: undefined,
+        redirectUri: 'https://thecoop.group/auth/discord-challenge',
+        logoutRedirectUri: 'https://thecoop.group/loggedout',
+        scope: ['identify'],
         clientId: process.env.DISCORD_APPID,
         clientSecret: process.env.DISCORD_CLIENT_SECRET,
-        scope: ['identify']
-      },
+        autoLogout: true
+      }
     }
   }
 

@@ -54,8 +54,6 @@
             </div>
 
             <div class="login-options">
-
-
                 <!-- Fallback to pass port -->
                 <!-- https://www.passportjs.org/packages/passport-discord/ -->
                 <button class="login-option-button" v-on:click="loginDiscord" >
