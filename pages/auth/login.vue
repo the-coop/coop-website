@@ -45,7 +45,6 @@
         </p>
 
         <p>There is still time to join our _LINK_ NEWSLETTER _LINK_.</p>
-
         
         <div class="login">
             <div class="upgrade-session-promo">
