@@ -58,10 +58,7 @@ export default {
   components: true,
 
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
-  buildModules: [
-    // https://go.nuxtjs.dev/typescript
-    // '@nuxt/typescript-build',
-  ],
+  buildModules: [],
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
@@ -114,7 +111,7 @@ export default {
         redirectUri: 'https://thecoop.group/auth/discord-challenge',
         logoutRedirectUri: 'https://thecoop.group/loggedout',
         scope: ['identify'],
-        clientId: process.env.DISCORD_APPID,
+        clientId: '799695179623432222',
         clientSecret: process.env.DISCORD_CLIENT_SECRET,
         autoLogout: true
       }
