@@ -12,15 +12,16 @@
         <rect y="60" width="100" height="20"></rect>
       </svg>
       <nav class="navigation">
-        <NuxtLink to="/" class="nav-link current">Home</NuxtLink>
-        <NuxtLink to="/conquest" class="nav-link">Conquest</NuxtLink>
+        <NuxtLink to="/" class="nav-link current">🏠 Home</NuxtLink>
+        <NuxtLink to="/conquest" class="nav-link">🗞️ Propaganda</NuxtLink>
+        <NuxtLink to="/conquest" class="nav-link">🗡 Conquest</NuxtLink>
         
         <!-- Actions for guests/non-users/logged out users -->
-        <NuxtLink v-if="!loggedIn" to="/auth/login" class="nav-link">Login</NuxtLink>
-        <a v-if="!loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
+        <NuxtLink v-if="!loggedIn" to="/auth/login" class="nav-link">🔒 Login</NuxtLink>
+        <a v-if="!loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">📝 Apply</a>
 
         <!-- Actions for logged un users -->
-        <NuxtLink v-if="loggedIn" to="/profile" class="nav-link">Profile</NuxtLink>
+        <NuxtLink v-if="loggedIn" to="/profile" class="nav-link">👤 Profile</NuxtLink>
         <button v-if="loggedIn" 
           class="nav-link"
           v-on:click="logout">Logout</button>
@@ -196,12 +197,10 @@
     .navigation {
       display: flex;
       position: fixed;
-      bottom: -15vh;
+      bottom: -35vh;
       right: 1.75rem;
       flex-direction: column;
       transition: bottom .3s ease;
-    
-      /* bottom: 3vh; */
     }
   }
 </style>
