@@ -35,6 +35,16 @@
     methods: {
       async authenticate() {
         try {
+          // This is all outdated bullshit now, all I need to do is
+          // Access the code from URL and post it securely to our API
+          // in return for a token
+          
+
+
+
+
+
+
           // Access the authorisation params provided by OAuth redirect.
           const fragment = new URLSearchParams(window.location.hash.slice(1));
 
