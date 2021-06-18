@@ -50,6 +50,10 @@
           // Put the token in session storage unless they specify remember me then -> local storage.
           Auth.setToken(token);
 
+          // Attempt to set token globally for axious but may
+          // not be mutable like this.
+          API.configureAxiosIncludeAuthGlobally(token);
+
           // Set the username for a visual feedback.
           this.username = authResponse.user.username;
 
