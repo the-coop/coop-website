@@ -47,7 +47,7 @@
           if (!token) throw new Error('No token returned.');
 
           // Set the username for a visual feedback.
-          this.username = data.user.username;
+          // this.username = data.user.username;
 
           // Set as loaded.
           this.loaded = true;
