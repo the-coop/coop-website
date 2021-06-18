@@ -75,13 +75,10 @@ export default {
       local: {
         token: {
           property: 'token',
-          global: true,
-          // required: true,
-          // type: 'Bearer'
+          required: true
         },
         user: {
-          property: 'user',
-          // autoFetch: true
+          autoFetch: true
         },
         endpoints: {
           login: false,
