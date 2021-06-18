@@ -41,7 +41,7 @@
     },
     data() {
       return {
-        loggedIn: false
+        loggedIn: this.$store.state.auth.loggedIn
       }
     },
     methods: {
