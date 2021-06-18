@@ -16,12 +16,12 @@
         <NuxtLink to="/conquest" class="nav-link">Conquest</NuxtLink>
         
         <!-- Actions for guests/non-users/logged out users -->
-        <NuxtLink v-if="!this.$auth.loggedIn" to="/auth/login" class="nav-link">Login</NuxtLink>
-        <a v-if="!this.$auth.loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
+        <NuxtLink v-if="!$auth.$state.loggedIn" to="/auth/login" class="nav-link">Login</NuxtLink>
+        <a v-if="!$auth.$state.loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
 
         <!-- Actions for logged un users -->
-        <NuxtLink v-if="this.$auth.loggedIn" to="/profile" class="nav-link">Profile</NuxtLink>
-        <button v-if="this.$auth.loggedIn" 
+        <NuxtLink v-if="$auth.$state.loggedIn" to="/profile" class="nav-link">Profile</NuxtLink>
+        <button v-if="$auth.$state.loggedIn" 
           class="nav-link"
           v-on:click="logout">Logout</button>
 
