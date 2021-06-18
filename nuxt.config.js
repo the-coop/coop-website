@@ -72,8 +72,8 @@ export default {
 
   auth: {
     redirect: {
-      login: '/auth/loggedin',
-      // logout: '/auth/loggedout'
+      login: '/auth/login',
+      logout: '/auth/loggedout'
     },
     strategies: {
       local: {

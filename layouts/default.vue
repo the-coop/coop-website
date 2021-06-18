@@ -54,7 +54,7 @@
       async logout() {
         // Until nuxt/auth sort their lives out...
         await this.$auth.logout();
-        await this.$auth.logout('local');
+        // await this.$auth.logout('local');
 
         // Reset memory followed by a hard refresh... sad.
         // window.location.href = 'https://thecoop.group/auth/loggedout';
