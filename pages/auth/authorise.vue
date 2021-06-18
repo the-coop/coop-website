@@ -32,11 +32,10 @@
           // Extract code from oauth redirect.
           const params = new URLSearchParams(window.location.search);
           const code = params.get('code');
-          const method = params.get('method');
+          const method = params.get('method') || 'discord_oauth';
 
           // TODO: Do state comparison to prevent against CSRF
 
-          console.log(method);
 
           // Exchange grant token with access token to validate identity.
           const loginAttempt = await this.$auth.loginWith('local', { data: { code, method } });
