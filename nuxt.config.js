@@ -87,10 +87,6 @@ export default {
           autoFetch: true
         },
         endpoints: {
-          logout: {
-            url: 'https://cooperchickenbot.herokuapp.com/auth/logout', 
-            method: 'get' 
-          },
           login: {
             url: 'https://cooperchickenbot.herokuapp.com/auth/access', 
             method: 'post' 
