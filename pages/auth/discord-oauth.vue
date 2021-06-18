@@ -58,8 +58,9 @@
           // Set as loaded.
           this.loaded = true;
 
+          // Let it set it self the lazy fucks.
           // Set the user to nuxt auth/local memory.
-          this.$auth.setUser(data.user);
+          // this.$auth.setUser(data.user);
 
         } catch(e) {
           this.error = e.message;
