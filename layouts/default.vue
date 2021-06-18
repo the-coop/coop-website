@@ -35,6 +35,19 @@
   import anime from 'animejs/lib/anime.es';
 
   export default {
+    mounted() {
+      console.log(this.$auth);
+      console.log(this.$auth.user);
+
+      // Access using vuex
+      console.log(this.$store.state.auth.user);
+
+      // Access using $auth
+      console.log(this.$auth.loggedIn);
+
+      // Access using vuex
+      console.log(this.$store.state.auth.loggedIn);
+    },
     methods: {
       async logout() {
         await this.$auth.logout('local');
