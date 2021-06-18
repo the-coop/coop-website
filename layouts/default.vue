@@ -36,18 +36,14 @@
   import Auth from '~/lib/auth/auth';
 
   export default {
-    async mounted() {
-      if (Auth._isLoggedIn()) this.loggedIn = true;
-    },
-    data() {
-      return {
-        loggedIn: this.$store.state.auth.loggedIn
+    computed: {
+      loggedIn() {
+        return this.$store.state.auth.loggedIn
       }
     },
     methods: {
       logout() {
         Auth.logout();
-        this.loggedIn = false;
 
         // Redirect to logged out page.
         this.$router.push({
