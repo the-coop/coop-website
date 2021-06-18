@@ -36,6 +36,8 @@
 
   export default {
     mounted() {
+      console.log('mounted...?')
+
       console.log(this.$auth);
       console.log(this.$auth.user);
 
@@ -49,8 +51,12 @@
       console.log(this.$store.state.auth.loggedIn);
     },
     methods: {
-      async logout() {
-        await this.$auth.logout('local');
+      logout() {
+        // Until nuxt/auth sort their lives out...
+        this.$auth.reset()
+
+          // Reset memory followed by a hard refresh... sad.
+          .then(() => window.location = 'https://thecoop.group/loggedout');
       },
       openMenu() {
         const menu = document.querySelector('.navigation');
