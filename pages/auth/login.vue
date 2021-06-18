@@ -86,32 +86,11 @@
 </template>
 
 <script>
-    import Auth from '~/lib/auth/auth';
-
     export default {
         middleware: 'guest',
         data() {
             return {
                 discordAuthURL: "https://discord.com/api/oauth2/authorize?client_id=799695179623432222&redirect_uri=https%3A%2F%2Fthecoop.group%2Fauth%2Fdiscord-oauth&response_type=code&scope=identify",
-                remembered: false
-            }
-        },
-        mounted() {
-            if (window.localStorage.getItem(Auth.REMEMBER_ME_KEY))
-                this.remembered = true;
-        },
-        methods: {
-            toggleRemember() {
-                if (Auth._shouldRemember()) this.unrememberMe();
-                else this.rememberMe();
-            },
-            unrememberMe() {
-                window.localStorage.removeItem(Auth.REMEMBER_ME_KEY, true);
-                this.remembered = false;
-            },
-            rememberMe() {
-                window.localStorage.setItem(Auth.REMEMBER_ME_KEY, true);
-                this.remembered = true;
             }
         }
     }

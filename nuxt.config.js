@@ -72,7 +72,8 @@ export default {
 
   auth: {
     redirect: {
-      login: '/loggedin',
+      login: '/auth/loggedin',
+      logout: '/auth/loggedout'
     },
     strategies: {
       local: {
@@ -85,13 +86,11 @@ export default {
           autoFetch: false
         },
         endpoints: {
+          logout: false,
           login: {
             url: 'https://cooperchickenbot.herokuapp.com/auth/access-discord', 
             method: 'post' 
           },
-          logout: false,
-
-          // TODO: This one should actually exist.
           user: { 
             url: 'https://cooperchickenbot.herokuapp.com/auth/me', 
             method: 'get' 
