@@ -83,7 +83,7 @@ export default {
         endpoints: {
           login: {
             url: 'https://cooperchickenbot.herokuapp.com/auth/access-discord', 
-            method: 'get' 
+            method: 'post' 
           },
           logout: false,
 

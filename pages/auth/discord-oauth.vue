@@ -52,6 +52,8 @@
           console.log(loginAttempt);
           console.log(loginAttempt.data);
 
+          this.$toast.success('Logged In!'))
+
           // Access/check for token within response.
           const token = data.token || null;
           if (!token) throw new Error('No token returned.');
