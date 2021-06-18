@@ -74,6 +74,7 @@ export default {
     strategies: {
       local: {
         token: {
+          global: true,
           property: 'token',
           required: true
         },

@@ -44,25 +44,15 @@
           // TODO: Do state comparison to prevent against CSRF
 
           // Exchange grant token with access token to validate identity.
-          // const authResponse = await API.post('auth/access-discord', { code });
-          // const data = authResponse.data || null;
-          // if (!data) throw new Error('No data returned.');
-
           const loginAttempt = await this.$auth.loginWith('local', { data: { code } });
-          console.log(loginAttempt);
-          console.log(loginAttempt.data);
+          const data = loginAttempt.data || null;
+          if (!data) throw new Error('No data returned.');
 
           this.$toast.success('Logged In!');
 
           // Access/check for token within response.
           const token = data.token || null;
           if (!token) throw new Error('No token returned.');
-
-          // Put the token in session storage unless they specify remember me then -> local storage.
-          Auth.setToken(token);
-
-          // Attempt to set token globally for axios.
-          API.configureAxiosIncludeAuthGlobally(token);
 
           // Set the username for a visual feedback.
           this.username = data.user.username;
@@ -72,7 +62,6 @@
 
           // Set the user to nuxt auth/local memory.
           this.$auth.setUser(data.user);
-          // this.$auth.setUserToken(data.token);
 
         } catch(e) {
           this.error = e.message;
