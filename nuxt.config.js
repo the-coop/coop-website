@@ -81,7 +81,10 @@ export default {
           autoFetch: false
         },
         endpoints: {
-          login: false,
+          login: {
+            url: 'https://cooperchickenbot.heroku.app/auth/access-discord', 
+            method: 'get' 
+          },
           logout: false,
 
           // TODO: This one should actually exist.

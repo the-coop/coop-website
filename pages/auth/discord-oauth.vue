@@ -44,9 +44,12 @@
           // TODO: Do state comparison to prevent against CSRF
 
           // Exchange grant token with access token to validate identity.
-          const authResponse = await API.post('auth/access-discord', { code });
-          const data = authResponse.data || null;
-          if (!data) throw new Error('No data returned.');
+          // const authResponse = await API.post('auth/access-discord', { code });
+          // const data = authResponse.data || null;
+          // if (!data) throw new Error('No data returned.');
+
+          const loginAttempt = await this.$auth.loginWith('local', { data: { code } });
+          console.log(loginAttempt);
 
           // Access/check for token within response.
           const token = data.token || null;
