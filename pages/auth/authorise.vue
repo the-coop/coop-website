@@ -33,9 +33,6 @@
           const code = params.get('code');
           const method = params.get('method') || 'discord_oauth';
 
-          // TODO: Do state comparison to prevent against CSRF
-
-
           // Exchange grant token with access token to validate identity.
           const loginAttempt = await this.$auth.loginWith('local', { data: { code, method } });
           const data = loginAttempt.data || null;
