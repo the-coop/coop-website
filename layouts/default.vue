@@ -56,7 +56,7 @@
         this.$auth.reset()
 
           // Reset memory followed by a hard refresh... sad.
-          .then(() => window.location = 'https://thecoop.group/loggedout');
+          .then(() => window.location.href = 'https://thecoop.group/auth/loggedout');
       },
       openMenu() {
         const menu = document.querySelector('.navigation');
