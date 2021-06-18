@@ -42,8 +42,8 @@
       }
     },
     methods: {
-      logout() {
-        this.$auth.logout();
+      async logout() {
+        await this.$auth.logout();
       },
       openMenu() {
         const menu = document.querySelector('.navigation');
