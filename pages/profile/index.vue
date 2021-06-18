@@ -1,6 +1,7 @@
 <template>
   <div class="content-container">
-    <h1 v-if="me">{{me.username}}</h1>
+    <!-- <h1 v-if="me">{{me.username}}</h1> -->
+    <h1>Meeee</h1>
   </div>
 </template>
 
@@ -8,14 +9,6 @@
   import Auth from '~/lib/auth/auth';
 
   export default {
-    async mounted() {
-      const me = await Auth._me();
-      if (typeof me.id !== 'undefined' && me.id) this.me = me;
-    },
-    data() {
-      return {
-        me: null
-      }
-    }
+    // Access user data from vuex store instead?
   }
 </script>

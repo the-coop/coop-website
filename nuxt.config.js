@@ -90,7 +90,7 @@ export default {
 
           // TODO: This one should actually exist.
           user: { 
-            url: 'https://cooperchickenbot.herokuapp.com/auth/user', 
+            url: 'https://cooperchickenbot.herokuapp.com/auth/me', 
             method: 'get' 
           }
         }
