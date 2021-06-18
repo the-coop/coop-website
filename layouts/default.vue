@@ -37,7 +37,7 @@
   export default {
     methods: {
       async logout() {
-        await this.$auth.logout();
+        await this.$auth.logout('local');
       },
       openMenu() {
         const menu = document.querySelector('.navigation');
