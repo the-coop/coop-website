@@ -44,9 +44,13 @@ import axios from 'axios';
           // TODO: Do state comparison to prevent against CSRF
 
           const authResponse = await API.post('auth/access-discord', { code });
-          const token = authResponse.token || null;
+          const data = authResponse.data || null;
 
-          console.log(authResponse);
+          if (!data) throw new Error('No data returned.');
+
+          const token = data.token || null;
+          
+          console.log(data);
           console.log('token', token);
 
           if (!token) throw new Error('No token returned.');
@@ -59,7 +63,7 @@ import axios from 'axios';
           API.configureAxiosIncludeAuthGlobally(token);
 
           // Set the username for a visual feedback.
-          this.username = authResponse.user.username;
+          this.username = data.user.username;
 
           // Set as loaded.
           this.loaded = true;
