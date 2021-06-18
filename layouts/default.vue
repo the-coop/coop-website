@@ -16,12 +16,12 @@
         <NuxtLink to="/conquest" class="nav-link">Conquest</NuxtLink>
         
         <!-- Actions for guests/non-users/logged out users -->
-        <NuxtLink v-if="!loggedIn" to="/auth/login" class="nav-link">Login</NuxtLink>
-        <a v-if="!loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
+        <NuxtLink v-if="!this.$auth.loggedIn" to="/auth/login" class="nav-link">Login</NuxtLink>
+        <a v-if="!this.$auth.loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
 
         <!-- Actions for logged un users -->
-        <NuxtLink v-if="loggedIn" to="/profile" class="nav-link">Profile</NuxtLink>
-        <button v-if="loggedIn" 
+        <NuxtLink v-if="this.$auth.loggedIn" to="/profile" class="nav-link">Profile</NuxtLink>
+        <button v-if="this.$auth.loggedIn" 
           class="nav-link"
           v-on:click="logout">Logout</button>
 
@@ -33,14 +33,8 @@
 
 <script>
   import anime from 'animejs/lib/anime.es';
-  import Auth from '~/lib/auth/auth';
 
   export default {
-    computed: {
-      loggedIn() {
-        return this.$store.state.auth.loggedIn
-      }
-    },
     methods: {
       async logout() {
         await this.$auth.logout();
