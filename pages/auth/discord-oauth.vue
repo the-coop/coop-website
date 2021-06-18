@@ -22,6 +22,7 @@
   import Auth from '~/lib/auth/auth';
 
   export default {
+    middleware: 'guest',
     mounted() {
       // Attempt to authenticate, this page should only be arrived at during auth process.
       this.authenticate();
