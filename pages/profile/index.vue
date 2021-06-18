@@ -6,8 +6,6 @@
 </template>
 
 <script>
-  import Auth from '~/lib/auth/auth';
-
   export default {
     // Access user data from vuex store instead?
   }

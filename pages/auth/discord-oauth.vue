@@ -18,9 +18,6 @@
 </template>
 
 <script>
-  import API from '~/lib/api/api';
-  import Auth from '~/lib/auth/auth';
-
   export default {
     middleware: 'guest',
     mounted() {
