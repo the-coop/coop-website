@@ -38,25 +38,26 @@
     mounted() {
       console.log('mounted...?')
 
-      console.log(this.$auth);
-      console.log(this.$auth.user);
+      // console.log(this.$auth);
+      // console.log(this.$auth.user);
 
-      // Access using vuex
-      console.log(this.$store.state.auth.user);
+      // // Access using vuex
+      // console.log(this.$store.state.auth.user);
 
-      // Access using $auth
-      console.log(this.$auth.loggedIn);
+      // // Access using $auth
+      // console.log(this.$auth.loggedIn);
 
-      // Access using vuex
-      console.log(this.$store.state.auth.loggedIn);
+      // // Access using vuex
+      // console.log(this.$store.state.auth.loggedIn);
     },
     methods: {
       async logout() {
         // Until nuxt/auth sort their lives out...
-        await this.$auth.reset();
+        await this.$auth.logout();
+        await this.$auth.logout('local');
 
         // Reset memory followed by a hard refresh... sad.
-        window.location.href = 'https://thecoop.group/auth/loggedout';
+        // window.location.href = 'https://thecoop.group/auth/loggedout';
       },
       openMenu() {
         const menu = document.querySelector('.navigation');
