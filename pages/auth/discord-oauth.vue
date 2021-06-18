@@ -48,8 +48,6 @@
           const data = loginAttempt.data || null;
           if (!data) throw new Error('No data returned.');
 
-          // this.$toast.success('Logged In!');
-
           // Access/check for token within response.
           const token = data.token || null;
           if (!token) throw new Error('No token returned.');

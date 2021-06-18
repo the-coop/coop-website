@@ -71,6 +71,9 @@ export default {
   ],
 
   auth: {
+    redirect: {
+      login: '/loggedin',
+    },
     strategies: {
       local: {
         token: {
