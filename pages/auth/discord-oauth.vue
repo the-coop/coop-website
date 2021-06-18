@@ -18,6 +18,7 @@
 </template>
 
 <script>
+import axios from 'axios';
   import API from '~/lib/api/api';
   import Auth from '~/lib/auth/auth';
 
@@ -59,6 +60,10 @@
 
           // Set as loaded.
           this.loaded = true;
+
+          // TODO: Test requesting the test page to see what happens
+          const authResp = await API.get('auth/authedonly');
+          console.log(authResp);
 
         } catch(e) {
           this.error = e.message;
