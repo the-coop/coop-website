@@ -45,10 +45,6 @@
           const token = data.token || null;
           if (!token) throw new Error('No token returned.');
 
-          // Set the username for a visual feedback.
-          // this.username = data.user.username;
-          // Let it set it self the lazy fucks.
-
           // Set the user to nuxt auth/local memory.
           this.$auth.setUser(data.user);
 
