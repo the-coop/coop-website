@@ -18,7 +18,6 @@
 </template>
 
 <script>
-import axios from 'axios';
   import API from '~/lib/api/api';
   import Auth from '~/lib/auth/auth';
 
@@ -43,23 +42,19 @@ import axios from 'axios';
 
           // TODO: Do state comparison to prevent against CSRF
 
+          // Exchange grant token with access token to validate identity.
           const authResponse = await API.post('auth/access-discord', { code });
           const data = authResponse.data || null;
-
           if (!data) throw new Error('No data returned.');
 
+          // Access/check for token within response.
           const token = data.token || null;
-          
-          console.log(data);
-          console.log('token', token);
-
           if (!token) throw new Error('No token returned.');
 
           // Put the token in session storage unless they specify remember me then -> local storage.
           Auth.setToken(token);
 
-          // Attempt to set token globally for axious but may
-          // not be mutable like this.
+          // Attempt to set token globally for axios.
           API.configureAxiosIncludeAuthGlobally(token);
 
           // Set the username for a visual feedback.
@@ -68,9 +63,8 @@ import axios from 'axios';
           // Set as loaded.
           this.loaded = true;
 
-          // TODO: Test requesting the test page to see what happens
-          const authResp = await API.get('auth/authedonly');
-          console.log(authResp);
+          // Set the user to nuxt auth/local memory.
+          this.$auth.setUser(data.user);
 
         } catch(e) {
           this.error = e.message;
