@@ -47,6 +47,10 @@
 
           // Set the username for a visual feedback.
           // this.username = data.user.username;
+          // Let it set it self the lazy fucks.
+
+          // Set the user to nuxt auth/local memory.
+          this.$auth.setUser(data.user);
 
           // Set as loaded.
           this.loaded = true;
