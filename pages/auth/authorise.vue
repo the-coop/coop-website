@@ -7,7 +7,7 @@
 
     <div v-if="error">
       <h2 class="title">Error authenticating.</h2>
-      {{error}}
+      <pre>{{error}}</pre>
     </div>
   </div>
 </template>
@@ -21,7 +21,6 @@
     },
     data() {
       return {
-        username: null,
         loaded: false,
         error: null
       }
