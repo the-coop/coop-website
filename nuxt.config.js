@@ -78,6 +78,7 @@ export default {
           required: true
         },
         user: {
+          property: '',
           autoFetch: true
         },
         endpoints: {
