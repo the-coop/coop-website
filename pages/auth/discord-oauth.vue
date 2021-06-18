@@ -5,11 +5,6 @@
       <p>Attemping to verify your Discord account in exchange for greater access.</p>
     </div>
 
-    <h1 v-if="loaded && !error">
-      <h2 class="subtitle">Welcome {{this.username}}!</h2>
-      <img class="profile-image" src="" />
-    </h1>
-
     <div v-if="error">
       <h2 class="title">Error authenticating.</h2>
       {{error}}
@@ -37,11 +32,14 @@
           // Extract code from oauth redirect.
           const params = new URLSearchParams(window.location.search);
           const code = params.get('code');
+          const method = params.get('method');
 
           // TODO: Do state comparison to prevent against CSRF
 
+          console.log(method);
+
           // Exchange grant token with access token to validate identity.
-          const loginAttempt = await this.$auth.loginWith('local', { data: { code } });
+          const loginAttempt = await this.$auth.loginWith('local', { data: { code, method } });
           const data = loginAttempt.data || null;
           if (!data) throw new Error('No data returned.');
 
@@ -54,10 +52,6 @@
 
           // Set as loaded.
           this.loaded = true;
-
-          // Let it set it self the lazy fucks.
-          // Set the user to nuxt auth/local memory.
-          // this.$auth.setUser(data.user);
 
         } catch(e) {
           this.error = e.message;

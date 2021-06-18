@@ -92,7 +92,7 @@ export default {
             method: 'get' 
           },
           login: {
-            url: 'https://cooperchickenbot.herokuapp.com/auth/access-discord', 
+            url: 'https://cooperchickenbot.herokuapp.com/auth/access', 
             method: 'post' 
           },
           user: { 
