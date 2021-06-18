@@ -46,6 +46,9 @@ import axios from 'axios';
           const authResponse = await API.post('auth/access-discord', { code });
           const token = authResponse.token || null;
 
+          console.log(authResponse);
+          console.log('token', token);
+
           if (!token) throw new Error('No token returned.');
 
           // Put the token in session storage unless they specify remember me then -> local storage.
