@@ -84,7 +84,8 @@ export default {
         },
         user: {
           autoFetch: true,
-          property: 'user'
+          autoFetchUser: true,
+          property: ''
         },
         endpoints: {
           logout: false,
