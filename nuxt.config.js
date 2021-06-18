@@ -80,7 +80,8 @@ export default {
         token: {
           global: true,
           property: 'token',
-          required: true
+          required: true,
+          prefix: '_token.'
         },
         user: {
           property: false,
