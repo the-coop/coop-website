@@ -83,7 +83,7 @@ export default {
           prefix: '_token.'
         },
         user: {
-          property: false,
+          property: 'user',
           autoFetch: true
         },
         endpoints: {
