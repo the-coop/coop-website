@@ -51,12 +51,12 @@
       console.log(this.$store.state.auth.loggedIn);
     },
     methods: {
-      logout() {
+      async logout() {
         // Until nuxt/auth sort their lives out...
-        this.$auth.reset()
+        await this.$auth.reset()
 
-          // Reset memory followed by a hard refresh... sad.
-          .then(() => window.location.href = 'https://thecoop.group/auth/loggedout');
+        // Reset memory followed by a hard refresh... sad.
+        window.location.href = 'https://thecoop.group/auth/loggedout';
       },
       openMenu() {
         const menu = document.querySelector('.navigation');
