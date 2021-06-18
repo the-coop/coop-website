@@ -66,6 +66,7 @@
 
           // Set the user to nuxt auth/local memory.
           this.$auth.setUser(data.user);
+          this.$auth.setUserToken(data.token);
 
         } catch(e) {
           this.error = e.message;
