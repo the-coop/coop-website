@@ -88,8 +88,10 @@ export default {
           logout: false,
 
           // TODO: This one should actually exist.
-          user: false
-          // user: { url: '/api/auth/user', method: 'get' }
+          user: { 
+            url: 'https://cooperchickenbot.heroku.app/auth/user', 
+            method: 'get' 
+          }
         }
       }
     }
