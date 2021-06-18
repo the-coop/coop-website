@@ -50,6 +50,7 @@
 
           const loginAttempt = await this.$auth.loginWith('local', { data: { code } });
           console.log(loginAttempt);
+          console.log(loginAttempt.data);
 
           // Access/check for token within response.
           const token = data.token || null;

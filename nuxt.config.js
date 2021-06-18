@@ -82,14 +82,14 @@ export default {
         },
         endpoints: {
           login: {
-            url: 'https://cooperchickenbot.heroku.app/auth/access-discord', 
+            url: 'https://cooperchickenbot.herokuapp.com/auth/access-discord', 
             method: 'get' 
           },
           logout: false,
 
           // TODO: This one should actually exist.
           user: { 
-            url: 'https://cooperchickenbot.heroku.app/auth/user', 
+            url: 'https://cooperchickenbot.herokuapp.com/auth/user', 
             method: 'get' 
           }
         }
