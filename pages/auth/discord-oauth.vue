@@ -36,24 +36,22 @@
     methods: {
       async authenticate() {
         try {
-          // This is all outdated bullshit now, all I need to do is
-          // Access the code from URL and post it securely to our API
-          // in return for a token
+          // Extract code from oauth redirect.
           const params = new URLSearchParams(window.location.search);
           const code = params.get('code');
 
+          // TODO: Do state comparison to prevent against CSRF
 
           const authResponse = await API.post('auth/access-discord', { code });
+          const token = authResponse.token || null;
 
-          console.log(authResponse);
+          if (!token) throw new Error('No token returned.');
 
-          // BELOW TWO STEPS SHOULD BE DONE FROM SUCCESSFUL AUTH REQ
+          // Put the token in session storage unless they specify remember me then -> local storage.
+          Auth.setToken(token);
 
-            // Put the token in session storage unless they specify remember me then -> local storage.
-            // Auth.setToken(fragment.get('access_token'));
-
-            // Set the username for a visual feedback.
-            // this.username = me.username;
+          // Set the username for a visual feedback.
+          this.username = authResponse.user.username;
 
           // Set as loaded.
           this.loaded = true;
