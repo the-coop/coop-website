@@ -48,11 +48,6 @@
 
         
         <div class="login">
-            <div class="upgrade-session-promo">
-                <label for="remember-toggle">Save until manual logout?</label>
-                <input id="remember-toggle" type="checkbox" v-on:click="toggleRemember" v-model="remembered" />
-            </div>
-
             <div class="login-options">
                 <a class="login-option-button" :href="discordAuthURL">
                     <svg class="button-icon" width="71" height="55" viewBox="0 0 71 55" fill="none">
