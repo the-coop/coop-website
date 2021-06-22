@@ -12,19 +12,19 @@
         <rect y="60" width="100" height="20"></rect>
       </svg>
       <nav class="navigation">
-        <NuxtLink to="/" class="nav-link current">
-          <a v-on:click="toggleMenu">Home
-          </a>
+        <NuxtLink to="/" class="nav-link current" v-on:click="toggleMenu">
+          Home
         </NuxtLink>
-        <NuxtLink to="/conquest" class="nav-link">
-          <a v-on:click="toggleMenu">Conquest
-          </a>
+
+        <NuxtLink to="/conquest" class="nav-link" v-on:click="toggleMenu">
+          Conquest
         </NuxtLink>
         
         <!-- Actions for guests/non-users/logged out users -->
-        <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link">
-          <a v-on:click="toggleMenu">Login</a>
+        <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" v-on:click="toggleMenu">
+          Login
         </NuxtLink>
+
         <a 
           v-on:click="toggleMenu"
           v-show="!$auth.$state.loggedIn" 
@@ -33,8 +33,8 @@
         </a>
 
         <!-- Actions for logged un users -->
-        <NuxtLink v-show="$auth.$state.loggedIn" to="/profile" class="nav-link">
-          <a v-on:click="toggleMenu">Profile</a>
+        <NuxtLink v-show="$auth.$state.loggedIn" to="/profile" class="nav-link" v-on:click="toggleMenu">
+          Profile
         </NuxtLink>
 
         <button v-show="$auth.$state.loggedIn" 
