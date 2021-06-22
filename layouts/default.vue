@@ -6,24 +6,40 @@
           <Logo />
         </NuxtLink>
       </div>
-      <svg @click="openMenu" class="mobile-nav-trigger" viewBox="0 0 100 80">
+      <svg @click="toggleMenu" class="mobile-nav-trigger" viewBox="0 0 100 80">
         <rect width="100" height="20"></rect>
         <rect y="30" width="100" height="20"></rect>
         <rect y="60" width="100" height="20"></rect>
       </svg>
       <nav class="navigation">
-        <NuxtLink to="/" class="nav-link current">Home</NuxtLink>
-        <NuxtLink to="/conquest" class="nav-link">Conquest</NuxtLink>
+        <NuxtLink to="/" class="nav-link current">
+          <a v-on:click="toggleMenu">Home
+          </a>
+        </NuxtLink>
+        <NuxtLink to="/conquest" class="nav-link">
+          <a v-on:click="toggleMenu">Conquest
+          </a>
+        </NuxtLink>
         
         <!-- Actions for guests/non-users/logged out users -->
-        <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link">Login</NuxtLink>
-        <a v-show="!$auth.$state.loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">Apply</a>
+        <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link">
+          <a v-on:click="toggleMenu">Login</a>
+        </NuxtLink>
+        <a 
+          v-on:click="toggleMenu"
+          v-show="!$auth.$state.loggedIn" 
+          href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">
+          Apply
+        </a>
 
         <!-- Actions for logged un users -->
-        <NuxtLink v-show="$auth.$state.loggedIn" to="/profile" class="nav-link">Profile</NuxtLink>
+        <NuxtLink v-show="$auth.$state.loggedIn" to="/profile" class="nav-link">
+          <a v-on:click="toggleMenu">Profile</a>
+        </NuxtLink>
+
         <button v-show="$auth.$state.loggedIn" 
           class="nav-link"
-          v-on:click="logout">Logout</button>
+          v-on:click="() => { logout(); toggleMenu(); }">Logout</button>
 
       </nav>
     </div>
@@ -39,9 +55,9 @@
       async logout() {
         await this.$auth.logout();
       },
-      openMenu() {
+      toggleMenu() {
         const menu = document.querySelector('.navigation');
-        const targetBottom = menu.style.bottom === '3vh' ? '-15vh' : '3vh';
+        const targetBottom = menu.style.bottom === '0vh' ? '-50vh' : '0vh';
         anime({
           targets: '.navigation',
           bottom: targetBottom,
@@ -57,17 +73,18 @@
     padding: 0 1.5em;
 
     position: relative;
-    overflow: hidden;
     width: 100vw;
     box-sizing: border-box;
-    height: 100vh;
   }
 
   .header {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 2.5em 0;
+
+    padding: 1.5em 0;
+
+    /* padding: 2.5em 0; */
   }
 
   /* Temporary until someone can do better. */
@@ -85,8 +102,8 @@
       }
 
       .brand svg {
-        height: 9em;
-        width: 9em;
+        height: 7em;
+        width: 7em;
       }
 
     .navigation {
@@ -169,6 +186,7 @@
     .nav-link {
       text-align: right;
       font-size: 1.3em;
+      margin-bottom: 1rem;
     }
     .mobile-nav-trigger {
       display: block;
@@ -178,15 +196,18 @@
       height: 3rem;
       fill: #ff6565;
     }
+
     .navigation {
       display: flex;
       position: fixed;
-      bottom: -15vh;
-      right: 1.75rem;
+      bottom: -50vh;
+      right: 0;
       flex-direction: column;
       transition: bottom .3s ease;
-    
-      /* bottom: 3vh; */
+      padding: 2rem;
+
+      background: #111111;
+      border-radius: 1rem;
     }
   }
 </style>

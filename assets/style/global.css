@@ -11,18 +11,19 @@ html {
   background-color: #4a4a4a;
   padding: 1rem;
   border-radius: 0 .5rem;
+  margin-bottom: 2rem;
 }
 
 .title {
   margin: 0;
-  font-size: clamp(26px, 4vw, 40px);
+  font-size: 1.44em;
   color: #fefefe;
   font-weight: 600;
 }
 
 .subtitle {
   margin: 0;
-  font-size: clamp(18px,4vw,20px);
+  font-size: 1.122em;
   font-weight: 500;
   color: #dadada;
   line-height: 150%;
