@@ -84,6 +84,24 @@
       });
 
 
+      // Define the animation loop.
+      const animate = () => {
+				requestAnimationFrame(animate);
+
+				cube.rotation.x += 0.01;
+				cube.rotation.y += 0.01;
+
+        // Render the scene using the camera for frustum culling.
+				renderer.render(
+          window.GROUND_LEVEL.scene, 
+          window.GROUND_LEVEL.camera
+        );
+			};
+
+      // Begin and sustain the rendering loop.
+			animate();
+
+
       // Render cubes for other people
 
       // socket.on("player_moved", data => {
@@ -97,4 +115,4 @@
       // Load the profile picture for the user if they're logged in.
     }
   }
-</script>
+</script> 
