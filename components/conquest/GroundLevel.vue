@@ -1,9 +1,7 @@
 <template>
   <div class="groundlevel-wrapper">
     <div class="groundlevel" />
-
-    <div class="ui">
-    </div>
+    <div class="ui"></div>
   </div>
 </template>
 
@@ -33,7 +31,7 @@
     document.body.appendChild(renderer.domElement);
 
     // Give the camera its initial position.
-    camera.position.set(0, 0, 5);
+    camera.position.set(5, 5, 5);
     camera.lookAt(0, 0, 0);
 
     // Globalise the ground/scene/core components for better access later.
