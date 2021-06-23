@@ -32,6 +32,9 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
+    // Give the camera its initial position.
+    camera.position.set(20, 20, 20);
+
     // Globalise the ground/scene/core components for better access later.
     return { renderer, scene, camera };
   }
@@ -73,8 +76,8 @@
         console.log('player recognised data', data)
 
         // Generate geometry and materials for this player object.
-        const playerGeometry = new THREE.IcosahedronGeometry(20, 2);
-        const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xf6c801, wireframe: true });
+        const playerGeometry = new THREE.BoxGeometry(4, 4, 4);
+        const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xf6c801 });
         const playerSphere = new THREE.Mesh(playerGeometry, playerMaterial);
 
         // Add the player to the relevent scene layer.
