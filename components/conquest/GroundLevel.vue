@@ -94,7 +94,7 @@
         window.GROUND_LEVEL.scene.add(playerMesh);
 
         // Add for global data access. =p
-        players[id] = {
+        window.GROUND_LEVEL.players[id] = {
           mesh: 'player',
           position
         };
