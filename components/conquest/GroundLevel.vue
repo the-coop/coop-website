@@ -55,7 +55,11 @@
       // Debug socket opening/closing.
       socket.on("connect", () => console.log('connect', socket.id));
       socket.on("disconnect", () => console.log('disconnect', socket.id));
+
       socket.on("data", data => console.log('data', data));
+
+      socket.on("player_recognised", player_recognised => console.log('player_recognised', player_recognised));
+      
 
       // Create basic scene.
       generateGround();
