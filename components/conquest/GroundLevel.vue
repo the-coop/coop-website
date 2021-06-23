@@ -31,8 +31,7 @@
     document.body.appendChild(renderer.domElement);
 
     // Give the camera its initial position.
-    camera.position.set(5, 5, 5);
-    camera.lookAt(0, 0, 0);
+    camera.position.set(0, 10, 0);
 
     // Globalise the ground/scene/core components for better access later.
     return { renderer, scene, camera };
@@ -46,8 +45,7 @@
         default: null
       }
     },
-    methods: {
-    },
+    methods: {},
     async mounted() {
       // Used for shared state.
       window.GROUND_LEVEL = {
