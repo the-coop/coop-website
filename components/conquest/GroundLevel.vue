@@ -33,7 +33,7 @@
     document.body.appendChild(renderer.domElement);
 
     // Give the camera its initial position.
-    camera.position.set(20, 20, 20);
+    camera.position.set(0, 0, 5);
 
     // Globalise the ground/scene/core components for better access later.
     return { renderer, scene, camera };
@@ -52,6 +52,7 @@
     async mounted() {
       // Used for shared state.
       window.GROUND_LEVEL = {
+        // Not really sure what else will go in here yet, prolly something fun.
 
         // Create basic scene and globalise properties
         ...generateGround()
@@ -59,7 +60,6 @@
 
       // Connect to the website.
       const socket = io("https://cooperchickenbot.herokuapp.com/", {
-          // TODO: Add auth requirement later.
           // auth: { token: "123" },
           transports: ["websocket"]
       });
@@ -70,23 +70,18 @@
 
       // Generate a colour and cube for the player.
       socket.on("player_recognised", data => {
-        // TODO: 
-        // Send request to play/load in/restart.
-        // Actually just do this automatically on server side (on connection).
-        console.log('player recognised data', data)
+        console.log('player recognised data', data);
 
         // Generate geometry and materials for this player object.
         const playerGeometry = new THREE.BoxGeometry(4, 4, 4);
         const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xf6c801 });
-        const playerSphere = new THREE.Mesh(playerGeometry, playerMaterial);
+        const playerMesh = new THREE.Mesh(playerGeometry, playerMaterial);
 
-        // Check what's actually in here.
-        console.log(window.GROUND_LEVEL);
+        // Set the position based on what the server returns.
+        playerMesh.position = data.position;
 
         // Add the player to the relevent scene layer.
-        window.GROUND_LEVEL.scene.add(playerSphere);
-
-        // colour, id, position
+        window.GROUND_LEVEL.scene.add(playerMesh);
       });
 
       // socket.on("player_moved", data => {
