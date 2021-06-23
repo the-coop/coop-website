@@ -88,7 +88,7 @@
         const playerMesh = new THREE.Mesh(playerGeometry, playerMaterial);
 
         // Set the position based on what the server returns.
-        playerMesh.position.set(position);
+        playerMesh.position.set(position.x, position.y, position.z);
 
         // Add the player to the relevent scene layer.
         window.GROUND_LEVEL.scene.add(playerMesh);
