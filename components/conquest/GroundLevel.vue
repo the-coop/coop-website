@@ -91,7 +91,7 @@
 				// cube.rotation.x += 0.01; cube.rotation.y += 0.01;
 
         // Render the scene using the camera for frustum culling.
-				renderer.render(
+				window.GROUND_LEVEL.renderer.render(
           window.GROUND_LEVEL.scene, 
           window.GROUND_LEVEL.camera
         );
