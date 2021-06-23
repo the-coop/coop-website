@@ -69,8 +69,8 @@
       socket.on("disconnect", () => console.log('disconnect', socket.id));
 
       // Generate a colour and cube for the player.
-      socket.on("player_recognised", data => {
-        console.log('player recognised data', data);
+      socket.on("player_recognised", ({ position, id, color }) => {
+        console.log('player recognised data', { position, id, color });
 
         // Generate geometry and materials for this player object.
         const playerGeometry = new THREE.BoxGeometry(4, 4, 4);
@@ -78,7 +78,7 @@
         const playerMesh = new THREE.Mesh(playerGeometry, playerMaterial);
 
         // Set the position based on what the server returns.
-        playerMesh.position = data.position;
+        playerMesh.position.set(position);
 
         // Add the player to the relevent scene layer.
         window.GROUND_LEVEL.scene.add(playerMesh);
