@@ -1,5 +1,10 @@
 <template>
-  <div class="groundlevel" />
+  <div class="groundlevel-wrapper">
+    <div class="groundlevel" />
+
+    <div class="ui">
+    </div>
+  </div>
 </template>
 
 <style>
@@ -28,9 +33,7 @@
     document.body.appendChild(renderer.domElement);
 
     // Globalise the ground/scene/core components for better access later.
-    window.GROUND_LEVEL.renderer = renderer;
-    window.GROUND_LEVEL.scene = scene;
-    window.GROUND_LEVEL.camera = camera;
+    return { renderer, scene, camera };
   }
 
   export default {
@@ -41,9 +44,15 @@
         default: null
       }
     },
+    methods: {
+    },
     async mounted() {
       // Used for shared state.
-      window.GROUND_LEVEL = {};
+      window.GROUND_LEVEL = {
+
+        // Create basic scene and globalise properties
+        ...generateGround()
+      };
 
       // Connect to the website.
       const socket = io("https://cooperchickenbot.herokuapp.com/", {
@@ -56,13 +65,29 @@
       socket.on("connect", () => console.log('connect', socket.id));
       socket.on("disconnect", () => console.log('disconnect', socket.id));
 
-      socket.on("data", data => console.log('data', data));
+      // Generate a colour and cube for the player.
+      socket.on("player_recognised", data => {
+        // TODO: 
+        // Send request to play/load in/restart.
+        // Actually just do this automatically on server side (on connection).
+        console.log('player recognised data', data)
 
-      socket.on("player_recognised", player_recognised => console.log('player_recognised', player_recognised));
-      
+        // Generate geometry and materials for this player object.
+        const playerGeometry = new THREE.IcosahedronGeometry(20, 2);
+        const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xf6c801, wireframe: true });
+        const playerSphere = new THREE.Mesh(playerGeometry, playerMaterial);
 
-      // Create basic scene.
-      generateGround();
+        // Add the player to the relevent scene layer.
+        window.GROUND_LEVEL.scene.add(playerSphere);
+
+        // colour, id, position
+      });
+
+      // socket.on("player_moved", data => {
+      //   console.log('player move data', data)
+
+      //   // colour, id, position
+      // });
 
       // Random colour.
 
