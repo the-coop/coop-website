@@ -45,7 +45,7 @@
     document.body.appendChild(renderer.domElement);
 
     // Give the camera its initial position.
-    camera.position.z = 15;
+    camera.position.z = 25;
 
     // Globalise the ground/scene/core components for better access later.
     return { renderer, scene, camera };
@@ -64,6 +64,7 @@
       // Used for shared state.
       window.GROUND_LEVEL = {
         // Not really sure what else will go in here yet, prolly something fun.
+        players: {},
 
         // Create basic scene and globalise properties
         ...generateGroundScene()
@@ -91,6 +92,12 @@
 
         // Add the player to the relevent scene layer.
         window.GROUND_LEVEL.scene.add(playerMesh);
+
+        // Add for global data access. =p
+        players[id] = {
+          mesh: 'player',
+          position
+        };
 
         // Debugging only.
         console.log('player recognised data', { position, id, color });
