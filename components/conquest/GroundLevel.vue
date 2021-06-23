@@ -32,6 +32,7 @@
 
     // Give the camera its initial position.
     camera.position.z = 5;
+    camera.lookAt(0, 0, 0);
 
     // Globalise the ground/scene/core components for better access later.
     return { renderer, scene, camera };
@@ -65,36 +66,32 @@
       socket.on("connect", () => console.log('connect', socket.id));
       socket.on("disconnect", () => console.log('disconnect', socket.id));
 
-      // Generate a colour and cube for the player.
+      // Render a random coloured cube for the user.
       socket.on("player_recognised", ({ position, id, color }) => {
+        
         console.log('player recognised data', { position, id, color });
 
         // Generate geometry and materials for this player object.
         const playerGeometry = new THREE.BoxGeometry(2, 2, 2);
-        const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xf6c801 });
+        const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xf6c801, wireframe: true });
         const playerMesh = new THREE.Mesh(playerGeometry, playerMaterial);
 
         // Set the position based on what the server returns.
-        playerMesh.position.set(position);
+        // playerMesh.position.set(position);
 
         // Add the player to the relevent scene layer.
         window.GROUND_LEVEL.scene.add(playerMesh);
       });
 
-      // socket.on("player_moved", data => {
-      //   console.log('player move data', data)
-
-      //   // colour, id, position
-      // });
-
-      // Random colour.
-
-      // Render a cube for the user.
 
       // Render cubes for other people
 
-      // Add move (arrows) + WASD.
+      // socket.on("player_moved", data => {
+      //   console.log('player move data', data)
+      //   // colour, id, position
+      // });
 
+      // Add move (arrows) + WASD.
 
       // Extra
       // Load the profile picture for the user if they're logged in.
