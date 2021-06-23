@@ -21,7 +21,21 @@
   import * as THREE from 'three';
   import { io } from "socket.io-client";  
 
-  const generateGround = () => {
+  // Define the animation loop.
+  const animate = () => {
+    requestAnimationFrame(animate);
+
+    // TODO: Read the player positions into the render here.
+    // cube.rotation.x += 0.01; cube.rotation.y += 0.01;
+
+    // Render the scene using the camera for frustum culling.
+    window.GROUND_LEVEL.renderer.render(
+      window.GROUND_LEVEL.scene, 
+      window.GROUND_LEVEL.camera
+    );
+  };
+
+  const generateGroundScene = () => {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer();
@@ -31,8 +45,7 @@
     document.body.appendChild(renderer.domElement);
 
     // Give the camera its initial position.
-    camera.position.z = 5;
-    camera.lookAt(0, 0, 0);
+    camera.position.z = 15;
 
     // Globalise the ground/scene/core components for better access later.
     return { renderer, scene, camera };
@@ -53,7 +66,7 @@
         // Not really sure what else will go in here yet, prolly something fun.
 
         // Create basic scene and globalise properties
-        ...generateGround()
+        ...generateGroundScene()
       };
 
       // Connect to the website.
@@ -68,38 +81,20 @@
 
       // Render a random coloured cube for the user.
       socket.on("player_recognised", ({ position, id, color }) => {
-        
-        console.log('player recognised data', { position, id, color });
-
         // Generate geometry and materials for this player object.
         const playerGeometry = new THREE.BoxGeometry(2, 2, 2);
-        const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xf6c801, wireframe: true });
+        const playerMaterial = new THREE.MeshBasicMaterial({ color });
         const playerMesh = new THREE.Mesh(playerGeometry, playerMaterial);
 
         // Set the position based on what the server returns.
-        // playerMesh.position.set(position);
+        playerMesh.position.set(position);
 
         // Add the player to the relevent scene layer.
         window.GROUND_LEVEL.scene.add(playerMesh);
+
+        // Debugging only.
+        console.log('player recognised data', { position, id, color });
       });
-
-
-      // Define the animation loop.
-      const animate = () => {
-				requestAnimationFrame(animate);
-
-				// cube.rotation.x += 0.01; cube.rotation.y += 0.01;
-
-        // Render the scene using the camera for frustum culling.
-				window.GROUND_LEVEL.renderer.render(
-          window.GROUND_LEVEL.scene, 
-          window.GROUND_LEVEL.camera
-        );
-			};
-
-      // Begin and sustain the rendering loop.
-			animate();
-
 
       // Render cubes for other people
 
@@ -112,6 +107,9 @@
 
       // Extra
       // Load the profile picture for the user if they're logged in.
+
+      // Begin and sustain the rendering loop.
+			animate();
     }
   }
 </script> 
