@@ -31,7 +31,7 @@
     document.body.appendChild(renderer.domElement);
 
     // Give the camera its initial position.
-    camera.position.set(0, 10, 0);
+    camera.position.z = 5;
 
     // Globalise the ground/scene/core components for better access later.
     return { renderer, scene, camera };
@@ -70,7 +70,7 @@
         console.log('player recognised data', { position, id, color });
 
         // Generate geometry and materials for this player object.
-        const playerGeometry = new THREE.BoxGeometry(4, 4, 4);
+        const playerGeometry = new THREE.BoxGeometry(2, 2, 2);
         const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xf6c801 });
         const playerMesh = new THREE.Mesh(playerGeometry, playerMaterial);
 
