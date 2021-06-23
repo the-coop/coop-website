@@ -34,6 +34,7 @@
 
     // Give the camera its initial position.
     camera.position.set(0, 0, 5);
+    camera.lookAt(0, 0, 0);
 
     // Globalise the ground/scene/core components for better access later.
     return { renderer, scene, camera };
