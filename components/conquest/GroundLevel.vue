@@ -99,8 +99,6 @@
           position
         };
 
-        window.GROUND_LEVEL.camera.lookAt(playerMesh);
-
         // Debugging only.
         console.log('player recognised data', { position, id, color });
       });
