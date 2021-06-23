@@ -80,6 +80,9 @@
         const playerMaterial = new THREE.MeshBasicMaterial({ color: 0xf6c801 });
         const playerSphere = new THREE.Mesh(playerGeometry, playerMaterial);
 
+        // Check what's actually in here.
+        console.log(window.GROUND_LEVEL);
+
         // Add the player to the relevent scene layer.
         window.GROUND_LEVEL.scene.add(playerSphere);
 
