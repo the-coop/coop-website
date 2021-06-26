@@ -1,7 +1,7 @@
 <script>
   export default {
     components: {
-      'Worldview': () => import('@/components/conquest/GroundLevel.vue')
+      'Groundlevel': () => import('@/components/conquest/GroundLevel.vue')
     },
     layout: 'fullscreen',
     head() {
@@ -13,14 +13,16 @@
       return {
         tile: this.$nuxt.$route.query.tile
       }
-    },
-    mounted() {
-      // console.log(this.tile);
     }
   }
 </script>
 
+  // Render cubes for other people
+  // Add move (arrows) + WASD.
+  // Extra
+  // Load the profile picture for the user if they're logged in.
+  
 <template>
   <!-- Load map -->
-  <client-only><Worldview :tile="tile" /></client-only>
+  <client-only><Groundlevel :tile="tile" /></client-only>
 </template>
