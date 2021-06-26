@@ -21,35 +21,8 @@
   import * as THREE from 'three';
   import { io } from "socket.io-client";  
 
-  // Define the animation loop.
-  const animate = () => {
-    requestAnimationFrame(animate);
-
-    // TODO: Read the player positions into the render here.
-    // cube.rotation.x += 0.01; cube.rotation.y += 0.01;
-
-    // Render the scene using the camera for frustum culling.
-    window.GROUND_LEVEL.renderer.render(
-      window.GROUND_LEVEL.scene, 
-      window.GROUND_LEVEL.camera
-    );
-  };
-
-  const generateGroundScene = () => {
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer();
-
-    // Set the size and append the element.
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    // Give the camera its initial position.
-    camera.position.z = 25;
-
-    // Globalise the ground/scene/core components for better access later.
-    return { renderer, scene, camera };
-  }
+  import runGroundEngine from '../../lib/conquest/ground/engine/runGroundEngine';
+  import generateGroundScene from '../../lib/conquest/ground/engine/generateGroundScene';
 
   export default {
     name: 'GroundLevel',
@@ -119,7 +92,7 @@
       // Load the profile picture for the user if they're logged in.
 
       // Begin and sustain the rendering loop.
-			animate();
+			runGroundEngine();
     }
   }
 </script> 
