@@ -61,13 +61,13 @@
 </style>
 
 <script>
-  import createEngine from '../../lib/conquest/engine/createEngine';  
-  import runEngine from '../../lib/conquest/engine/runEngine';
-  import createSolarSystem from '../../lib/conquest/engine/createSolarSystem';  
+  import createEngine from '../../lib/conquest/space/engine/createEngine';  
+  import runEngine from '../../lib/conquest/space/engine/runEngine';
+  import createSolarSystem from '../../lib/conquest/space/engine/createSolarSystem';  
   import * as THREE from 'three';
 
-  import { BIOMES } from '../../lib/conquest/interfaces';
-  import setFocusTarget from '~/lib/conquest/controls/setFocusTarget';
+  import BIOMES from '../../lib/conquest/space/biomes';
+  import setFocusTarget from '../../lib/conquest/space/controls/setFocusTarget';
 
   export default {
     name: 'Worldview',

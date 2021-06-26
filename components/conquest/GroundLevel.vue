@@ -84,7 +84,10 @@
       socket.on("player_recognised", ({ position, id, color }) => {
         // Generate geometry and materials for this player object.
         const playerGeometry = new THREE.BoxGeometry(2, 2, 2);
-        const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const playerMaterial = new THREE.MeshBasicMaterial({ 
+          color: 0x00ff00,
+          wireframe: true
+        });
         const playerMesh = new THREE.Mesh(playerGeometry, playerMaterial);
 
         // Set the position based on what the server returns.
