@@ -16,11 +16,6 @@
     }
   }
 </script>
-
-  // Render cubes for other people
-  // Add move (arrows) + WASD.
-  // Extra
-  // Load the profile picture for the user if they're logged in.
   
 <template>
   <!-- Load map -->

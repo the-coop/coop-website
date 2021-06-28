@@ -1,3 +1,7 @@
+<style scoped>
+  .fullscreen {}
+</style>
+
 <template>
-  <Nuxt />
+  <Nuxt class="fullscreen" />
 </template>

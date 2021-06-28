@@ -13,6 +13,10 @@
     <p>
       <NuxtLink to="/conquest/world">World</NuxtLink>
     </p>
+
+    <p>
+      <NuxtLink to="/conquest/ground">Ground</NuxtLink>
+    </p>
   </div>
 </template>
 
