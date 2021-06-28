@@ -24,7 +24,7 @@
   import setupGroundMovement from '~/lib/conquest/ground/engine/setupGroundMovement';
 
   export default {
-    name: 'GroundLevel',
+    name: 'Groundview',
     props: {
       tile: {
         type: String,

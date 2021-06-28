@@ -1,7 +1,7 @@
 <script>
   export default {
     components: {
-      'Groundlevel': () => import('@/components/conquest/GroundLevel.vue')
+      'Groundview': () => import('@/components/conquest/Groundview.vue')
     },
     layout: 'fullscreen',
     head() {
