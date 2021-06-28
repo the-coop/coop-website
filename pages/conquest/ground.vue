@@ -19,5 +19,5 @@
   
 <template>
   <!-- Load map -->
-  <client-only><Groundlevel :tile="tile" /></client-only>
+  <client-only><Groundview :tile="tile" /></client-only>
 </template>
