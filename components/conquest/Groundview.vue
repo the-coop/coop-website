@@ -21,7 +21,6 @@
   import bootstrapGroundEngine from '../../lib/conquest/ground/engine/bootstrapGroundEngine';
   import runGroundEngine from '../../lib/conquest/ground/engine/runGroundEngine';
   import setupGroundNetworking from '~/lib/conquest/ground/engine/setupGroundNetworking';
-  import setupGroundMovement from '~/lib/conquest/ground/engine/setupGroundMovement';
 
   export default {
     name: 'Groundview',
@@ -41,9 +40,6 @@
 
       // Setup and run the game/level networking (socket based).
       setupGroundNetworking();
-
-      // Add the controls for player (self) movement.
-      setupGroundMovement();
 
       // TODO:
       // Render cubes for other people
