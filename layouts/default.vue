@@ -56,8 +56,6 @@
         await this.$auth.logout();
       },
       toggleMenu() {
-        console.log('toggling menu.');
-
         const menu = document.querySelector('.navigation');
         const targetBottom = menu.style.bottom === '0vh' ? '-50vh' : '0vh';
         anime({
@@ -192,6 +190,8 @@
     }
     .mobile-nav-trigger {
       display: block;
+
+      cursor: pointer;
 
       margin-left: 1rem;
       width: 3rem;  
