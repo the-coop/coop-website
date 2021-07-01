@@ -39,7 +39,7 @@
 			runGroundEngine();
 
       // Setup and run the game/level networking (socket based).
-      setupGroundNetworking();
+      setupGroundNetworking(this.$auth.strategy.token.get());
 
       // TODO:
       // Render cubes for other people
