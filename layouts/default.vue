@@ -26,7 +26,7 @@
         </NuxtLink>
 
         <a 
-          @click.native="toggleMenu"
+          @click="toggleMenu"
           v-show="!$auth.$state.loggedIn" 
           href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">
           Apply
@@ -39,7 +39,7 @@
 
         <button v-show="$auth.$state.loggedIn" 
           class="nav-link"
-          @click.native="() => { logout(); toggleMenu(); }">Logout</button>
+          @click="() => { logout(); toggleMenu(); }">Logout</button>
 
       </nav>
     </div>
