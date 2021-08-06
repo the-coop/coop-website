@@ -33,7 +33,7 @@
           @click="toggleMenu"
           v-show="!$auth.$state.loggedIn" 
           href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">
-          Apply
+          Join
         </a>
 
         <!-- Actions for logged un users -->

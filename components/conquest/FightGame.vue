@@ -6,9 +6,14 @@
 </template>
 
 <style>
-  .fightgame {
+  .fightgame-wrapper {
     width: 100vw;
     height: 100vh;
+    overflow: hidden;
+  }
+  .fightgame {
+    width: 100%;
+    height: 100%;
 
     position: absolute;
     top: 0;
@@ -18,17 +23,16 @@
 </style>
 
 <script>
+  import bootstrapGroundEngine from '~/lib/conquest/fight/bootstrapFight';
+
   export default {
-    name: 'Fightgame',
-    props: {
-      tile: {
-        type: String,
-        default: null
-      }
-    },
+    name: 'FightGame',
     methods: {},
     async mounted() {
-      alert('Fight game should start.')
+      console.log('Fight game should start.');
+
+      // Bootstrap the fight game engine:
+      bootstrapGroundEngine();
     }
   }
 </script> 

@@ -8,8 +8,8 @@
       </h2>
 
       <div class="actions">
-        <a v-show="!$auth.$state.loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="button">Apply Now</a>
         <a href="https://opencollective.com/the-coop" target="_blank" class="button">Donate</a>
+        <a v-show="!$auth.$state.loggedIn" href="https://discord.gg/2gTTUZbRVD" target="_blank" class="button">Join</a>
       </div>
     </div>
 
