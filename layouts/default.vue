@@ -16,6 +16,10 @@
           Home
         </NuxtLink>
 
+        <NuxtLink to="/blog" class="nav-link" @click.native="toggleMenu">
+          Blog
+        </NuxtLink>
+
         <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
           Conquest
         </NuxtLink>
