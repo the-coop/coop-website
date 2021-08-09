@@ -32,7 +32,7 @@
         <a 
           @click="toggleMenu"
           v-show="!$auth.$state.loggedIn" 
-          href="https://discord.gg/2gTTUZbRVD" target="_blank" class="nav-link">
+          href="https://discord.gg/dgexRwFCkc" target="_blank" class="nav-link">
           Join
         </a>
 
