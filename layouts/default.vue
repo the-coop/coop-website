@@ -16,9 +16,23 @@
           Home
         </NuxtLink>
 
-        <NuxtLink to="/blog" class="nav-link" @click.native="toggleMenu">
-          Blog
-        </NuxtLink>
+        <div class="dropdown">
+          <span 
+            @click="() => { }"
+            class="dropdown-label">Community</span>
+          <div class="dropdown-content">
+            <NuxtLink to="/blog" class="nav-link" @click.native="toggleMenu">
+              Blog
+            </NuxtLink>
+            <NuxtLink to="/members" class="nav-link" @click.native="toggleMenu">
+              Members
+            </NuxtLink>
+            <NuxtLink to="/members" class="nav-link" @click.native="toggleMenu">
+              ????
+            </NuxtLink>
+          </div>
+        </div>
+
 
         <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
           Conquest
@@ -36,7 +50,7 @@
           Join
         </a>
 
-        <!-- Actions for logged un users -->
+        <!-- Actions for logged in users -->
         <NuxtLink v-show="$auth.$state.loggedIn" to="/profile" class="nav-link" @click.native="toggleMenu">
           Profile
         </NuxtLink>
@@ -114,6 +128,38 @@
       display: none;
     }
 
+      .dropdown {
+        display: inline-block;
+        position: relative;
+        margin-left: 3.5em;
+      }
+
+      .dropdown-label {
+        color: #4a4a4a;
+        cursor: pointer;
+      }
+
+      .dropdown-label:hover {
+        color: white;
+      }
+
+      .dropdown-content {
+        position: absolute;
+        top: -100vh;
+
+        transition: top .3s ease;
+        padding: 2rem;
+        background: #111111;
+      }
+
+      .dropdown-content .nav-link {
+        margin-left: 0;
+      }
+
+      .dropdown.open .dropdown-content {
+        top: 100%;
+      }
+
       .nav-link {
         color: #4a4a4a;
         margin-left: 3.5em;
@@ -125,6 +171,8 @@
         outline: none;
         border: none;
         color: #ff6565;
+
+        cursor: pointer;
       }
 
       .nav-link:hover {
@@ -191,6 +239,9 @@
       text-align: right;
       font-size: 1.3em;
       margin-bottom: 1rem;
+    }
+    .dropdown-label {
+      font-size: 1.3em;
     }
     .mobile-nav-trigger {
       display: block;

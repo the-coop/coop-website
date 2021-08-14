@@ -23,7 +23,7 @@
 </style>
 
 <script>
-  import bootstrapGroundEngine from '~/lib/conquest/fight/bootstrapFight';
+  import bootstrapFight from '~/lib/conquest/fight/bootstrapFight';
 
   export default {
     name: 'FightGame',
@@ -32,7 +32,7 @@
       console.log('Fight game should start.');
 
       // Bootstrap the fight game engine:
-      bootstrapGroundEngine();
+      bootstrapFight();
     }
   }
 </script> 
