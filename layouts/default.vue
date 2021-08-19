@@ -17,9 +17,8 @@
         </NuxtLink>
 
         <div class="dropdown">
-          <span 
-            @click="() => { }"
-            class="dropdown-label">Community</span>
+          <span class="dropdown-label" @click="toggleDropdown">Community</span>
+
           <div class="dropdown-content">
             <NuxtLink to="/blog" class="nav-link" @click.native="toggleMenu">
               Blog
@@ -27,9 +26,27 @@
             <NuxtLink to="/members" class="nav-link" @click.native="toggleMenu">
               Members
             </NuxtLink>
-            <NuxtLink to="/members" class="nav-link" @click.native="toggleMenu">
-              ????
+
+            <!-- Actions for guests/non-users/logged out users -->
+            <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" @click.native="toggleMenu">
+              Login
             </NuxtLink>
+
+            <a 
+              @click="toggleMenu"
+              v-show="!$auth.$state.loggedIn" 
+              href="https://discord.gg/dgexRwFCkc" target="_blank" class="nav-link">
+              Join
+            </a>
+
+            <!-- Actions for logged in users -->
+            <NuxtLink v-show="$auth.$state.loggedIn" to="/profile" class="nav-link" @click.native="toggleMenu">
+              Profile
+            </NuxtLink>
+
+            <button v-show="$auth.$state.loggedIn" 
+              class="nav-link"
+              @click="() => { logout(); toggleMenu(); }">Logout</button>
           </div>
         </div>
 
@@ -37,28 +54,6 @@
         <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
           Conquest
         </NuxtLink>
-        
-        <!-- Actions for guests/non-users/logged out users -->
-        <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" @click.native="toggleMenu">
-          Login
-        </NuxtLink>
-
-        <a 
-          @click="toggleMenu"
-          v-show="!$auth.$state.loggedIn" 
-          href="https://discord.gg/dgexRwFCkc" target="_blank" class="nav-link">
-          Join
-        </a>
-
-        <!-- Actions for logged in users -->
-        <NuxtLink v-show="$auth.$state.loggedIn" to="/profile" class="nav-link" @click.native="toggleMenu">
-          Profile
-        </NuxtLink>
-
-        <button v-show="$auth.$state.loggedIn" 
-          class="nav-link"
-          @click="() => { logout(); toggleMenu(); }">Logout</button>
-
       </nav>
     </div>
     <Nuxt />
@@ -73,7 +68,10 @@
       async logout() {
         await this.$auth.logout();
       },
-      toggleMenu() {
+      toggleDropdown(ev) {
+        ev.target.parentElement.classList.toggle('open');
+      },
+      toggleMenu(ev) {
         const menu = document.querySelector('.navigation');
         const targetBottom = menu.style.bottom === '0vh' ? '-50vh' : '0vh';
         anime({
@@ -81,6 +79,10 @@
           bottom: targetBottom,
           duration: 250
         });
+
+        // If mobile, attempt to toggle containing dropdown. :)
+        if (window.matchMedia("(max-width: 665px)"))
+          ev.target.parentElement.parentElement.classList.toggle('open');
       }
     }
   }
@@ -101,8 +103,6 @@
     align-items: center;
 
     padding: 1.5em 0;
-
-    /* padding: 2.5em 0; */
   }
 
   /* Temporary until someone can do better. */
@@ -146,8 +146,12 @@
       .dropdown-content {
         position: absolute;
         top: -100vh;
+        opacity: 0;
 
-        transition: top .3s ease;
+        transition: 
+          top .3s ease,
+          opacity .3s ease;
+
         padding: 2rem;
         background: #111111;
       }
@@ -158,6 +162,7 @@
 
       .dropdown.open .dropdown-content {
         top: 100%;
+        opacity: 1;
       }
 
       .nav-link {
@@ -242,6 +247,27 @@
     }
     .dropdown-label {
       font-size: 1.3em;
+    }
+    .dropdown {
+      margin-bottom: 1rem;
+      text-align: right;
+    }
+    .dropdown-content {
+      display: none;
+
+      margin-top: 1rem;
+      flex-direction: column;
+      background: #ffffff;
+      border-radius: 1rem;
+
+      padding: 1rem 2rem 0;
+    }
+    .dropdown-content .nav-link:hover {
+      color: #f76465;
+    }
+    .dropdown.open .dropdown-content {
+      display: flex;
+      position: static;
     }
     .mobile-nav-trigger {
       display: block;
