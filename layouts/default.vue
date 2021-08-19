@@ -147,13 +147,13 @@
         position: absolute;
         top: -100vh;
         opacity: 0;
-
         transition: 
           top .3s ease,
           opacity .3s ease;
 
         padding: 2rem;
         background: #111111;
+        z-index: -1;
       }
 
       .dropdown-content .nav-link {
