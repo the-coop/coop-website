@@ -96,7 +96,7 @@
     padding: 0 1.5em;
 
     position: relative;
-    width: 100vw;
+    width: 100%;
     box-sizing: border-box;
   }
 
