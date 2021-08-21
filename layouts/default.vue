@@ -12,7 +12,7 @@
         <rect y="60" width="100" height="20"></rect>
       </svg>
       <nav class="navigation">
-        <NuxtLink to="/" class="nav-link current" @click.native="toggleMenu">
+        <NuxtLink to="/" class="nav-link current" @click.native="closeMenu">
           Home
         </NuxtLink>
 
@@ -20,36 +20,36 @@
           <span class="dropdown-label" @click="toggleDropdown">Community</span>
 
           <div class="dropdown-content">
-            <NuxtLink to="/blog" class="nav-link" @click.native="toggleMenu">
+            <NuxtLink to="/blog" class="nav-link" @click.native="closeMenu">
               Blog
             </NuxtLink>
-            <NuxtLink to="/projects" class="nav-link" @click.native="toggleMenu">
+            <NuxtLink to="/projects" class="nav-link" @click.native="closeMenu">
               Projects
             </NuxtLink>
-            <NuxtLink to="/members" class="nav-link" @click.native="toggleMenu">
+            <NuxtLink to="/members" class="nav-link" @click.native="closeMenu">
               Members
             </NuxtLink>
 
             <!-- Actions for guests/non-users/logged out users -->
-            <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" @click.native="toggleMenu">
+            <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" @click.native="closeMenu">
               Login
             </NuxtLink>
 
             <a 
-              @click="toggleMenu"
+              @click="closeMenu"
               v-show="!$auth.$state.loggedIn" 
               href="https://discord.gg/dgexRwFCkc" target="_blank" class="nav-link">
               Join
             </a>
 
             <!-- Actions for logged in users -->
-            <NuxtLink v-show="$auth.$state.loggedIn" to="/profile" class="nav-link" @click.native="toggleMenu">
+            <NuxtLink v-show="$auth.$state.loggedIn" to="/profile" class="nav-link" @click.native="closeMenu">
               Profile
             </NuxtLink>
 
             <button v-show="$auth.$state.loggedIn" 
               class="nav-link"
-              @click="() => { logout(); toggleMenu(); }">Logout</button>
+              @click="() => { logout(); closeMenu(); }">Logout</button>
           </div>
         </div>
 
@@ -66,6 +66,9 @@
 <script>
   import anime from 'animejs/lib/anime.es';
 
+
+  const closedBottom = '-50vh';
+
   export default {
     methods: {
       async logout() {
@@ -74,9 +77,20 @@
       toggleDropdown(ev) {
         ev.target.parentElement.classList.toggle('open');
       },
+      closeMenu(ev = null)  {
+        anime({
+          targets: '.navigation',
+          bottom: closedBottom,
+          duration: 250
+        });
+
+        // If mobile, attempt to toggle containing dropdown. :)
+        if (ev && window.matchMedia("(max-width: 665px)"))
+          ev.target.parentElement.parentElement.classList.remove('open');
+      },
       toggleMenu(ev) {
         const menu = document.querySelector('.navigation');
-        const targetBottom = menu.style.bottom === '0vh' ? '-50vh' : '0vh';
+        const targetBottom = menu.style.bottom === '0vh' ? closedBottom : '0vh';
         anime({
           targets: '.navigation',
           bottom: targetBottom,
