@@ -40,7 +40,7 @@
 
           // Access/check for token within response.
           const token = data.token || null;
-          if (!token) throw new Error('No token returned.');
+          if (!token) throw new Error('Could not verify you have an account in The Coop. Try joining via the menu?');
 
           // Set the user to nuxt auth/local memory.
           this.$auth.setUser(data.user);
