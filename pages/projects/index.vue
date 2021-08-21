@@ -5,7 +5,18 @@
 </template>
 
 <script>
+  import API from '~/lib/api/api';
+
   export default {
-    // Access user data from vuex store instead?
+    data() {
+      return {
+        projects: []
+      }
+    },
+    async fetch() {
+      const projectsResp = await fetch(API.BASE_URL + 'projects');
+      const projects = await projectsResp.json();
+      this.projects = projects;
+    }
   }
 </script>

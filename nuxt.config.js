@@ -1,3 +1,5 @@
+import API from "./lib/api/api";
+
 const metaName = 'The Coop';
 const metaDesc = 'The Coop is a discord server community that focuses on business, design, and programming. In our free and democratic system, you make the decisions!';
 const metaImage = 'https://thecoop.group/favicon.svg';
@@ -89,11 +91,11 @@ export default {
         endpoints: {
           logout: false,
           login: {
-            url: 'https://cooperchickenbot.herokuapp.com/auth/access', 
+            url: API.BASE_URL + 'auth/access', 
             method: 'post' 
           },
           user: { 
-            url: 'https://cooperchickenbot.herokuapp.com/auth/me', 
+            url: API.BASE_URL + 'auth/me', 
             method: 'get' 
           }
         }
