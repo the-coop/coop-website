@@ -23,6 +23,9 @@
             <NuxtLink to="/blog" class="nav-link" @click.native="toggleMenu">
               Blog
             </NuxtLink>
+            <NuxtLink to="/projects" class="nav-link" @click.native="toggleMenu">
+              Projects
+            </NuxtLink>
             <NuxtLink to="/members" class="nav-link" @click.native="toggleMenu">
               Members
             </NuxtLink>
@@ -153,7 +156,6 @@
 
         padding: 2rem;
         background: #111111;
-        z-index: -1;
       }
 
       .dropdown-content .nav-link {
