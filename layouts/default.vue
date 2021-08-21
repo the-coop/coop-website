@@ -137,6 +137,11 @@
         margin-left: 3.5em;
       }
 
+      .dropdown:hover .dropdown-content {
+        top: 100%;
+        opacity: 1;
+      }
+
       .dropdown-label {
         color: #4a4a4a;
         cursor: pointer;
