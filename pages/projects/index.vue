@@ -1,6 +1,6 @@
 <template>
   <div class="content-container">
-    <h1 class="title">Projects</h1>
+    <h1 class="title">👷 Projects</h1>
   </div>
 </template>
 

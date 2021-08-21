@@ -13,49 +13,49 @@
       </svg>
       <nav class="navigation">
         <NuxtLink to="/" class="nav-link current" @click.native="closeMenu">
-          Home
+          🏠 Home
         </NuxtLink>
 
         <div class="dropdown">
-          <span class="dropdown-label" @click="toggleDropdown">Community</span>
+          <span class="dropdown-label" @click="toggleDropdown">🥚 Community</span>
 
           <div class="dropdown-content">
             <NuxtLink to="/blog" class="nav-link" @click.native="closeMenu">
-              Blog
+              🗞️ Blog
             </NuxtLink>
             <NuxtLink to="/projects" class="nav-link" @click.native="closeMenu">
-              Projects
+              👷 Projects
             </NuxtLink>
             <NuxtLink to="/members" class="nav-link" @click.native="closeMenu">
-              Members
+              🔮 Members
             </NuxtLink>
 
             <!-- Actions for guests/non-users/logged out users -->
             <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" @click.native="closeMenu">
-              Login
+              🔑 Login
             </NuxtLink>
 
             <a 
               @click="closeMenu"
               v-show="!$auth.$state.loggedIn" 
               href="https://discord.gg/dgexRwFCkc" target="_blank" class="nav-link">
-              Join
+              🚪 Join
             </a>
 
             <!-- Actions for logged in users -->
             <NuxtLink v-show="$auth.$state.loggedIn" to="/profile" class="nav-link" @click.native="closeMenu">
-              Profile
+              👤 Profile
             </NuxtLink>
 
             <button v-show="$auth.$state.loggedIn" 
               class="nav-link"
-              @click="() => { logout(); closeMenu(); }">Logout</button>
+              @click="() => { logout(); closeMenu(); }">⏏️ Logout</button>
           </div>
         </div>
 
 
         <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
-          Conquest
+          🗡 Conquest
         </NuxtLink>
       </nav>
     </div>
@@ -173,6 +173,10 @@
           top .3s ease,
           opacity .3s ease;
 
+        min-width: 8rem;
+        display: flex;
+        flex-direction: column;
+
         padding: 2rem;
         background: #111111;
       }
@@ -277,7 +281,7 @@
       display: none;
 
       margin-top: 1rem;
-      flex-direction: column;
+      
       background: #ffffff;
       border-radius: 1rem;
 

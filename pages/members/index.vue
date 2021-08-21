@@ -1,6 +1,6 @@
 <template>
   <div class="content-container">
-    <h1 class="title">Members</h1>
+    <h1 class="title">🔮 Members</h1>
     <div>
       <h1>Commander</h1>
       <h2>Leaders</h2>

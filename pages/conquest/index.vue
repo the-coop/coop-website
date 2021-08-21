@@ -1,6 +1,6 @@
 <template>
   <div class="content-container">
-    <h1 class="title">Conquest</h1>
+    <h1 class="title">🗡 Conquest</h1>
 
     <div class="conquest-menu">
       <NuxtLink to="/conquest/world" class="conquest-menu-item">
