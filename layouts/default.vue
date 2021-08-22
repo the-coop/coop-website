@@ -78,7 +78,7 @@
         if (this.isMobileSize()) ev.target.parentElement.classList.toggle('open');
       },
       isMobileSize() {
-        return window.matchMedia("(max-width: 665px)")?.matches;
+        return window.matchMedia("(max-width: 850px)")?.matches;
       },
       closeMenu(ev = null)  {
         anime({
@@ -146,6 +146,17 @@
 
     .navigation {
       display: none;
+    }
+
+    .mobile-nav-trigger {
+      display: block;
+
+      cursor: pointer;
+
+      margin-left: 1rem;
+      width: 3rem;  
+      height: 3rem;
+      fill: #ff6565;
     }
 
       .dropdown {
@@ -249,6 +260,9 @@
       .navigation {
         display: block;
       }
+      .mobile-nav-trigger {
+        display: none;
+      }
   }
 
   @media screen and (min-width: 666px) {
@@ -264,11 +278,6 @@
           height: 4em;
           width: 4em;
         }
-
-
-    .mobile-nav-trigger {
-      display: none;
-    }
   }
 
   @media screen and (max-width: 665px) {
@@ -300,16 +309,6 @@
     .dropdown.open .dropdown-content {
       display: flex;
       position: static;
-    }
-    .mobile-nav-trigger {
-      display: block;
-
-      cursor: pointer;
-
-      margin-left: 1rem;
-      width: 3rem;  
-      height: 3rem;
-      fill: #ff6565;
     }
 
     .navigation {
