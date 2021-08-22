@@ -8,7 +8,11 @@
 
     <div class="posts">
       <div class="post" v-for="post in posts" :key="post.id">
-        {{ post.title }}
+        Title: {{ post.title }}
+        ID: {{ post.id }}
+        <!-- Slug: {{ post.slug }} -->
+        Owner: {{ post.author_id }}
+        Date: {{ post.date }}
       </div>
     </div>
   </div>
