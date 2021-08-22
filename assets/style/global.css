@@ -83,3 +83,27 @@ html {
 .note {
   color: #bcbcbc;
 }
+
+form .only-action {
+  margin: auto;
+  display: block;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.field label {
+  color: #f17a7b;
+  font-weight: 200;
+}
+
+.field input {
+  background-color: #f76465;
+  border: 0;
+  padding: .85rem;
+  color: #fefefe;
+  font-size: 1.125rem;
+}

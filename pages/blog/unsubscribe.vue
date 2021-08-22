@@ -1,18 +1,17 @@
 <template>
   <div class="content-container">
     <!-- TODO: Swap for success title. -->
-    <h1 v-if="!success" class="title">Subscribe to newsletter!</h1>
-    <h1 v-if="success" class="title">See, successfully subscribed!</h1>
+    <h1 v-if="!success" class="title">Unsubscribe 😞</h1>
+    <h1 v-if="success" class="title">See, successfully unsubscribed!</h1>
 
     <div v-if="success">
-      <p>You successfully subscribed to The Coop Community. 🐔</p>
+      <p>You successfully unsubscribed to The Coop Community. 🐔</p>
       <p class="note">
-        Default: You will only receive 1 email a month unless you opt for more emails. You can quickly 
-        <NuxtLink class="link" to="/blog/unsubscribe">unsubscribe any time.</NuxtLink>
+        You can <NuxtLink class="link" to="/blog/subscribe">subscribe again</NuxtLink> any time to 1 Newsletter email a month.
       </p>
     </div>
 
-    <form v-if="!success" @submit="subscribe">
+    <form v-if="!success" @submit="unsubscribe">
       <div class="field">
         <label for="email">Email address</label>
         <input 
@@ -21,8 +20,9 @@
         />
       </div>
 
-      <button class="button only-action" type="submit" >Subscribe</button>
+      <button class="button only-action" type="submit">Unsubscribe</button>
     </form>
+
   </div>
 </template>
 
@@ -38,11 +38,11 @@
       }
     },
     methods: {
-      async subscribe(ev) {
+      async unsubscribe(ev) {
         ev.preventDefault();
 
         // Access state field value.
-        const resp = await this.$axios.post(API.BASE_URL + 'blog/subscribe', { email: this.email });
+        const resp = await this.$axios.post(API.BASE_URL + 'blog/unsubscribe', { email: this.email });
         const data = resp.data;
 
         // Provide feedback.
