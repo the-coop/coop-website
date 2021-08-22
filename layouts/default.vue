@@ -103,7 +103,7 @@
         anime({
           targets: '.navigation',
           bottom: closedBottom,
-          duration: 250
+          duration: 125
         });
 
         // If mobile, attempt to toggle containing dropdown. :)
@@ -195,7 +195,6 @@
       .dropdown:hover .dropdown-content {
         top: 100%;
         opacity: 1;
-        background-color: #111111;
         pointer-events: all;
       }
 
@@ -236,7 +235,6 @@
       .dropdown.open .dropdown-content {
         top: 100%;
         opacity: 1;
-        background-color: #111111;
         pointer-events: all;
       }
 
@@ -291,12 +289,16 @@
   }
 
   @media screen and (min-width: 850px) {
-      .navigation {
-        display: block;
-      }
-      .mobile-nav-trigger {
-        display: none;
-      }
+    .navigation {
+      display: block;
+    }
+    .mobile-nav-trigger {
+      display: none;
+    }
+
+    .dropdown.open .dropdown-content, .dropdown:hover .dropdown-content {
+      background-color: #111111;
+    }
   }
 
   @media screen and (min-width: 666px) {
