@@ -75,11 +75,10 @@
         await this.$auth.logout();
       },
       toggleDropdown(ev) {
-        if (this.isMobileSize())
-          ev.target.parentElement.classList.toggle('open');
+        if (this.isMobileSize()) ev.target.parentElement.classList.toggle('open');
       },
       isMobileSize() {
-        return window.matchMedia("(max-width: 665px)");
+        return window.matchMedia("(max-width: 665px)")?.matches;
       },
       closeMenu(ev = null)  {
         anime({
