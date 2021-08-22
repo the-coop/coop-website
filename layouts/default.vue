@@ -75,7 +75,11 @@
         await this.$auth.logout();
       },
       toggleDropdown(ev) {
-        ev.target.parentElement.classList.toggle('open');
+        if (this.isMobileSize())
+          ev.target.parentElement.classList.toggle('open');
+      },
+      isMobileSize() {
+        return window.matchMedia("(max-width: 665px)");
       },
       closeMenu(ev = null)  {
         anime({
@@ -85,7 +89,7 @@
         });
 
         // If mobile, attempt to toggle containing dropdown. :)
-        if (ev && window.matchMedia("(max-width: 665px)"))
+        if (ev && this.isMobileSize())
           ev.target.parentElement.parentElement.classList.remove('open');
       },
       toggleMenu(ev) {
