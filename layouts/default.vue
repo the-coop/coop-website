@@ -199,7 +199,7 @@
       }
 
       .dropdown-label {
-        color: #4a4a4a;
+        color: #616060;
         cursor: pointer;
       }
 
@@ -239,7 +239,7 @@
       }
 
       .nav-link {
-        color: #4a4a4a;
+        color: #616060;
         margin-left: 3.5em;
         text-decoration: none;
       }
