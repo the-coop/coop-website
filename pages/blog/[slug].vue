@@ -8,7 +8,7 @@
 </template>
 
 <script>
-  import blogParser from '~/lib/blog/blogParser';
+  // import blogParser from '~/lib/blog/blogParser';
 
   export default {
     // async asyncData({ $axios }) {

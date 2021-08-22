@@ -1,21 +1,32 @@
 <template>
   <div class="content-container">
     <h1 class="title">🗞️ Blog</h1>
-    <h5>Our blog will be launching here!</h5>
-    <p>Stay tuned! Join our newsletter here... (when link is added ;))</p>
+    <p class="note">
+      If you would like an email when a post is added, 
+      <NuxtLink class="link" to="/blog/subscribe">please subscribe.</NuxtLink>
+    </p>
+
+    <div class="posts">
+      <div class="post" v-for="post in posts" :key="post.id">
+        {{ post.title }}
+      </div>
+    </div>
   </div>
-  <!-- <nuxt-content :document="page" /> -->
 </template>
 
 <script>
-  // import blogParser from '~/lib/blog/blogParser';
+  import API from '~/lib/api/api';
 
   export default {
-    // async asyncData({ $axios }) {
-    //   const resp = await $axios.get('/path/to/example.md');
-    //   const page = await blogParser(resp.data);
-
-    //   return { page };
-    // }
+    data() {
+      return {
+        posts: []
+      }
+    },
+    async fetch() {
+      const projectsResp = await fetch(API.BASE_URL + 'blog');
+      const headlines = await projectsResp.json();
+      this.posts = headlines;
+    }
   }
 </script>

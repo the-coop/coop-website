@@ -2,6 +2,7 @@
     .login-options {
         display: flex;
         align-items: center;
+        justify-content: center;
         margin-top: 1.5rem;
     }
     .login-option-button {
@@ -32,13 +33,6 @@
     .login-option-button .button-icon {
         margin-right: 1.5rem;
     }
-
-    .link {
-        color: #f76465;
-    }
-    .link:hover {
-        color: #b2b2b2;
-    }
 </style>
 
 <template>
@@ -49,8 +43,11 @@
         <p>
             All data is manageable by the user and can be deleted any time. <i><a class="link" target="_blank" href="/privacy/discord-oauth-permissions.png">View requested permissions here</a></i>
         </p>
-        <p>
-            You won't receive any emails (newsletter etc) <NuxtLink class="link" to="/blog/subscribe">unless you subscribe here.</NuxtLink>
+        <p class="note">
+            Default: You won't receive any emails 
+            <NuxtLink class="link" to="/blog/subscribe">(newsletter etc),</NuxtLink>
+            without
+             <NuxtLink class="link" to="/blog/subscribe">subscribing</NuxtLink>.
         </p>
         
         <div class="login">
@@ -67,7 +64,7 @@
                         </defs>
                     </svg>
 
-                    LOGIN VIA DISCORD
+                    DISCORD
                 </a>
             </div>
 
