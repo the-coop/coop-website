@@ -1,5 +1,5 @@
 <template>
-  <div class="default">
+  <div :class="['default', page].join(' ')">
     <div class="header">
       <div class="brand">
         <NuxtLink to="/">
@@ -69,7 +69,26 @@
 
   const closedBottom = '-50vh';
 
+
   export default {
+    mounted() {
+      // When the dropdown menu is hovered...
+      // Should trigger an event which blocks the now upwards moving box re-triggering CSS hover.
+      const dropdowns = Array.from(document.querySelectorAll('.dropdown'));
+      dropdowns.map(dropdown => {
+        dropdown.addEventListener('mouseleave', ev => {
+          const content = ev.target.querySelector('.dropdown-content');
+          if (content) {
+            // 1. Turn off pointer-events for the duration of the hiding animation.
+            content.style.pointerEvents = "none";
+
+            // 2. Then re-enable.
+            setTimeout(() => content.removeAttribute('style'), 333);
+          }
+          // 3. [Investigate if problems] - Make sure these are accessible for cleanup.
+        });
+      });
+    },
     methods: {
       async logout() {
         await this.$auth.logout();
@@ -101,11 +120,19 @@
         });
 
         // If mobile, attempt to toggle containing dropdown. :)
-        if (window.matchMedia("(max-width: 665px)"))
+        if (this.isMobileSize())
           ev.target.parentElement.parentElement.classList.toggle('open');
       }
+    },
+    data() {
+      return { page: this.$route.name };
+    },
+    watch: {
+      $route(value) {
+        this.page = value.name;
+      }
     }
-  }
+  };
 </script>
 
 <style>
@@ -168,6 +195,8 @@
       .dropdown:hover .dropdown-content {
         top: 100%;
         opacity: 1;
+        background-color: #111111;
+        pointer-events: all;
       }
 
       .dropdown-label {
@@ -181,18 +210,21 @@
 
       .dropdown-content {
         position: absolute;
-        top: -100vh;
+        top: 50%;
         opacity: 0;
         transition: 
-          top .3s ease,
-          opacity .3s ease;
+          top .25s ease,
+          opacity .125s ease,
+          background-color .25s ease-in;
 
         min-width: 8rem;
         display: flex;
         flex-direction: column;
 
         padding: 2rem;
-        background: #111111;
+        background-color: transparent;
+
+        pointer-events: none;
 
         z-index: 1;
       }
@@ -204,6 +236,8 @@
       .dropdown.open .dropdown-content {
         top: 100%;
         opacity: 1;
+        background-color: #111111;
+        pointer-events: all;
       }
 
       .nav-link {
@@ -280,7 +314,7 @@
         }
   }
 
-  @media screen and (max-width: 665px) {
+  @media screen and (max-width: 850px) {
     .nav-link {
       text-align: right;
       font-size: 1.3em;

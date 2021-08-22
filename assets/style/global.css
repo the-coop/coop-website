@@ -7,6 +7,12 @@ html {
   background-color: #111;
 }
 
+.default.index {
+  overflow: hidden;
+  padding-bottom: 0;
+  height: 100vh;
+}
+
 .content-container {
   background-color: #4a4a4a;
   padding: 1rem;
