@@ -245,6 +245,12 @@
     to { transform: translateY(5px); }
   }
 
+  @media screen and (min-width: 850px) {
+      .navigation {
+        display: block;
+      }
+  }
+
   @media screen and (min-width: 666px) {
     .default {
       padding: 0 5em 7.5em;
@@ -253,10 +259,6 @@
     .header {
       justify-content: space-between;
     }
-
-      .navigation {
-        display: block;
-      }
 
         .brand svg {
           height: 4em;
