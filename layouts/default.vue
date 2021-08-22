@@ -179,6 +179,8 @@
 
         padding: 2rem;
         background: #111111;
+
+        z-index: 1;
       }
 
       .dropdown-content .nav-link {
