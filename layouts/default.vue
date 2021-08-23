@@ -58,8 +58,44 @@
           🗡 Conquest
         </NuxtLink>
       </nav>
+
+      <div class="header-socials">
+        <a href="https://www.instagram.com/thecoop_ig/" target="_blank">
+          <img src="/socials/instagram.svg" />
+        </a>
+        <a href="https://www.facebook.com/thecoopfb" target="_blank">
+          <img src="/socials/facebook.svg" />
+        </a>
+        <a href="https://www.linkedin.com/company/thecoopgroup" target="_blank">
+          <img src="/socials/linkedin.svg" />
+        </a>
+        <a href="https://twitter.com/thecoopg" target="_blank">
+          <img src="/socials/twitter.svg" />
+        </a>
+        <!-- <a href="" target="_blank">
+          <img src="/socials/youtube.svg" />
+        </a> -->
+      </div>
     </div>
     <Nuxt />
+
+    <div class="footer-socials">
+      <h4 class="footer-socials-prompt">Follow?</h4>
+      <div class="footer-socials-items">
+        <a href="https://www.instagram.com/thecoop_ig/" target="_blank">
+          <img src="/socials/instagram.svg" />
+        </a>
+        <a href="https://www.facebook.com/thecoopfb" target="_blank">
+          <img src="/socials/facebook.svg" />
+        </a>
+        <a href="https://www.linkedin.com/company/thecoopgroup" target="_blank">
+          <img src="/socials/linkedin.svg" />
+        </a>
+        <a href="https://twitter.com/thecoopg" target="_blank">
+          <img src="/socials/twitter.svg" />
+        </a>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -148,14 +184,35 @@
     display: flex;
     justify-content: center;
     align-items: center;
-
+    flex-wrap: wrap;
     padding: 1.5em 0;
+  }
+
+  .header-socials {
+    flex: 100%;
+    text-align: center;
+  }
+
+  .header-socials img {
+    width: 2em;
   }
 
   /* Temporary until someone can do better. */
   .footer {
     padding: 2.5rem 0rem;
   }
+    .footer-socials {
+      margin-top: 12rem;
+      text-align: right;
+    }
+    .footer-socials-prompt {
+      font-size: 1.15em;
+      color: silver;
+      margin: 0;
+    }
+    .footer-socials img {
+      width: 2em;
+    }
 
     .footer a {
       text-decoration: none;
@@ -313,6 +370,10 @@
         .brand svg {
           height: 4em;
           width: 4em;
+        }
+
+        .header-socials {
+          text-align: left;
         }
   }
 
