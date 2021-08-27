@@ -1,7 +1,8 @@
 <template>
   <div class="content-container">
     <h1 class="title">🗞️ {{ post.title }}</h1>
-
+    <!-- <p>{{ post.author_username }} - {{ post.date }}</p> -->
+    
     <vue-markdown :source="post.content" />
 
     <p class="note">

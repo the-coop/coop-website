@@ -115,7 +115,7 @@ export default {
       const resp = await axios.get(API.BASE_URL + 'blog/build')
       return resp.data.map(post => {
         return {
-          route: '/blog/' + blog.slug,
+          route: '/blog/' + post.slug,
           payload: post
         }
       });
