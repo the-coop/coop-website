@@ -1,7 +1,9 @@
 <template>
   <div class="fightgame-wrapper">
     <div class="fightgame" />
-    <div class="ui"></div>
+    <div class="ui">
+      WASD to move
+    </div>
   </div>
 </template>
 

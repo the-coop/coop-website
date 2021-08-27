@@ -1,6 +1,7 @@
 <template>
-  <div class="content-container">
-    <h1 class="title">🔮 Members</h1>
+  <!-- <div class="content-container"> -->
+  <div>
+    <h1 class="title" style="text-align: center">🔮 Members</h1>
     <div>
       <h1>👑 Commander</h1>
       <div v-if="hierarchy.commander" class="commander">
