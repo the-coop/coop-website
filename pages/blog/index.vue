@@ -1,20 +1,20 @@
 <template>
   <div class="content-container">
     <h1 class="title">🗞️ Blog</h1>
+
+    <p class="note">Thanks for checking out our blog, you'll find out <NuxtLink class="link" to="/blog/subscribe">subscribe-worthy</NuxtLink> latest headlines below! 🤓</p>
+
+    <div class="posts">
+      <NuxtLink class="post" v-for="post in posts" :to="`/blog/${post.slug}`" :key="post.id">
+        <h2>{{ post.title }}</h2>
+        <p>{{ post.author_username }} - {{ post.date }}</p>
+      </NuxtLink>
+    </div>
+
     <p class="note">
       If you would like an email when a post is added, 
       <NuxtLink class="link" to="/blog/subscribe">please subscribe.</NuxtLink>
     </p>
-
-    <div class="posts">
-      <div class="post" v-for="post in posts" :key="post.id">
-        Title: {{ post.title }}
-        ID: {{ post.id }}
-        <!-- Slug: {{ post.slug }} -->
-        Owner: {{ post.author_id }}
-        Date: {{ post.date }}
-      </div>
-    </div>
   </div>
 </template>
 
@@ -22,15 +22,13 @@
   import API from '~/lib/api/api';
 
   export default {
-    data() {
-      return {
-        posts: []
-      }
+    data({ posts }) {
+      return { posts }
     },
-    async fetch() {
+    async asyncData() {
       const projectsResp = await fetch(API.BASE_URL + 'blog');
-      const headlines = await projectsResp.json();
-      this.posts = headlines;
+      const posts = await projectsResp.json();
+      return { posts };
     }
   }
 </script>

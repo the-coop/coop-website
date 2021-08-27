@@ -1,3 +1,4 @@
+import axios from 'axios';
 import API from "./lib/api/api";
 
 const metaName = 'The Coop';
@@ -48,7 +49,6 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [],
-
 
   webfontloader: {
     google: {
@@ -104,5 +104,22 @@ export default {
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
-  build: {}
+  build: {
+  },
+
+
+  generate: {
+    // Build payload (all at once) implemented to improve build speed.
+    // https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-generate#speeding-up-dynamic-route-generation-with-payload
+    async routes() {
+      const resp = await axios.get(API.BASE_URL + 'blog/build')
+      return resp.data.map(post => {
+        return {
+          route: '/blog/' + blog.slug,
+          payload: post
+        }
+      });
+    }
+  }
+  
 }
