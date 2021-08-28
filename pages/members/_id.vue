@@ -1,14 +1,17 @@
 <template>
   <div>
-    <h1 class="title">🔮 {{ user.username }}</h1>
+    <div v-if="!user">Loading!</div>
+    <div v-if="user">
+      <h1 class="title">🔮 {{ user.username }}</h1>
 
-    <img :src="user.image ? user.image : '/favicon.svg'" class="pfp" />
+      <img :src="user.image ? user.image : '/favicon.svg'" class="pfp" />
 
-    <div class="user-info">
-      <div class="user-info-header">
-        <span class="user-title">{{ user.username }}</span>
-        <div class="user-tags">
-          <span>MEMBER</span>
+      <div class="user-info">
+        <div class="user-info-header">
+          <span class="user-title">{{ user.username }}</span>
+          <div class="user-tags">
+            <span>MEMBER</span>
+          </div>
         </div>
       </div>
     </div>
