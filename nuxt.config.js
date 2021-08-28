@@ -111,6 +111,11 @@ export default {
     // Build payload (all at once) implemented to improve build speed.
     // https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-generate#speeding-up-dynamic-route-generation-with-payload
     async routes() {
+
+      // TODO: Need to add members/build
+
+      // TODO: Need to add projects/build
+
       const resp = await axios.get(API.BASE_URL + 'blog/build')
       return resp.data.map(post => {
         return {

@@ -60,10 +60,6 @@
 
 
 <style scoped>
-  h1, h2, h3, h4, h6, p {
-    margin: 0;
-  }
-
   .title {
     text-align: center;
   }
