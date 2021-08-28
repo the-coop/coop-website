@@ -113,17 +113,15 @@ export default {
     async routes() {
 
       // TODO: Need to add members/build (missing data).
-      const membersResp = await axios.get(API.BASE_URL + 'members')
-      console.log(membersResp.data)
+      // TODO: Need to add projects/build
+
+      const membersResp = await axios.get(API.BASE_URL + 'members');
       const membersRoutes = membersResp.data.map(member => {
         return {
           route: '/members/' + member.discord_id,
           payload: member
         }
       });
-
-
-      // TODO: Need to add projects/build
 
       const postsResp = await axios.get(API.BASE_URL + 'blog/build')
       const blogRoutes = postsResp.data.map(post => {
@@ -133,7 +131,7 @@ export default {
         }
       });
 
-      return [...blogRoutes, ...membersRoutes];
+      return blogRoutes.concat(membersRoutes);
     }
   }
   
