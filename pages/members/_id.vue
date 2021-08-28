@@ -41,6 +41,9 @@
   import API from '~/lib/api/api';
 
   export default {
+    data({ user }) {
+      return { user }
+    },
     async asyncData({ params, error, payload }) {
       let user = null;
 
