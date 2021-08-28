@@ -1,45 +1,119 @@
 <template>
   <!-- <div class="content-container"> -->
+  <!-- <p>Search for member</p>   -->
   <div>
-    <h1 class="title" style="text-align: center">🔮 Members</h1>
+    <h1 class="title">🔮 Members</h1>
     <div>
-      <h1>👑 Commander</h1>
-      <div v-if="hierarchy.commander" class="commander">
-          <img :src="hierarchy.commander.image" />
-          {{ hierarchy.commander.username }}
-      </div>
-
-      <h2>⚔️ Leaders</h2>
-      <div class="leaders">
-        <div class="leader" v-for="leader in hierarchy.leaders" :key="leader.discord_id">
-          <img :src="leader.image" />
-          {{ leader.username }}
-        </div>
-      </div>
-
-      <h3>Member of the week</h3>
-      <div v-if="hierarchy.motw" class="motw">
-          <img :src="hierarchy.motw.image" />
-          {{ hierarchy.motw.username }}
-      </div>
-
-      <!-- <h4>Richest user</h4> -->
-      <!-- <h6>Boosters</h6> -->
-      <!-- <p>Search for member</p>   -->
-
-      <h6>Users</h6>
       <div class="users">
-        <div class="user" v-for="user in hierarchy.other_users" :key="user.discord_id">
-          <img :src="user.image" />
-          {{ user.username }}
-        </div>
+        <NuxtLink v-if="hierarchy.commander" :to="'/members/' + hierarchy.commander.discord_id" class="user commander">
+          <img :src="hierarchy.commander.image" class="pfp" />
+          <div class="user-info">
+            <div class="user-info-header">
+              <span class="user-title">{{ hierarchy.commander.username }}</span>
+              <div class="user-tags">
+                <span>👑 Commander</span>
+              </div>
+            </div>
+          </div>
+        </NuxtLink>
+
+        <NuxtLink class="user leader" v-for="leader in hierarchy.leaders" :to="'/members/' + leader.discord_id" :key="leader.discord_id">
+          <img :src="leader.image" class="pfp" />
+          <div class="user-info">
+            <div class="user-info-header">
+              <span class="user-title">{{ leader.username }}</span>
+              <div class="user-tags">
+                <span>⚔️ Leaders</span>
+              </div>
+            </div>
+          </div>
+        </NuxtLink>
+
+        <NuxtLink v-if="hierarchy.motw" :to="'/members/' + hierarchy.motw.discord_id" class="user motw">
+          <img :src="hierarchy.motw.image" class="pfp" />
+          <div class="user-info">
+            <div class="user-info-header">
+              <span class="user-title">{{ hierarchy.motw.username }}</span>
+              <div class="user-tags">
+                <!-- TODO: Add hover tooltip to this? -->
+                <span>MOTW</span>
+              </div>
+            </div>
+          </div>
+        </NuxtLink>
+        <NuxtLink class="user" v-for="user in hierarchy.other_users" :to="'/members/' + user.discord_id" :key="user.discord_id">
+          <img :src="user.image ? user.image : '/favicon.svg'" class="pfp" />
+          <div class="user-info">
+            <div class="user-info-header">
+              <span class="user-title">{{ user.username }}</span>
+              <div class="user-tags">
+                <span>MEMBER</span>
+              </div>
+            </div>
+          </div>
+          <!-- Identify prospects too! -->
+        </NuxtLink>
       </div>
     </div>
   </div>
 </template>
 
+
+<style scoped>
+  h1, h2, h3, h4, h6, p {
+    margin: 0;
+  }
+
+  .title {
+    text-align: center;
+  }
+
+  .users {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 2rem;
+  }
+
+  .user {
+    display: flex;
+    flex: 100% 0 0;
+  }
+
+  @media (min-width: 1200px) {
+    .user {
+      flex: 50% 0 0;
+    }
+  }
+
+  .pfp {
+    flex: 22% 0 0;
+    margin: 1rem;
+    margin-left: 0;
+    margin-top: 0;
+    
+    border-radius: 1rem;
+    border: .165rem solid silver;
+  }
+
+  .user-info {
+    
+  }
+  .user-info-header {
+    display: flex;
+    align-items: center;
+  }
+  .user-title {
+    margin-right: 1rem;
+    font-size: 1.5em;
+    color: #e6e6e6;
+  }
+
+</style>
+
 <script>
-import API from '~/lib/api/api';
+  import API from '~/lib/api/api';
+
   export default {
     data() {
       return {
@@ -50,21 +124,6 @@ import API from '~/lib/api/api';
       const hierarchyResp = await fetch(API.BASE_URL + 'members/hierarchy');
       const hierarchy = await hierarchyResp.json();
       this.hierarchy = hierarchy;
-
-      console.log(hierarchy);
     }
   }
 </script>
-
-<style scoped>
-  h1, h2, h3, h4, h6, p {
-    margin: 0;
-  }
-
-  .users {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
-    align-items: center;
-  }
-</style>

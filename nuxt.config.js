@@ -107,7 +107,6 @@ export default {
   build: {
   },
 
-
   generate: {
     // Build payload (all at once) implemented to improve build speed.
     // https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-generate#speeding-up-dynamic-route-generation-with-payload
