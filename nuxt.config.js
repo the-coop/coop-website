@@ -112,17 +112,28 @@ export default {
     // https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-generate#speeding-up-dynamic-route-generation-with-payload
     async routes() {
 
-      // TODO: Need to add members/build
+      // TODO: Need to add members/build (missing data).
+      const membersResp = await axios.get(API.BASE_URL + 'members')
+      console.log(membersResp.data)
+      const membersRoutes = membersResp.data.map(member => {
+        return {
+          route: '/members/' + member.discord_id,
+          payload: member
+        }
+      });
+
 
       // TODO: Need to add projects/build
 
-      const resp = await axios.get(API.BASE_URL + 'blog/build')
-      return resp.data.map(post => {
+      const postsResp = await axios.get(API.BASE_URL + 'blog/build')
+      const blogRoutes = postsResp.data.map(post => {
         return {
           route: '/blog/' + post.slug,
           payload: post
         }
       });
+
+      return [...blogRoutes, ...membersRoutes];
     }
   }
   
