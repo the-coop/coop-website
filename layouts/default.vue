@@ -47,9 +47,9 @@
               👤 Profile
             </NuxtLink>
 
-            <button v-show="$auth.$state.loggedIn" 
+            <span v-show="$auth.$state.loggedIn" 
               class="nav-link"
-              @click="() => { logout(); closeMenu(); }">⏏️ Logout</button>
+              @click="() => { logout(); closeMenu(); }">⏏️ Logout</span>
           </div>
         </div>
 
@@ -127,6 +127,7 @@
     },
     methods: {
       async logout() {
+        console.log(this.$auth.user);
         await this.$auth.logout();
       },
       toggleDropdown(ev) {
@@ -299,6 +300,7 @@
         color: #616060;
         margin-left: 3.5em;
         text-decoration: none;
+        cursor: pointer;
       }
 
       button.nav-link {

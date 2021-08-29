@@ -131,7 +131,7 @@ export default {
         }
       });
 
-      return blogRoutes.concat(membersRoutes);
+      return [...blogRoutes, ...membersRoutes];
     }
   }
   
