@@ -43,7 +43,7 @@
             </a>
 
             <!-- Actions for logged in users -->
-            <NuxtLink v-show="$auth.$state.loggedIn" to="/profile" class="nav-link" @click.native="closeMenu">
+            <NuxtLink v-show="$auth.$state.loggedIn" :to="'/members/' + $auth.user.id" class="nav-link" @click.native="closeMenu">
               👤 Profile
             </NuxtLink>
 
@@ -127,7 +127,6 @@
     },
     methods: {
       async logout() {
-        console.log(this.$auth.user);
         await this.$auth.logout();
       },
       toggleDropdown(ev) {
