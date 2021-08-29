@@ -43,7 +43,9 @@
             </a>
 
             <!-- Actions for logged in users -->
-            <NuxtLink v-show="$auth.$state.loggedIn" :to="'/members/' + $auth.user.id" class="nav-link" @click.native="closeMenu">
+            <NuxtLink v-show="$auth.$state.loggedIn" 
+              :to="$auth.$state.loggedIn ? '/members/' + $auth.user.id : '/members'"
+              class="nav-link" @click.native="closeMenu">
               👤 Profile
             </NuxtLink>
 
