@@ -26,7 +26,7 @@
               <div class="user-tags">
                 <span>⚔️ Leaders</span>
               </div>
-              {{ hierarchy.leader.intro_content }}
+              {{ leader.intro_content }}
             </div>
           </div>
         </NuxtLink>
