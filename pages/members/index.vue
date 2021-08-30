@@ -13,6 +13,7 @@
               <div class="user-tags">
                 <span>👑 Commander</span>
               </div>
+              {{ hierarchy.commander.intro_content }}
             </div>
           </div>
         </NuxtLink>
@@ -25,6 +26,7 @@
               <div class="user-tags">
                 <span>⚔️ Leaders</span>
               </div>
+              {{ hierarchy.leader.intro_content }}
             </div>
           </div>
         </NuxtLink>
@@ -38,6 +40,7 @@
                 <!-- TODO: Add hover tooltip to this? -->
                 <span>MOTW</span>
               </div>
+              {{ hierarchy.motw.intro_content }}
             </div>
           </div>
         </NuxtLink>
@@ -50,6 +53,7 @@
                 <span>MEMBER</span>
               </div>
             </div>
+            {{ user.intro_content }}
           </div>
           <!-- Identify prospects too! -->
         </NuxtLink>
