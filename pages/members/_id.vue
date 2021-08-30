@@ -2,17 +2,27 @@
   <div>
     <div v-if="!user">Loading!</div>
     <div v-if="user">
-      <h1 class="title">🔮 {{ user.username }}</h1>
-
       <img :src="user.image ? user.image : '/favicon.svg'" class="pfp" />
 
       <div class="user-info">
         <div class="user-info-header">
-          <span class="user-title">{{ user.username }}</span>
+          <span class="user-title">🔮 {{ user.username }}</span>
           <div class="user-tags">
             <span>MEMBER</span>
           </div>
         </div>
+
+        <h3>About</h3>
+        {{ user.intro_content }}
+
+        <h3>Projects</h3>
+
+        <h3>Posts</h3>
+
+        <h3>Economy</h3>
+        <h3>Conquest</h3>
+
+        <h3>Contact/Socials</h3>
       </div>
     </div>
   </div>
