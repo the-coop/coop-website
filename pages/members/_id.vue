@@ -7,22 +7,29 @@
       <div class="user-info">
         <div class="user-info-header">
           <span class="user-title">🔮 {{ user.username }}</span>
-          <div class="user-tags">
-            <span>MEMBER</span>
-          </div>
+        </div>
+
+        <h3>Roles</h3>
+        <div class="roles-wrapper">
+          <span v-for="role in user.role_list" :key="role">
+            {{ role }}
+          </span>
         </div>
 
         <h3>About</h3>
         {{ user.intro_content }}
+
+        <h3>Contact/Socials</h3>
 
         <h3>Projects</h3>
 
         <h3>Posts</h3>
 
         <h3>Economy</h3>
-        <h3>Conquest</h3>
+        <p>{{ user.historical_points }} points</p>
 
-        <h3>Contact/Socials</h3>
+        <h3>Conquest</h3>
+        
       </div>
     </div>
   </div>
@@ -52,6 +59,7 @@
 
 <script>
   import API from '~/lib/api/api';
+  import MembersUIHelper from '~/lib/members/membersUIHelper';
 
   export default {
     async asyncData({ params, error, payload }) {
@@ -61,9 +69,12 @@
       else {        
         const id = params.id || null;
 
-        const userResp = await fetch(API.BASE_URL + 'members/' + id);
+        const userResp = await fetch(API.BASE_URL + 'members/build-single/' + id);
         user = await userResp.json();
       }
+
+      if (user && user.role_list)
+        user.role_list = MembersUIHelper.filter(user.role_list).map(MembersUIHelper.decorate);
 
       return { user };
     }
