@@ -6,18 +6,10 @@
       <NuxtLink to="/conquest/world" class="conquest-menu-item">
         <img 
           class="conquest-menu-image"
-          src="/conquest/world.png" alt="Conquest world level thumbnail">
-        <span class="conquest-menu-item-link-label">
-          World Mode
-        </span>
-      </NuxtLink>
+          src="/conquest/world.png" alt="Conquest world level thumbnail" />
 
-      <NuxtLink to="/conquest/ground" class="conquest-menu-item">
-        <img 
-          class="conquest-menu-image"
-          src="/conquest/ground.png" alt="Conquest ground level thumbnail">
         <span class="conquest-menu-item-link-label">
-          Ground Mode
+          Coopverse
         </span>
       </NuxtLink>
 

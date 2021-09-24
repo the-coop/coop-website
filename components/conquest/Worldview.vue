@@ -69,6 +69,8 @@
   import BIOMES from '../../lib/conquest/space/biomes';
   import setFocusTarget from '../../lib/conquest/space/controls/setFocusTarget';
 
+  import setupGroundNetworking from '~/lib/conquest/space/ground/setupGroundNetworking';
+
   export default {
     name: 'Worldview',
     props: {
@@ -85,6 +87,18 @@
       noWebGL: false
     }),
     async mounted() {
+      // Initialise the ground engine manager/data structures/etc.
+      window.GROUND_LEVEL = {
+          // Global access to socket.
+          socket: null,
+
+          // Not really sure what else will go in here yet, prolly something fun.
+          players: {},
+
+          // An easy to use global reference to me.
+          me: null
+      };
+
       // Used for shared state.
       window.CONQUEST = {
         BIOMES,
@@ -120,6 +134,11 @@
           setFocusTarget(face.structure.mesh);
         }
       }
+
+      // Setup and run the game/level networking (socket based).
+      setupGroundNetworking(this.$auth.strategy.token.get());
+
+      // Load the profile picture for the user if they're logged in.
     }
   }
 </script>
