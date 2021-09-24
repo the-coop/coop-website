@@ -111,11 +111,8 @@ export default {
     // Build payload (all at once) implemented to improve build speed.
     // https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-generate#speeding-up-dynamic-route-generation-with-payload
     async routes() {
-
-      // TODO: Need to add members/build (missing data).
-      // TODO: Need to add projects/build
-
-      const membersResp = await axios.get(API.BASE_URL + 'members');
+      // Build all members pages with the completed data.
+      const membersResp = await axios.get(API.BASE_URL + 'members/build');
       const membersRoutes = membersResp.data.map(member => {
         return {
           route: '/members/' + member.discord_id,
@@ -123,6 +120,7 @@ export default {
         }
       });
 
+      // Generate all of the posts page from the database response.
       const postsResp = await axios.get(API.BASE_URL + 'blog/build')
       const blogRoutes = postsResp.data.map(post => {
         return {
@@ -130,6 +128,8 @@ export default {
           payload: post
         }
       });
+
+      // TODO: Need to add projects/build
 
       return [...blogRoutes, ...membersRoutes];
     }
