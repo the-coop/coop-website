@@ -1,8 +1,10 @@
 <template>
-  <!-- <div class="content-container"> -->
-  <!-- <p>Search for member</p>   -->
   <div>
-    <h1 class="title">🔮 Members ({{ members.length }} / {{ total }})</h1>
+    <div class="members-header">
+      <h1 class="title">🔮 Members ({{ members.length }} / {{ total }})</h1>
+      <input class="search" ref="searchquery" placeholder="Search for member" />
+      <button v-on:click="search" class="search-button">🔎</button>
+    </div>
     <div>
       <div class="users">
         <NuxtLink class="user" v-for="user in members" :to="'/members/' + user.discord_id" :key="user.discord_id">
@@ -35,8 +37,25 @@
 
 
 <style scoped>
+  .members-header {
+    display: flex;
+  }
+  .members-header .search {
+    padding: .5em 1em;
+    margin-left: auto;
+    border-radius: .3em;
+    background-color: transparent;
+    font-size: 1.25em;
+    color: #898989;
+  }
+  .search-button {
+    border-radius: .3em;
+    background-color: transparent;
+    font-size: 1.25em;
+  }
   .title {
     text-align: center;
+    margin: auto;
   }
 
   .users {
@@ -130,6 +149,11 @@
       }
     },
     methods: {
+      async search() {
+        const query = this.$refs.searchquery.value;
+        const result = await fetch(API.BASE_URL + '/members/search/' + query);
+        console.log(result);
+      },
       async load() {
         const membersResp = await fetch(API.BASE_URL + 'members/build');
         const members = (await membersResp.json()) || [];
