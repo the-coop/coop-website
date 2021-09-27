@@ -13,7 +13,7 @@
         </span>
       </NuxtLink>
 
-      <NuxtLink to="/conquest/fight" class="conquest-menu-item">
+      <!-- <NuxtLink to="/conquest/fight" class="conquest-menu-item">
         <img 
           class="conquest-menu-image"
           src="/conquest/fight.jpeg" alt="Conquest fight level thumbnail">
@@ -21,16 +21,11 @@
           Fight
         </span>
       </NuxtLink>
+      -->
 
       <NuxtLink 
         to="/conquest/leaderboard"
-        class="conquest-menu-item">
-        <!-- <img 
-          srcset="elva-fairy-480w.jpg 480w"
-          sizes="(max-width: 600px) 480px,
-                  800px"
-          src="elva-fairy-800w.jpg"
-          alt="Elva dressed as a fairy"> -->
+        class="conquest-menu-item disabled">
         <span class="conquest-menu-item-link-label">
           Leaderboard
         </span>

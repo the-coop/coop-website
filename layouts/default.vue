@@ -20,12 +20,18 @@
           <span class="dropdown-label" @click="toggleDropdown">🥚 Community</span>
 
           <div class="dropdown-content">
+            <NuxtLink to="/services" class="nav-link" @click.native="closeMenu">
+              🏷️ Services
+            </NuxtLink>
+            
             <NuxtLink to="/blog" class="nav-link" @click.native="closeMenu">
               🗞️ Blog
             </NuxtLink>
+
             <NuxtLink to="/projects" class="nav-link" @click.native="closeMenu">
               👷 Projects
             </NuxtLink>
+
             <NuxtLink to="/members" class="nav-link" @click.native="closeMenu">
               🔮 Members
             </NuxtLink>
