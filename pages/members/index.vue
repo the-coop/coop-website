@@ -2,8 +2,10 @@
   <div>
     <div class="members-header">
       <h1 class="title">🔮 Members ({{ members.length }} / {{ total }})</h1>
-      <input class="search" ref="searchquery" placeholder="Search for member" />
-      <button v-on:click="search" class="search-button">🔎</button>
+      <input class="search" ref="searchquery" 
+        :disabled="!searching"
+        placeholder="Search for member" />
+      <button :disabled="!searching" v-on:click="search" class="search-button">🔎</button>
     </div>
     <div>
       <div class="users">
@@ -52,6 +54,7 @@
     border-radius: .3em;
     background-color: transparent;
     font-size: 1.25em;
+    cursor: pointer;
   }
   .title {
     text-align: center;
@@ -145,14 +148,26 @@
       return {
         members: [],
         total: 0,
-        loaded: 0
+        loaded: 0,
+
+        // Used as a simple UI block to prevent search spam (DDOS).
+        searching: true
       }
     },
     methods: {
       async search() {
+        this.searching = true;
+
         const query = this.$refs.searchquery.value;
-        const result = await fetch(API.BASE_URL + '/members/search/' + query);
-        console.log(result);
+        const result = await fetch(API.BASE_URL + 'members/search/' + query);
+        const members = (await result.json()) || [];
+
+        this.total = members.length;
+        this.members = members;
+        this.loaded = members.length;
+
+        // Unlock the search.
+        setTimeout(() => this.searching = false, 3000);
       },
       async load() {
         const membersResp = await fetch(API.BASE_URL + 'members/build');
