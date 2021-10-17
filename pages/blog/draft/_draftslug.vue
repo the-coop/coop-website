@@ -24,11 +24,12 @@
       let post = null;
 
       if (payload) post = payload;
-      else {        
+      else {
         const draftslug = params.draftslug || null;
-
         const projectsResp = await fetch(API.BASE_URL + 'blog/draft/' + draftslug);
+
         post = await projectsResp.json();
+        post.content = post.content ? post.content : '';
       }
 
       return { post };
