@@ -2,15 +2,17 @@
   <div class="content-container">
     <h1>DRAFT PREVIEW</h1>
 
-    <h1 class="title">🗞️ {{ post.title }}</h1>
-    <!-- <p>{{ post.author_username }} - {{ post.date }}</p> -->
-    
-    <vue-markdown :source="post.content" />
+    <template v-if="post">
+      <h1 class="title">🗞️ {{ post.title }}</h1>
+      <!-- <p>{{ post.author_username }} - {{ post.date }}</p> -->
+      
+      <vue-markdown :source="post.content" />
 
-    <p class="note">
-      If you would like an email when a post is added, 
-      <NuxtLink class="link" to="/blog/subscribe">please subscribe.</NuxtLink>
-    </p>
+      <p class="note">
+        If you would like an email when a post is added, 
+        <NuxtLink class="link" to="/blog/subscribe">please subscribe.</NuxtLink>
+      </p>
+    </template>
   </div>
 </template>
 
@@ -20,17 +22,14 @@
 
   export default {
     components: { VueMarkdown },
-    async asyncData({ params, error, payload }) {
+    async asyncData({ params }) {
       let post = null;
 
-      if (payload) post = payload;
-      else {
-        const draftslug = params.draftslug || null;
-        const projectsResp = await fetch(API.BASE_URL + 'blog/draft/' + draftslug);
+      const draftslug = params.draftslug || null;
+      const projectsResp = await fetch(API.BASE_URL + 'blog/draft/' + draftslug);
 
-        post = await projectsResp.json();
-        post.content = post.content ? post.content : '';
-      }
+      post = await projectsResp.json();
+      post.content = post.content ? post.content : '';
 
       return { post };
     }
