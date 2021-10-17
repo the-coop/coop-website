@@ -22,16 +22,18 @@
 
   export default {
     components: { VueMarkdown },
-    async asyncData({ params }) {
-      let post = null;
-
+    data() {
+      return { post: null };
+    },
+    async fetch({ params }) {
       const draftslug = params.draftslug || null;
       const projectsResp = await fetch(API.BASE_URL + 'blog/draft/' + draftslug);
+      const post = await projectsResp.json();
 
-      post = await projectsResp.json();
-      post.content = post.content ? post.content : '';
-
-      return { post };
+      if (post) {
+        post.content = post.content ? post.content : '';
+        this.post = post;
+      }
     }
   }
 </script>
