@@ -5,7 +5,7 @@
     <h1 class="title">🗞️ {{ post.title }}</h1>
     <!-- <p>{{ post.author_username }} - {{ post.date }}</p> -->
     
-    <!-- <vue-markdown :source="post.content" /> -->
+    <vue-markdown :source="post.content" />
 
     <p class="note">
       If you would like an email when a post is added, 
@@ -25,9 +25,9 @@
 
       if (payload) post = payload;
       else {        
-        const slug = params.slug || null;
+        const draftslug = params.draftslug || null;
 
-        const projectsResp = await fetch(API.BASE_URL + 'blog/draft/' + slug);
+        const projectsResp = await fetch(API.BASE_URL + 'blog/draft/' + draftslug);
         post = await projectsResp.json();
       }
 
