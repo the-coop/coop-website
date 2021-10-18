@@ -2,7 +2,7 @@
   <div class="content-container">
     <h1>DRAFT PREVIEW</h1>
 
-    <template v-if="post">
+    <div v-if="post">
       <h1 class="title">🗞️ {{ post.title }}</h1>
       <!-- <p>{{ post.author_username }} - {{ post.date }}</p> -->
       
@@ -12,7 +12,8 @@
         If you would like an email when a post is added, 
         <NuxtLink class="link" to="/blog/subscribe">please subscribe.</NuxtLink>
       </p>
-    </template>
+    </div>
+
   </div>
 </template>
 
@@ -25,14 +26,15 @@
     data() {
       return { post: null };
     },
-    async fetch({ params }) {
-      const draftslug = params.draftslug || null;
-      const projectsResp = await fetch(API.BASE_URL + 'blog/draft/' + draftslug);
-      const post = await projectsResp.json();
-
-      if (post) {
-        post.content = post.content ? post.content : '';
-        this.post = post;
+    async mounted() {
+      const channelID = this.$route.query.channel_id;
+      if (channelID) {
+        const projectsResp = await fetch(API.BASE_URL + 'blog/draft/' + channelID);
+        const postData = await projectsResp.json();
+        if (postData) {
+          postData.content = postData.content ? postData.content : '';
+          this.post = postData;
+        }
       }
     }
   }
