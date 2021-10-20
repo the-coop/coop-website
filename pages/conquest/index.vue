@@ -31,17 +31,20 @@
         </span>
       </NuxtLink>
 
+      <NuxtLink 
+        to="/conquest/economy/trade"
+        class="conquest-menu-item">
+        <span class="conquest-menu-item-link-label">
+          Trade
+        </span>
+      </NuxtLink>
+      
       <div class="conquest-menu-item disabled">
         <span 
           class="conquest-menu-item-link-label"
           to="/conquest/leaderboard">Info: Economy</span>
       </div>
 
-      <div class="conquest-menu-item disabled">
-        <span 
-          class="conquest-menu-item-link-label"
-          to="/conquest/leaderboard">Trade</span>
-      </div>
 
       <div class="conquest-menu-item disabled">
         <span 
