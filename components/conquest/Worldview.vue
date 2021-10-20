@@ -1,10 +1,12 @@
 <template>
+  <!-- // Load the profile picture for the user if they're logged in. -->
   <div class="worldview">
     <h1 class="error-text" v-if="noWebGL && !silent">Error WebGL not supported...</h1>
-      <!-- <div class="controls">
-      X
-      // TODO: toggle to locked/unlocked for camera
-      </div> -->
+      <div v-if="!silent" class="controls">
+        CONTROLS
+
+        Exit focus
+      </div>
   </div>
 </template>
 
@@ -33,6 +35,14 @@
 
   .error-text {
     animation: errorPulse 5s infinite;
+  }
+
+  .controls {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    background: white;
   }
 
   @keyframes loadingPulse {
@@ -111,7 +121,7 @@
         },
 
         // Deterministic time variable.
-        timeIncrement: 0
+        timeIncrement: Date.now()
       };
       
       // Check if WebGL is supported.
@@ -124,7 +134,7 @@
 
         // Setup the solar system geometry.
         await createSolarSystem();
-  
+
         // Run the engine.
         runEngine();
 
@@ -137,8 +147,6 @@
 
       // Setup and run the game/level networking (socket based).
       setupGroundNetworking(this.$auth.strategy.token.get());
-
-      // Load the profile picture for the user if they're logged in.
     }
   }
 </script>

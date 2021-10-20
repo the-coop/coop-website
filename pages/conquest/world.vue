@@ -22,5 +22,7 @@
 
 <template>
   <!-- Load map -->
-  <client-only><Worldview :tile="tile" /></client-only>
+  <client-only>
+    <Worldview :tile="tile" />
+  </client-only>
 </template>
