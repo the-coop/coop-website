@@ -5,6 +5,8 @@
       <div v-if="!silent" class="controls">
         CONTROLS
 
+        Your location: ?
+
         Exit focus
       </div>
   </div>
@@ -71,10 +73,11 @@
 </style>
 
 <script>
-  import createEngine from '../../lib/conquest/space/engine/createEngine';  
-  import runEngine from '../../lib/conquest/space/engine/runEngine';
-  import createSolarSystem from '../../lib/conquest/space/engine/createSolarSystem';  
   import * as THREE from 'three';
+
+  import createEngine from '../../lib/conquest/space/engine/createEngine';
+  import runEngine from '../../lib/conquest/space/engine/runEngine';
+  import createSolarSystem from '../../lib/conquest/space/engine/createSolarSystem';
 
   import BIOMES from '../../lib/conquest/space/biomes';
   import setFocusTarget from '../../lib/conquest/space/controls/setFocusTarget';
@@ -97,28 +100,27 @@
       noWebGL: false
     }),
     async mounted() {
-      // Initialise the ground engine manager/data structures/etc.
-      window.GROUND_LEVEL = {
-          // Global access to socket.
-          socket: null,
-
-          // Not really sure what else will go in here yet, prolly something fun.
-          players: {},
-
-          // An easy to use global reference to me.
-          me: null
-      };
-
       // Used for shared state.
       window.CONQUEST = {
+        // Global access to socket.
+        socket: null,
+
+        // Not really sure what else will go in here yet, prolly something fun.
+        players: {},
+
+        // An easy to use global reference to me.
+        me: null,
+
         BIOMES,
         faces: {},
         VIEW: {
           focusTarget: null,
           mouse: new THREE.Vector2(),
           raycaster: new THREE.Raycaster(),
-          cameraTween: null
+          cameraTween: null,
         },
+
+        scene: new THREE.Scene(),
 
         // Deterministic time variable.
         timeIncrement: Date.now()
@@ -143,10 +145,10 @@
           const face = window.CONQUEST.faces[this.tile];
           setFocusTarget(face.structure.mesh);
         }
-      }
 
-      // Setup and run the game/level networking (socket based).
-      setupGroundNetworking(this.$auth.strategy.token.get());
+        // Setup and run the game/level networking (socket based).
+        setupGroundNetworking(this.$auth.strategy.token.get());
+      }
     }
   }
 </script>
