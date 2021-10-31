@@ -8,7 +8,7 @@
       </h2>
 
       <div class="actions">
-        <a href="https://opencollective.com/the-coop" target="_blank" class="button">Donate</a>
+        <a href="https://fund-the-coop.raisely.com" target="_blank" class="button">Donate</a>
         <a v-show="!$auth.$state.loggedIn" href="https://discord.gg/dgexRwFCkc" target="_blank" class="button">Join</a>
       </div>
     </div>
