@@ -96,7 +96,7 @@
     color: #ff6565;
   }
   .conquest-menu-item:hover .conquest-menu-item-link-label, .conquest-menu-item:focus .conquest-menu-item-link-label {
-    color: #111111;
+    color: white;
   }
   .conquest-menu-item:hover .conquest-menu-image, .conquest-menu-item:focus .conquest-menu-image {
     opacity: .25;

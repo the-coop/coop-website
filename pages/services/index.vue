@@ -10,6 +10,12 @@
   </div>
 </template>
 
+<style scoped>
+  .services {
+    color: #616060;
+  }
+</style>
+
 <script>
   // import API from '~/lib/api/api';
 

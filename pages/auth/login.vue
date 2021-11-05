@@ -38,17 +38,20 @@
 <template>
     <div class="content-container">
         <h1 class="title">🔑 Login</h1>
-        <p>Gain access by proving you have an account inside The Coop Community. 🐔</p>
 
-        <p>
-            All data is manageable by the user and can be deleted any time. <i><a class="link" target="_blank" href="/privacy/discord-oauth-permissions.png">View requested permissions here</a></i>
-        </p>
-        <p class="note">
-            Default: You won't receive any emails 
-            <NuxtLink class="link" to="/blog/subscribe">(newsletter etc),</NuxtLink>
-            without
-             <NuxtLink class="link" to="/blog/subscribe">subscribing</NuxtLink>.
-        </p>
+        <div class="login-text">
+            <p>Gain access by proving you have an account inside The Coop Community. 🐔</p>
+
+            <p>
+                All data is manageable by the user and can be deleted any time. <i><a class="link" target="_blank" href="/privacy/discord-oauth-permissions.png">View requested permissions here</a></i>
+            </p>
+            <p class="note">
+                Default: You won't receive any emails 
+                <NuxtLink class="link" to="/blog/subscribe">(newsletter etc),</NuxtLink>
+                without
+                <NuxtLink class="link" to="/blog/subscribe">subscribing</NuxtLink>.
+            </p>
+        </div>
         
         <div class="login">
             <div class="login-options">
@@ -71,6 +74,12 @@
         </div>
     </div>
 </template>
+
+<style scoped>
+    .login-text {
+        color: white;
+    }
+</style>
 
 <script>
     export default {

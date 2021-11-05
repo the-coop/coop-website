@@ -1,6 +1,6 @@
 <template>
   <div class="page home">
-    <div class="hero">      
+    <div class="hero">
       <h1 class="title">WHAT IS THE COOP?</h1>
 
       <h2 class="subtitle">
@@ -11,6 +11,11 @@
         <a href="https://fund-the-coop.raisely.com" target="_blank" class="button">Donate</a>
         <a v-show="!$auth.$state.loggedIn" href="https://discord.gg/dgexRwFCkc" target="_blank" class="button">Join</a>
       </div>
+    </div>
+
+    <div class="advertisement">
+      <h2>Do you want to advertise here?</h2>
+      <p>We hope not, it isn't supported yet!</p>
     </div>
 
     <client-only>
@@ -29,8 +34,19 @@
 </script>
 
 <style>
+  .home {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
   .hero {
     z-index: 1;
+  }
+
+  .advertisement {
+    margin-top: 2rem;
+    color: silver;
   }
 
   .actions {
@@ -55,6 +71,12 @@
     opacity: .125;
   }
 
+  @media screen and (min-width: 850px) {
+    .home {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  }
 
   @keyframes moveMouth {
     from { transform: translateX(0); }

@@ -1,5 +1,5 @@
 <template>
-  <svg class="header_logo__2G1RE" width="41" height="50" viewBox="0 0 41 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="41" height="50" viewBox="0 0 41 54" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="13.285" cy="24.2351" r="4.02576" fill="white"></circle>
     <path class="beak" d="M28.583 14.1707H40.6603L34.0178 20.2093L40.6603 26.2479H28.583V14.1707Z" fill="white"></path>
     <path d="M1.93237 16.103H24.6377V46.0547H1.93237V16.103Z" stroke="white" stroke-width="3.86473"></path>

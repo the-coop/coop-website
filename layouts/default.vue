@@ -69,20 +69,17 @@
 
       <div class="header-socials">
         <a href="https://www.instagram.com/thecoop_ig/" target="_blank">
-          <img src="/socials/instagram.svg" />
+          <Instagram />
         </a>
         <a href="https://www.facebook.com/thecoopfb" target="_blank">
-          <img src="/socials/facebook.svg" />
+          <Facebook />
         </a>
         <a href="https://www.linkedin.com/company/thecoopgroup" target="_blank">
-          <img src="/socials/linkedin.svg" />
+          <LinkedIn />
         </a>
         <a href="https://twitter.com/thecoopg" target="_blank">
-          <img src="/socials/twitter.svg" />
+          <Twitter />
         </a>
-        <!-- <a href="" target="_blank">
-          <img src="/socials/youtube.svg" />
-        </a> -->
       </div>
     </div>
     <Nuxt />
@@ -91,16 +88,16 @@
       <h4 class="footer-socials-prompt">Follow?</h4>
       <div class="footer-socials-items">
         <a href="https://www.instagram.com/thecoop_ig/" target="_blank">
-          <img src="/socials/instagram.svg" />
+          <Instagram />
         </a>
         <a href="https://www.facebook.com/thecoopfb" target="_blank">
-          <img src="/socials/facebook.svg" />
+          <Facebook />
         </a>
         <a href="https://www.linkedin.com/company/thecoopgroup" target="_blank">
-          <img src="/socials/linkedin.svg" />
+          <LinkedIn />
         </a>
         <a href="https://twitter.com/thecoopg" target="_blank">
-          <img src="/socials/twitter.svg" />
+          <Twitter />
         </a>
       </div>
     </div>
@@ -110,11 +107,22 @@
 <script>
   import anime from 'animejs/lib/anime.es';
 
+  import Facebook from '../components/socials/Facebook.vue';
+  import Twitter from '../components/socials/Twitter.vue';
+  import Instagram from '../components/socials/Instagram.vue';
+  import LinkedIn from '../components/socials/LinkedIn.vue';
+
 
   const closedBottom = '-50vh';
 
 
   export default {
+    components: {
+      Facebook,
+      Twitter,
+      Instagram,
+      LinkedIn
+    },
     mounted() {
       // When the dropdown menu is hovered...
       // Should trigger an event which blocks the now upwards moving box re-triggering CSS hover.
@@ -218,7 +226,7 @@
       color: silver;
       margin: 0;
     }
-    .footer-socials img {
+    .footer-socials svg {
       width: 2em;
     }
 
