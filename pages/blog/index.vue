@@ -7,7 +7,10 @@
     <div class="posts">
       <NuxtLink class="post" v-for="post in posts" :to="`/blog/${post.slug}`" :key="post.id">
         <h2 class="post-title">{{ post.title }}</h2>
-        <p class="post-info">{{ post.author_username }} - {{ post.date }}</p>
+        <p class="post-info">
+          <span class="author">{{ post.author_username }}</span>
+          <span class="date">{{ fmtDate(post.date) }}</span>
+        </p>
       </NuxtLink>
     </div>
 
@@ -37,17 +40,25 @@
   }
   .post-info {
     color: silver;
-    
   }
-
+  .author {
+    font-weight: bold;
+    color: #ff6565;
+  }
+  .date {
+  }
 </style>
 
 <script>
+  import moment from 'moment';
   import API from '~/lib/api/api';
 
   export default {
     data({ posts }) {
       return { posts }
+    },
+    methods: {
+      fmtDate: date => moment.unix(date).format("DD/MM/YYYY")
     },
     async asyncData() {
       const projectsResp = await fetch(API.BASE_URL + 'blog');

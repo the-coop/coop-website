@@ -1,9 +1,13 @@
 <template>
   <div class="content-container">
-    <h1 class="title">🗞️ {{ post.title }}</h1>
-    <!-- <p>{{ post.author_username }} - {{ post.date }}</p> -->
+    <div class="post-info">
+      <h1 class="title">🗞️ {{ post.title }}</h1>
+      <p>{{ post.author_username }} {{ fmtDate(post.date) }}</p>
+    </div>
     
-    <vue-markdown :source="post.content" />
+    <div class="content">
+      <vue-markdown :source="post.content" />
+    </div>
 
     <p class="note">
       If you would like an email when a post is added, 
@@ -12,12 +16,30 @@
   </div>
 </template>
 
+<style scoped>
+  .post-info {
+    color: #ff6565;
+  }
+  .content {
+    color: white;
+  }
+</style>
+<style>
+  .content a {
+    color: #ff8f8f;
+  }
+</style>
+
 <script>
-  import API from '~/lib/api/api';
+  import moment from 'moment';
   import VueMarkdown from 'vue-markdown';
+  import API from '~/lib/api/api';
 
   export default {
     components: { VueMarkdown },
+    methods: {
+      fmtDate: date => moment.unix(date).format("DD/MM/YYYY")
+    },
     async asyncData({ params, error, payload }) {
       let post = null;
 

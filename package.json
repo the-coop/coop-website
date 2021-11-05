@@ -20,6 +20,7 @@
     "body-parser": "^1.19.0",
     "consola": "^2.15.3",
     "lodash": "^4.17.21",
+    "moment": "^2.29.1",
     "nuxt": "^2.2.0",
     "nuxt-webfontloader": "^1.1.0",
     "phaser": "^3.55.2",

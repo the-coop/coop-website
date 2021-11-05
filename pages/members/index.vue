@@ -23,7 +23,9 @@
               </div>
             </div>
 
-            {{ user.intro_content }}
+            <div class="user-intro">
+              {{ user.intro_content }}
+            </div>
 
             {{ user.historical_points ? `${user.historical_points}P` : null }}
           </div>
@@ -76,13 +78,22 @@
     text-decoration: none;
     color: indianred;
     min-height: 10em;
-
   }
 
   @media (min-width: 1200px) {
     .user {
       flex: calc(50% - .45rem) 0 0;
     }
+  }
+
+  .user:hover .pfp {
+    border-color: indianred;
+  }
+  .user:hover .user-title {
+    color: indianred;
+  }
+  .user:hover .user-intro {
+    color: white;
   }
 
   .pfp {
