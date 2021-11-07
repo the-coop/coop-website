@@ -45,8 +45,6 @@
     font-weight: bold;
     color: #ff6565;
   }
-  .date {
-  }
 </style>
 
 <script>
