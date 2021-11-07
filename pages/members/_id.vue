@@ -1,7 +1,7 @@
 <template>
   <div class="content-container">
     <div v-if="!user">Loading!</div>
-    <div v-if="user">
+    <div class="user-profile" v-if="user">
       <img :src="user.image ? user.image : '/favicon.svg'" class="pfp" />
 
       <div class="user-info">
@@ -37,6 +37,9 @@
 
 
 <style scoped>
+  .user-profile {
+    color: #ff6565;
+  }
   .pfp {
     flex: 22% 0 0;
     margin: 1rem;
