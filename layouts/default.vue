@@ -44,8 +44,8 @@
             <a 
               @click="closeMenu"
               v-show="!$auth.$state.loggedIn" 
-              href="https://discord.gg/dgexRwFCkc" target="_blank" class="nav-link">
-              🚪 Join
+              href="https://discord.gg/Z2n6wbWj2t" target="_blank" class="nav-link">
+              👋 Join
             </a>
 
             <!-- Actions for logged in users -->
