@@ -77,14 +77,4 @@
       justify-content: space-between;
     }
   }
-
-  @keyframes moveMouth {
-    from { transform: translateX(0); }
-    to { transform: translateX(5px); }
-  }
-
-  @keyframes moveWeirdChickenBeard {
-    from { transform: translateY(0); }
-    to { transform: translateY(5px); }
-  }
 </style>

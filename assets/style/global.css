@@ -13,6 +13,10 @@ html {
   margin-bottom: 2rem;
 }
 
+.logo {
+  width: 3em;
+}
+
 .title {
   margin: 0;
   font-size: 1.44em;
@@ -48,6 +52,7 @@ html {
 
 .button:hover {
   background-color: transparent;
+  color: #ff6565;
 }
 
 .button.secondary {
