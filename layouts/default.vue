@@ -61,7 +61,6 @@
           </div>
         </div>
 
-
         <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
           🗡 Conquest
         </NuxtLink>
@@ -112,9 +111,7 @@
   import Instagram from '../components/socials/Instagram.vue';
   import LinkedIn from '../components/socials/LinkedIn.vue';
 
-
   const closedBottom = '-50vh';
-
 
   export default {
     components: {
@@ -414,6 +411,8 @@
       flex-direction: column;
       transition: bottom .3s ease;
       padding: 2rem;
+
+      z-index: 3;
 
       background: #111111;
       border-radius: 1rem;

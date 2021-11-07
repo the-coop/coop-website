@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="page home">
+    <div class="page home content-container">
       <div class="hero">
         <h1 class="title">WHAT IS THE COOP?</h1>
 
@@ -24,28 +24,120 @@
         <Worldview :silent="true" />
       </client-only>
     </div>
+
+    <div class="content-container">
+      <h1 class="title">🗞️ Posts ({{ posts.length }}/{{ postsTotal }})</h1>
+
+      <p class="note">Thanks for checking out our blog, you'll find out <NuxtLink class="link" to="/blog/subscribe">subscribe-worthy</NuxtLink> latest headlines below! 🤓</p>
+
+      <PostsList :posts="posts" />
+
+      <p class="note">
+        If you would like an email when a post is added, 
+        <NuxtLink class="link" to="/blog/subscribe">please subscribe.</NuxtLink>
+      </p>
+
+      <NuxtLink to="/blog" class="center-cta">
+        ALL POSTS 🗞️
+      </NuxtLink>
+    </div>
+
+    <div class="content-container">
+      <h1 class="title">👷 Projects ({{ projects.length }}/{{ projectsTotal }})</h1>
+      <ProjectsList />
+
+      <NuxtLink to="/projects" class="center-cta">
+        ALL PROJECTS 👷
+      </NuxtLink>
+    </div>
+
+    <div class="content-container">
+      <h1 class="title">🔮 Top Members ({{ users.length }}/{{ usersTotal }})</h1>
+      <UsersList :users="users" />
+
+      <NuxtLink to="/members" class="center-cta">
+        ALL MEMBERS 🔮
+      </NuxtLink>
+    </div>
+
+    <div class="content-container">
+      <h1 class="title">🏷️ Services</h1>
+      <ServicesList />
+      <NuxtLink to="/services" class="center-cta">
+        ALL SERVICES 🏷️
+      </NuxtLink>
+    </div>
+
+    <div class="content-container">
+      <h1 class="title">🗡 Conquest</h1>
+
+      <ConquestMenu />
+    </div>
+
+    <div class="content-container" v-show="!$auth.$state.loggedIn">
+      <h1 class="title">🔑 Login</h1>
+
+      <LoginBlock />
+    </div>
   </div>
 </template>
 
 <script>
   import API from '~/lib/api/api';
+  import PostsList from '~/components/blog/PostsList.vue';
+  import ProjectsList from '~/components/projects/ProjectsList.vue';
+  import UsersList from '~/components/users/UsersList.vue';
+  import ConquestMenu from '~/components/conquest/ConquestMenu.vue';
+  import LoginBlock from '~/components/users/LoginBlock.vue';
+  import ServicesList from '~/components/users/services/ServicesList.vue';
 
   export default {
     components: {
-      'Worldview': () => import('@/components/conquest/Worldview.vue')
+      'Worldview': () => import('@/components/conquest/Worldview.vue'),
+      PostsList,
+      ProjectsList,
+      UsersList,
+      ConquestMenu,
+      LoginBlock,
+      ServicesList
     },
-    // data({ posts }) {
-    //   return { posts }
-    // },
-    // async mounted() {
-    //   const projectsResp = await fetch(API.BASE_URL + 'blog');
-    //   const posts = await projectsResp.json();
-    //   this.posts = posts;
-    //   return { posts };
-    // }
-    // async asyncData() {
+    data({ posts, projects }) {
+      return { posts, projects }
+    },
+    async asyncData() {
+      // Load the necessary posts.
+      const blogResp = await fetch(API.BASE_URL + 'blog');
+      let posts = await blogResp.json();
 
-    // }
+      const postsTotal = posts.length;
+
+      // Cap to the first two items.
+      posts = posts.slice(0, 2);
+
+      // Load the necessary projects.
+      const projectsResp = await fetch(API.BASE_URL + 'projects');
+      let projects = await projectsResp.json();
+
+      // Cap to the first six items.
+      projects = projects.slice(0, 4);
+
+      const projectsTotal = projects.length;
+
+      // Load the necessary users.
+      const membersResp = await fetch(API.BASE_URL + 'members/build');
+      let users = (await membersResp.json()) || [];
+
+      const usersTotal = users.length;
+    
+      // Cap to the first six items.
+      users = users.slice(0, 6);
+
+      return { 
+        posts, postsTotal,
+        projects, projectsTotal,
+        users, usersTotal 
+      };
+    }
   }
 </script>
 

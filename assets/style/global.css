@@ -13,6 +13,10 @@ html {
   margin-bottom: 2rem;
 }
 
+.content-container + .content-container {
+  margin-top: 10rem;
+}
+
 .logo {
   width: 3em;
 }
@@ -64,6 +68,35 @@ html {
   background-color: #ff6565;
   color: white;
 }
+
+
+.center-cta {
+  display: block;
+  margin: auto;
+  margin-top: 2rem;
+  padding: 1.8rem 3rem;
+  background-color: indianred;
+
+  font-size: 1.25em;
+  font-weight: bold;
+  color: #dadada;
+
+  border-radius: 1rem;
+  border: none;
+
+  cursor: pointer;
+
+  text-decoration: none;
+}
+
+.center-cta:hover {
+  color: white;
+  background-color: transparent;
+}
+
+
+
+
 
 @media screen and (min-width: 666px) {
     .subtitle {
