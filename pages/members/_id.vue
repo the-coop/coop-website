@@ -26,10 +26,20 @@
         <h3>Posts</h3>
 
         <h3>Economy</h3>
-        <p>{{ user.historical_points }} points</p>
+
+
+        <h4>Items</h4>
+        <div class="items">
+          <span v-for="i in user.item_list" :key="`items-list-${i.item_code}`">
+            {{ i.item_code }}x{{ i.quantity }}
+          </span>
+        </div>
 
         <h3>Conquest</h3>
         
+        Location: {{ user.tile }}
+
+        Bases: ?
       </div>
     </div>
   </div>
@@ -57,6 +67,15 @@
     margin-right: 1rem;
     font-size: 1.5em;
     color: #e6e6e6;
+  }
+
+  .items {
+    width: 50%;
+  }
+
+  .items span {
+    margin-right: .3em;
+    margin-bottom: .3em;
   }
 </style>
 
