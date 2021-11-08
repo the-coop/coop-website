@@ -1,7 +1,7 @@
 <template>
   <div class="content-container">
     <h1 class="title">👷 Projects</h1>
-    <ProjectsList />
+    <ProjectsList :projects="projects" />
   </div>
 </template>
 

@@ -23,7 +23,15 @@
 
         <h3>Projects</h3>
 
+        <NuxtLink class="meta-link" :to="`/projects/${project.slug}`" v-for="project in user.project_list" :key="project.slug">
+          {{ project.slug }}
+        </NuxtLink>
+
         <h3>Posts</h3>
+
+        <NuxtLink class="meta-link" :to="`/blog/${post.slug}`" v-for="post in user.blog_posts" :key="post.slug">
+          {{ post.slug }}
+        </NuxtLink>
 
         <h3>Economy</h3>
 
@@ -76,6 +84,15 @@
   .items span {
     margin-right: .3em;
     margin-bottom: .3em;
+  }
+
+  .meta-link {
+    display: block;
+    margin-bottom: 1em;
+    color: white;
+  }
+  .meta-link:hover {
+    color: #ff6565;
   }
 </style>
 
