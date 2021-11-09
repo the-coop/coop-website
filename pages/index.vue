@@ -44,7 +44,7 @@
 
     <div class="content-container">
       <h1 class="title">👷 Projects ({{ projects.length }}/{{ projectsTotal }})</h1>
-      <ProjectsList />
+      <ProjectsList :projects="projects" />
 
       <NuxtLink to="/projects" class="center-cta">
         ALL PROJECTS 👷

@@ -43,10 +43,15 @@
 
   .user {
     display: flex;
+    flex-direction: column;
     flex: 100% 0 0;
     text-decoration: none;
     color: indianred;
     min-height: 10em;
+
+    margin-bottom: 2em;
+
+    align-items: flex-start;
   }
 
   .user:hover .pfp {
@@ -95,9 +100,10 @@
     color: #898989;
   }
 
-  @media (min-width: 1200px) {
+  @media (min-width: 800px) {
     .user {
       flex: calc(50% - .45rem) 0 0;
+      flex-direction: row;
     }
     .user-info-header {
       /* flex-direction: row; */

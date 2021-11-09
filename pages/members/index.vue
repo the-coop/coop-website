@@ -89,7 +89,8 @@
   .members-header {
     display: flex;
   }
-  .members-header .search {
+  .search {
+    display: none;
     padding: .5em 1em;
     margin-left: auto;
     border-radius: .3em;
@@ -98,6 +99,7 @@
     color: #898989;
   }
   .search-button {
+    display: none;
     border-radius: .3em;
     background-color: transparent;
     font-size: 1.25em;
@@ -106,5 +108,14 @@
   .title {
     text-align: center;
     margin: auto;
+  }
+
+  @media (min-width: 800px) {
+    .search {
+      display: inline-block;
+    }
+    .search-button {
+      display: inline-block;
+    }
   }
 </style>
