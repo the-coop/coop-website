@@ -2,15 +2,21 @@
   <div class="challenge-wrapper content-container">
     <div v-if="!loaded && !error">
       <h1 class="title">Authenticating</h1>
-      <p>Attemping to verify your Discord account in exchange for greater access.</p>
+      <p class="text">Attemping to verify your Discord account in exchange for greater access.</p>
     </div>
 
     <div v-if="error">
       <h2 class="title">Error authenticating.</h2>
-      <pre>{{error}}</pre>
+      <p class="text">{{ error }}</p>
     </div>
   </div>
 </template>
+
+<style scoped>
+  .text {
+    color: #ff6565;
+  }
+</style>
 
 <script>
   export default {
