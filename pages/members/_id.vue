@@ -19,35 +19,51 @@
         <h3>About</h3>
         {{ user.intro_content }}
 
-        <h3>Contact/Socials</h3>
+        <!-- <h3>Contact/Socials</h3> -->
 
-        <h3>Projects</h3>
+        <div v-if="user.project_list">
+          <h3>Projects</h3>
 
-        <NuxtLink class="meta-link" :to="`/projects/${project.slug}`" v-for="project in user.project_list" :key="project.slug">
-          {{ project.slug }}
-        </NuxtLink>
+          <NuxtLink class="meta-link" :to="`/projects/${project.slug}`" v-for="project in user.project_list" :key="project.slug">
+            {{ project.slug }}
+          </NuxtLink>
+        </div>
 
-        <h3>Posts</h3>
+        <div v-if="user.blog_posts">
+          <h3>Posts</h3>
 
-        <NuxtLink class="meta-link" :to="`/blog/${post.slug}`" v-for="post in user.blog_posts" :key="post.slug">
-          {{ post.slug }}
-        </NuxtLink>
+          <NuxtLink class="meta-link" :to="`/blog/${post.slug}`" v-for="post in user.blog_posts" :key="post.slug">
+            {{ post.slug }}
+          </NuxtLink>
+        </div>
 
         <h3>Economy</h3>
 
-
-        <h4>Items</h4>
-        <div class="items">
-          <span v-for="i in user.item_list" :key="`items-list-${i.item_code}`">
-            {{ i.item_code }}x{{ i.quantity }}
-          </span>
+        <div v-if="user.item_list">
+          <h4>Items</h4>
+          <div class="items">
+            <span v-for="i in user.item_list" :key="`items-list-${i.item_code}`">
+              <!-- TODO: Link each item code to item specific page -->
+              {{ i.item_code }}x{{ i.quantity }}
+            </span>
+          </div>
         </div>
 
         <h3>Conquest</h3>
         
-        Location: {{ user.tile }}
+        <div>
+          Location: {{ user.tile }}
+        </div>
 
-        Bases: ?
+        <h4>Bases:</h4>
+        <div>
+          <a target="_blank" 
+            :href="`https://www.thecoop.group/conquest/world?tile=${b.tile}`"
+            v-for="b in user.base_list" :key="`base-list-${b.tile}`">
+            {{ b.tile }}
+          </a>
+        </div>
+
       </div>
     </div>
   </div>
