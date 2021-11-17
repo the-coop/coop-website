@@ -4,9 +4,14 @@
       <div class="hero">
         <h1 class="title">WHAT IS THE COOP?</h1>
 
-        <h2 class="subtitle">
+        <p class="subtitle">
           The primary purpose of The Coop is <strong>the empowerment</strong> of creatives. We move the Earth and Moon for our <strong>free and democratic</strong> system.
-        </h2>
+        </p>
+
+        <p class="subtitle">
+          <br />
+          {{ Math.max(0, 1000 - usersTotal) }} <strong>full</strong> membership slots remaining!
+        </p>
 
         <div class="actions">
           <a href="https://fund-the-coop.raisely.com" target="_blank" class="button">Donate</a>
@@ -28,7 +33,9 @@
     <div class="content-container">
       <h1 class="title">🗞️ Posts ({{ posts.length }}/{{ postsTotal }})</h1>
 
-      <p class="note">Thanks for checking out our blog, you'll find out <NuxtLink class="link" to="/blog/subscribe">subscribe-worthy</NuxtLink> latest headlines below! 🤓</p>
+      <p class="note">
+        Thanks for checking out our blog, you'll find out <NuxtLink class="link" to="/blog/subscribe">subscribe-worthy</NuxtLink> latest headlines below! 🤓
+      </p>
 
       <PostsList :posts="posts" />
 
