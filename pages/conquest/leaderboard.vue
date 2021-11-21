@@ -21,7 +21,8 @@
 </template>
 
 <script>
-import API from '~/lib/api/api';
+  import API from '~/lib/api/api';
+
   export default {
     data() {
       return { 

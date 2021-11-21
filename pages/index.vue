@@ -25,7 +25,6 @@
       </div>
 
       <client-only>
-        <!-- TODO: Append after timeout. -->
         <Worldview :silent="true" />
       </client-only>
     </div>
@@ -51,7 +50,7 @@
 
     <div class="content-container">
       <h1 class="title">👷 Projects ({{ projects.length }}/{{ projectsTotal }})</h1>
-      <ProjectsList :projects="projects" />
+      <ProjectsList prefix="home-projects" :projects="projects" />
 
       <NuxtLink to="/projects" class="center-cta">
         ALL PROJECTS 👷
@@ -110,6 +109,9 @@
     },
     data({ posts, projects }) {
       return { posts, projects }
+    },
+    destroyed() {
+      // TODO: Reset the dynamic WorldView component to prevent sync errors/dev mostly.
     },
     async asyncData() {
       // Load the necessary posts.

@@ -13,15 +13,11 @@
       return {
         tile: this.$nuxt.$route.query.tile
       }
-    },
-    mounted() {
-      // this.tile;
     }
   }
 </script>
 
 <template>
-  <!-- Load map -->
   <client-only>
     <Worldview :tile="tile" />
   </client-only>

@@ -3,7 +3,7 @@
 
     <NuxtLink 
       :to="`/projects/${project.slug}`"
-      v-for="project in projects" :key="project.id" class="project">
+      v-for="project in projects" :key="prefix + '-' + project.id" class="project">
       <h2 class="project-title">{{ project.title }}</h2>
       <!-- <span>{{ project.deadline }}</span> -->
       <span>{{ fmtDate(project.created) }}</span>
@@ -35,7 +35,7 @@
   import moment from 'moment';
   
   export default {
-    props: ['projects'],
+    props: ['projects', 'prefix'],
     methods: {
       fmtDate: date => moment.unix(date).format("DD/MM/YYYY")
     }

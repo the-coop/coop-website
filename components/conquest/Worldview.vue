@@ -1,14 +1,42 @@
 <template>
   <!-- // Load the profile picture for the user if they're logged in. -->
   <div class="worldview">
-    <h1 class="error-text" v-if="noWebGL && !silent">Error WebGL not supported...</h1>
-      <div v-if="!silent" class="controls">
-        CONTROLS
+    <h1 class="error-text" v-if="noWebGL && !silent">Loading error...</h1>
 
-        Your location: ?
-
-        Exit focus
+    <div v-if="!silent" class="controls content-container">
+      <div>
+        <h2>CONTROLS</h2>
+        <div>
+          Current Focus: N\A
+          Exit focus
+        </div>
       </div>
+
+      <!-- Need to add a help/guide link somewhere. -->
+
+      <div v-if="$auth.$state.loggedIn">
+        <h2>YOU</h2>
+        <div>
+          <div v-if="me">
+            {{ me.id }}
+
+            x:
+            y:
+            z: 
+          </div>
+        </div>
+      </div>
+
+      <NuxtLink 
+        :to="{ 
+          path: '/auth/login', 
+          query: { redirect: 'http://thecoop.group/conquest/world' }
+        }">
+        <button>Play</button>
+      </NuxtLink>
+    </div>
+
+    <Tutorial :show="tutorial" :skipTutorial="skipTutorial" />
   </div>
 </template>
 
@@ -84,6 +112,8 @@
 
   import setupGroundNetworking from '~/lib/conquest/space/ground/setupGroundNetworking';
 
+  import Tutorial from './Tutorial.vue';
+
   export default {
     name: 'Worldview',
     props: {
@@ -96,9 +126,20 @@
         default: null
       }
     },
+    components: {
+      Tutorial
+    },
     data: () => ({
-      noWebGL: false
+      noWebGL: false,
+      tutorial: false,
+      me: null
     }),
+    methods: {
+      skipTutorial() {
+        this.tutorial = false;
+        localStorage.setItem('skip-tutorial', true);
+      }
+    },
     async mounted() {
       // Used for shared state.
       window.CONQUEST = {
@@ -113,6 +154,7 @@
 
         BIOMES,
         faces: {},
+
         VIEW: {
           focusTarget: null,
           mouse: new THREE.Vector2(),
@@ -125,10 +167,16 @@
         // Deterministic time variable.
         timeIncrement: Date.now()
       };
-      
+
       // Check if WebGL is supported.
       const canvas = document.createElement('canvas');
-      const supportsWebGL = !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+      const supportsWebGL = !!(
+        window.WebGLRenderingContext && 
+        (
+          canvas.getContext('webgl') || 
+          canvas.getContext('experimental-webgl')
+        )
+      );
       if (!supportsWebGL) return this.noWebGL = true;
       else {
         // Setup the engine.
@@ -143,11 +191,19 @@
         // If a tile specified on start, take me directly there.
         if (this.tile) {
           const face = window.CONQUEST.faces[this.tile];
-          setFocusTarget(face.structure.mesh);
+
+          // Check it's a valid base???
+          // Maybe just lock to the tile itself and not the base.
+          if (face?.structure?.mesh)
+            setFocusTarget(face.structure.mesh);
         }
 
         // Setup and run the game/level networking (socket based).
         setupGroundNetworking(this.$auth.strategy.token.get());
+
+        // Start tutorial if appropriate.
+        if (!localStorage.getItem('skip-tutorial') && !this.silent)
+          this.tutorial = true;
       }
     }
   }
