@@ -3,7 +3,7 @@
   <div class="worldview">
     <h1 class="error-text" v-if="noWebGL && !silent">Loading error...</h1>
 
-    <div v-if="!silent" class="controls content-container">
+    <div v-if="!silent && !tutorial" class="controls content-container">
       <div>
         <h2>CONTROLS</h2>
         <div>
@@ -199,7 +199,7 @@
         }
 
         // Setup and run the game/level networking (socket based).
-        setupGroundNetworking(this.$auth.strategy.token.get());
+        setupGroundNetworking(this.$auth.strategy.token.get(), this);
 
         // Start tutorial if appropriate.
         if (!localStorage.getItem('skip-tutorial') && !this.silent)
