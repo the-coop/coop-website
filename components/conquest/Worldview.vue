@@ -173,12 +173,13 @@
         setFocusTarget(window.CONQUEST.earthSphere);
       },
       spawn() {
+        const spawnFace = this.focus?.face_id;
+        const spawnPos = window.CONQUEST.faces[spawnFace].position;
         window.CONQUEST.socket.emit('player_spawned', {
-          spawn_location: {
-            x: 1,
-            y: 5,
-            z: 10
-          }
+          spawn_location: spawnPos,
+
+          // Make this dynamic so we can spawn on other planets. Elon.
+          orbit_influence: 'EARTH'
         });
       }
     },
@@ -198,11 +199,11 @@
         faces: {},
 
         VIEW: {
+          UI: this,
           focusTarget: null,
           mouse: new THREE.Vector2(),
           raycaster: new THREE.Raycaster(),
-          cameraTween: null,
-          UI: this
+          cameraTween: null
         },
 
         scene: new THREE.Scene(),
