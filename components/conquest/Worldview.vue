@@ -173,8 +173,12 @@
         setFocusTarget(window.CONQUEST.earthSphere);
       },
       spawn() {
-        const spawnFace = this.focus?.face_id;
+        const focusTarget = window.CONQUEST.VIEW.focusTarget;
+        const spawnFace = focusTarget.face_id;
         const spawnPos = window.CONQUEST.faces[spawnFace].position;
+
+        console.log(focusTarget, spawnFace);
+
         window.CONQUEST.socket.emit('player_spawned', {
           spawn_location: spawnPos,
 
