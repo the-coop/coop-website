@@ -3,11 +3,11 @@
     <h1>Welcome!</h1>
     <h2>This is your Coopverse</h2>
 
-    Welcome to the best wallpaper in the world.
-
     Logged in or not?
+    <div></div>
 
     Spawned or not?
+    <div></div>
 
     // Add the spawns to go to
 
@@ -16,6 +16,8 @@
     // Add collisions
 
     Add gravity
+
+    Guides page
 
     <button v-on:click="skipTutorial">Skip</button>
   </div>

@@ -8,6 +8,7 @@
         <h2>CONTROLS</h2>
         <div>
           Current Focus: N\A
+          {{ focus }}
           Exit focus
         </div>
       </div>
@@ -18,11 +19,14 @@
         <h2>YOU</h2>
         <div>
           <div v-if="me">
-            {{ me.id }}
+            {{ me.username }}
 
             x:
             y:
             z: 
+          </div>
+          <div v-if="!me">
+            Looks like ya need to spawn.
           </div>
         </div>
       </div>
@@ -132,7 +136,8 @@
     data: () => ({
       noWebGL: false,
       tutorial: false,
-      me: null
+      me: null,
+      focus: null
     }),
     methods: {
       skipTutorial() {
@@ -160,6 +165,7 @@
           mouse: new THREE.Vector2(),
           raycaster: new THREE.Raycaster(),
           cameraTween: null,
+          UI: this
         },
 
         scene: new THREE.Scene(),
@@ -190,16 +196,16 @@
 
         // If a tile specified on start, take me directly there.
         if (this.tile) {
+          // Check it's a valid base.
           const face = window.CONQUEST.faces[this.tile];
-
-          // Check it's a valid base???
-          // Maybe just lock to the tile itself and not the base.
           if (face?.structure?.mesh)
+            // Note: Maybe just lock to the tile itself and not the base?
             setFocusTarget(face.structure.mesh);
+            
         }
 
         // Setup and run the game/level networking (socket based).
-        setupGroundNetworking(this.$auth.strategy.token.get(), this);
+        setupGroundNetworking(this.$auth.strategy.token.get());
 
         // Start tutorial if appropriate.
         if (!localStorage.getItem('skip-tutorial') && !this.silent)
