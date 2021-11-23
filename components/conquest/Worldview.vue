@@ -3,48 +3,59 @@
   <div class="worldview">
     <h1 class="error-text" v-if="noWebGL && !silent">Loading error...</h1>
 
-    <div v-if="!silent && !tutorial" class="controls content-container">
-      <div>
-        <h2>CONTROLS</h2>
-        <div>
-          Current Focus: N\A
-          {{ focus }}
-          Exit focus
-        </div>
+    <div v-if="!silent && !tutorial" class="controls">
+      <div v-if="focus && focus.name !== 'EARTH'" class="content-container">
+        <h3>{{ focus.name }}</h3>
+        
+        <!-- When focus is a structure, show details about the structure? -->
+          <!-- Owner -->
+          <!-- Coordinates -->
+        <button 
+          v-on:click="spawn"
+          v-if="focus.type === 'STRUCTURE' && $auth.$state.loggedIn && !me"
+          class="ui-main-button button">
+          Spawn
+        </button>
+
+        <button 
+          v-on:click="unfocus"
+          class="ui-main-button button">
+          Unlock
+        </button>
       </div>
 
       <!-- Need to add a help/guide link somewhere. -->
 
-      <div v-if="$auth.$state.loggedIn">
-        <h2>YOU</h2>
+      <div 
+        class="content-container"
+        v-if="$auth.$state.loggedIn && me">
+        <h2>{{ me.username }}</h2>
         <div>
-          <div v-if="me">
-            {{ me.username }}
-
-            x:
-            y:
-            z: 
-          </div>
-          <div v-if="!me">
-            Looks like ya need to spawn.
-          </div>
+          x: {{ me.x }}
+          y: {{ me.y }}
+          z: {{ me.z }}
         </div>
       </div>
 
-      <NuxtLink 
-        :to="{ 
-          path: '/auth/login', 
-          query: { redirect: 'http://thecoop.group/conquest/world' }
-        }">
-        <button>Play</button>
-      </NuxtLink>
+      <div 
+        class="content-container"
+        v-if="!$auth.$state.loggedIn">
+        You must log in to play.
+        <NuxtLink 
+          :to="{ 
+            path: '/auth/login', 
+            query: { redirect: 'http://thecoop.group/conquest/world' }
+          }">
+          <button class="ui-main-button play-button button">Play</button>
+        </NuxtLink>
+      </div>
     </div>
 
     <Tutorial :show="tutorial" :skipTutorial="skipTutorial" />
   </div>
 </template>
 
-<style>
+<style scoped>
   .worldview {
     width: 100vw;
     height: 100vh;
@@ -74,9 +85,22 @@
   .controls {
     position: absolute;
     z-index: 2;
-    top: 0;
-    right: 0;
-    background: white;
+    top: 1em;
+    right: 1em;
+  }
+
+  .ui-main-button {
+    width: 100%;
+    margin-top: .5em;
+  }
+
+  .content-container {
+    background: rgba(255, 250, 250, 0.87);
+    border-radius: .5rem;
+  }
+
+  .content-container + .content-container {
+    margin-top: 0;
   }
 
   @keyframes loadingPulse {
@@ -143,6 +167,19 @@
       skipTutorial() {
         this.tutorial = false;
         localStorage.setItem('skip-tutorial', true);
+      },
+      unfocus() {
+        // Default to focussing on Earth.
+        setFocusTarget(window.CONQUEST.earthSphere);
+      },
+      spawn() {
+        window.CONQUEST.socket.emit('player_spawned', {
+          spawn_location: {
+            x: 1,
+            y: 5,
+            z: 10
+          }
+        });
       }
     },
     async mounted() {
@@ -201,7 +238,6 @@
           if (face?.structure?.mesh)
             // Note: Maybe just lock to the tile itself and not the base?
             setFocusTarget(face.structure.mesh);
-            
         }
 
         // Setup and run the game/level networking (socket based).
