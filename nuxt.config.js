@@ -105,34 +105,5 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-  },
-
-  generate: {
-    // Build payload (all at once) implemented to improve build speed.
-    // https://nuxtjs.org/docs/2.x/configuration-glossary/configuration-generate#speeding-up-dynamic-route-generation-with-payload
-    async routes() {
-      // Build all members pages with the completed data.
-      const membersResp = await axios.get(API.BASE_URL + 'members/build');
-      const membersRoutes = membersResp.data.map(member => {
-        return {
-          route: '/members/' + member.discord_id,
-          payload: member
-        }
-      });
-
-      // Generate all of the posts page from the database response.
-      const postsResp = await axios.get(API.BASE_URL + 'blog/build')
-      const blogRoutes = postsResp.data.map(post => {
-        return {
-          route: '/blog/' + post.slug,
-          payload: post
-        }
-      });
-
-      // TODO: Need to add projects/build
-
-      return [...blogRoutes, ...membersRoutes];
-    }
   }
-  
 }
