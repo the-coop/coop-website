@@ -198,6 +198,10 @@
         // An easy to use global reference to me.
         me: null,
 
+        SOIS: {
+          
+        },
+
         BIOMES,
         faces: {},
 
