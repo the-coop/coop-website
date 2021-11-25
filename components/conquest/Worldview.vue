@@ -177,9 +177,8 @@
         const spawnFace = focusTarget.face_id;
         const spawnPos = window.CONQUEST.faces[spawnFace].position;
 
-        console.log(focusTarget, spawnFace);
-
         window.CONQUEST.socket.emit('player_spawned', {
+          // Pass the yet unvalidated spawn location.
           spawn_location: spawnPos,
 
           // Make this dynamic so we can spawn on other planets. Elon.
