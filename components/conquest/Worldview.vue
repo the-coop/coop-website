@@ -257,7 +257,7 @@
 
           const player = window.CONQUEST.players[window.CONQUEST.me.id];
 
-          const currentPos = new Vector3();
+          const currentPos = new THREE.Vector3();
           player.mesh.getWorldPosition(currentPos);
 
           window.CONQUEST.VIEW.UI.me.position = currentPos;
