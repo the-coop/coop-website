@@ -253,12 +253,18 @@
         // Display statistics to the UI.
         const statsInterval = setInterval(() => {
           // Update UI ref's property for rendering UI data.
+          if (!window.CONQUEST.me) return;
+
+          const player = window.CONQUEST.players[window.CONQUEST.me.id];
+
+          const currentPos = new Vector3();
+          player.mesh.getWorldPosition(currentPos);
+
+          window.CONQUEST.VIEW.UI.me.position = currentPos;
+
           console.log('Stats testing');
-          window.CONQUEST.VIEW.UI.me = window.CONQUEST.me;
-
-          console.log(window.CONQUEST.me);
-
-          // May need to access from CONQUEST.players instead for fresh data?
+          console.log(player);
+          console.log(currentPos);
           
         }, 5000);
 
