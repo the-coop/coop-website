@@ -6,13 +6,20 @@
     <div v-if="!silent && !tutorial" class="controls">
       <div v-if="focus && focus.name !== 'EARTH'" class="content-container">
         <h3>{{ focus.name }}</h3>
-        
+
         <!-- When focus is a structure, show details about the structure? -->
-          <!-- Owner -->
-          <!-- Coordinates -->
+        <div v-if="focus.entity_type === 'STRUCTURE'">
+          <h4>Owner</h4>
+          {{ getStructure(focus.face_id).owner_id }}
+        </div>
+        
+        <!-- biome: "SNOW" -->
+
+        <!-- Coordinates -->
+          
         <button 
           v-on:click="spawn"
-          v-if="focus.type === 'STRUCTURE' && $auth.$state.loggedIn && !me"
+          v-if="focus.entity_type === 'STRUCTURE' && $auth.$state.loggedIn && !me"
           class="ui-main-button button">
           Spawn
         </button>
@@ -31,9 +38,9 @@
         v-if="$auth.$state.loggedIn && me">
         <h2>{{ me.username }}</h2>
         <div>
-          X: {{ me.position.x }}
-          Y: {{ me.position.y }}
-          Z: {{ me.position.z }}
+          <div>X: {{ me.position.x.toFixed(2) }}</div>
+          <div>Y: {{ me.position.y.toFixed(2) }}</div>
+          <div>Z: {{ me.position.z.toFixed(2) }}</div>
         </div>
       </div>
 
@@ -164,6 +171,9 @@
       focus: null
     }),
     methods: {
+      getStructure(faceID) {
+        return window.CONQUEST.faces?.[faceID];
+      },
       skipTutorial() {
         this.tutorial = false;
         localStorage.setItem('skip-tutorial', true);
@@ -259,14 +269,9 @@
 
           const currentPos = new THREE.Vector3();
           player.mesh.getWorldPosition(currentPos);
-
           window.CONQUEST.VIEW.UI.me.position = currentPos;
-
-          console.log('Stats testing');
-          console.log(player);
-          console.log(currentPos);
           
-        }, 5000);
+        }, 777);
 
         // Start tutorial if appropriate.
         if (!localStorage.getItem('skip-tutorial') && !this.silent)
