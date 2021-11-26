@@ -256,6 +256,8 @@
           console.log('Stats testing');
           window.CONQUEST.VIEW.UI.me = window.CONQUEST.me;
 
+          console.log(window.CONQUEST.me);
+
           // May need to access from CONQUEST.players instead for fresh data?
           
         }, 5000);
