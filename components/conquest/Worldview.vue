@@ -42,6 +42,12 @@
           <div>Y: {{ me.position.y.toFixed(2) }}</div>
           <div>Z: {{ me.position.z.toFixed(2) }}</div>
         </div>
+
+        <button 
+          v-on:click="focusMe"
+          class="ui-main-button button">
+          Focus
+        </button>
       </div>
 
       <div 
@@ -181,6 +187,9 @@
       unfocus() {
         // Default to focussing on Earth.
         setFocusTarget(window.CONQUEST.earthSphere);
+      },
+      focusMe() {
+        alert('Work in progress');
       },
       spawn() {
         const focusTarget = window.CONQUEST.VIEW.focusTarget;
