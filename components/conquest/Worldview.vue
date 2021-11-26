@@ -189,7 +189,7 @@
         setFocusTarget(window.CONQUEST.earthSphere);
       },
       focusMe() {
-        alert('Work in progress');
+        setFocusTarget(window.CONQUEST.VIEW.me.mesh);
       },
       spawn() {
         const focusTarget = window.CONQUEST.VIEW.focusTarget;
