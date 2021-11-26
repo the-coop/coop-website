@@ -31,9 +31,9 @@
         v-if="$auth.$state.loggedIn && me">
         <h2>{{ me.username }}</h2>
         <div>
-          x: {{ me.x }}
-          y: {{ me.y }}
-          z: {{ me.z }}
+          X: {{ me.position.x }}
+          Y: {{ me.position.y }}
+          Z: {{ me.position.z }}
         </div>
       </div>
 
