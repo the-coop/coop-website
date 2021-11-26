@@ -250,9 +250,22 @@
         // Setup and run the game/level networking (socket based).
         setupGroundNetworking(this.$auth.strategy.token.get());
 
+        // Display statistics to the UI.
+        const statsInterval = setInterval(() => {
+          // Update UI ref's property for rendering UI data.
+          console.log('Stats testing');
+          window.CONQUEST.VIEW.UI.me = window.CONQUEST.me;
+
+          // May need to access from CONQUEST.players instead for fresh data?
+          
+        }, 5000);
+
         // Start tutorial if appropriate.
         if (!localStorage.getItem('skip-tutorial') && !this.silent)
           this.tutorial = true;
+
+
+
       }
     }
   }
