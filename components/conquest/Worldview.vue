@@ -198,9 +198,8 @@
         // An easy to use global reference to me.
         me: null,
 
-        SOIS: {
-          
-        },
+        // Entites with orbital gravity.
+        SOIS: {},
 
         BIOMES,
         faces: {},
