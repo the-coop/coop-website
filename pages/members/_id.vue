@@ -17,7 +17,9 @@
         </div>
 
         <h3>About</h3>
-        {{ user.intro_content }}
+        <p>
+          {{ user.intro_content }}
+        </p>
 
         <!-- <h3>Contact/Socials</h3> -->
 
@@ -39,11 +41,11 @@
 
         <h3>Economy</h3>
 
+        <!-- TODO: Link each item code to item specific page -->
         <div v-if="user.item_list">
           <h4>Items</h4>
           <div class="items">
             <span v-for="i in user.item_list" :key="`items-list-${i.item_code}`">
-              <!-- TODO: Link each item code to item specific page -->
               {{ i.item_code }}x{{ i.quantity }}
             </span>
           </div>
