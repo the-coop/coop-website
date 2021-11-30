@@ -122,27 +122,10 @@
         users: null
       }
     },
-    // async asyncData({ params, error, payload }) {
-    //   let user = null;
-
-    //   if (payload) user = payload;
-    //   else {        
-    //     const id = params.id || null;
-
-    //     const userResp = await fetch(API.BASE_URL + 'members/build-single/' + id);
-    //     user = await userResp.json();
-    //   }
-
-    //   if (user && user.role_list)
-    //     user.role_list = MembersUIHelper.filter(user.role_list).map(MembersUIHelper.decorate);
-
-    //   return { user };
-    // },
-    // Can I access a param during fetch?
-    async fetch({ params }) {
+    async fetch() {
       let user = null;
 
-      const id = params.id || null;
+      const id = window.location.pathname.split('/')[2];
 
       const userResp = await fetch(API.BASE_URL + 'members/build-single/' + id);
       user = await userResp.json();
