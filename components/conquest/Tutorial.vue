@@ -15,8 +15,6 @@
 
     // Add collisions
 
-    Add gravity
-
     Guides page
 
     <button v-on:click="skipTutorial">Skip</button>
