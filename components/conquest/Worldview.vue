@@ -10,7 +10,10 @@
         <!-- When focus is a structure, show details about the structure? -->
         <div v-if="focus.entity_type === 'STRUCTURE'">
           <h4>Owner</h4>
-          {{ getStructure(focus.face_id).owner_id }}
+
+          <a :href="`http://localhost:3000/members/${getStructure(focus.face_id).structure.owner.id}`" target="_blank">
+            {{ getStructure(focus.face_id).structure.owner.username }}
+          </a>
         </div>
         
         <!-- biome: "SNOW" -->
@@ -178,6 +181,7 @@
     }),
     methods: {
       getStructure(faceID) {
+        console.log(window.CONQUEST.faces?.[faceID]);
         return window.CONQUEST.faces?.[faceID];
       },
       skipTutorial() {
@@ -285,9 +289,6 @@
         // Start tutorial if appropriate.
         if (!localStorage.getItem('skip-tutorial') && !this.silent)
           this.tutorial = true;
-
-
-
       }
     }
   }
