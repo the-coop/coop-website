@@ -117,21 +117,21 @@
   import MembersUIHelper from '~/lib/members/membersUIHelper';
 
   export default {
-    data() {
+    async data() {
       return {
-        users: null
+        user: null
       }
     },
-    async fetch() {
-      let user = null;
-
-      const id = window.location.pathname.split('/')[2];
+    async asyncData({ params }) {
+      const id = params.id;
 
       const userResp = await fetch(API.BASE_URL + 'members/build-single/' + id);
-      user = await userResp.json();
+      const user = await userResp.json();
 
       if (user && user.role_list)
-        user.role_list = MembersUIHelper.filter(user.role_list).map(MembersUIHelper.decorate);
+        user.role_list = MembersUIHelper
+          .filter(user.role_list)
+          .map(MembersUIHelper.decorate);
 
       return { user };
     }
