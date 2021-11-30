@@ -80,7 +80,14 @@
   export default {
     data() {
       return {
-        discordAuthURL: "https://discord.com/api/oauth2/authorize?method=discord_oauth&client_id=799695179623432222&redirect_uri=https%3A%2F%2Fthecoop.group%2Fauth%2Fauthorise&response_type=code&scope=identify",
+        discordAuthURL: 
+          "https://discord.com/api/oauth2/authorize?method=discord_oauth&client_id=799695179623432222&redirect_uri=https%3A%2F%2Fthecoop.group%2Fauth%2Fauthorise&response_type=code&scope=identify"
+
+          // Working but requires stable API dev/sandbox and stable development Discord server.
+          // process.env.NODE_ENV === 'production' ?
+          //   "https://discord.com/api/oauth2/authorize?method=discord_oauth&client_id=799695179623432222&redirect_uri=https%3A%2F%2Fthecoop.group%2Fauth%2Fauthorise&response_type=code&scope=identify"
+          //   :
+          //   "https://discord.com/api/oauth2/authorize?client_id=905180163355066409&redirect_uri=http%3A%2F%2Flocalhost%3A3000&response_type=code&scope=identify"
       }
     }
   }
