@@ -45,9 +45,12 @@
         <div v-if="user.item_list">
           <h4>Items</h4>
           <div class="items">
-            <span v-for="i in user.item_list" :key="`items-list-${i.item_code}`">
+            <a 
+              v-for="i in user.item_list" 
+              :href="`/conquest/economy/items/${i.item_code}`"
+              :key="`items-list-${i.item_code}`">
               {{ i.item_code }}x{{ i.quantity }}
-            </span>
+            </a>
           </div>
         </div>
 

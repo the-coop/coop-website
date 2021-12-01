@@ -36,12 +36,13 @@
       </span>
     </NuxtLink>
     
-    <div class="conquest-menu-item disabled">
-      <span 
-        class="conquest-menu-item-link-label"
-        to="/conquest/leaderboard">Info: Economy</span>
-    </div>
-
+    <NuxtLink 
+      to="/conquest/economy/items"
+      class="conquest-menu-item">
+      <span class="conquest-menu-item-link-label">
+        Items
+      </span>
+    </NuxtLink>
 
     <div class="conquest-menu-item disabled">
       <span 
