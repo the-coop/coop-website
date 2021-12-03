@@ -67,14 +67,14 @@
       </nav>
 
       <div class="header-socials">
+        <a href="https://www.twitch.tv/thecoop_twich/" target="_blank">
+          <Twitch />
+        </a>
+        <a href="https://github.com/the-coop/" target="_blank">
+          <Github />
+        </a>
         <a href="https://www.instagram.com/thecoop_ig/" target="_blank">
           <Instagram />
-        </a>
-        <a href="https://www.facebook.com/thecoopfb" target="_blank">
-          <Facebook />
-        </a>
-        <a href="https://www.linkedin.com/company/thecoopgroup" target="_blank">
-          <LinkedIn />
         </a>
         <a href="https://twitter.com/thecoopg" target="_blank">
           <Twitter />
@@ -86,14 +86,14 @@
     <div class="footer-socials">
       <h4 class="footer-socials-prompt">Follow?</h4>
       <div class="footer-socials-items">
+        <a href="https://www.twitch.tv/thecoop_twich/" target="_blank">
+          <Twitch />
+        </a>
+        <a href="https://github.com/the-coop/" target="_blank">
+          <Github />
+        </a>
         <a href="https://www.instagram.com/thecoop_ig/" target="_blank">
           <Instagram />
-        </a>
-        <a href="https://www.facebook.com/thecoopfb" target="_blank">
-          <Facebook />
-        </a>
-        <a href="https://www.linkedin.com/company/thecoopgroup" target="_blank">
-          <LinkedIn />
         </a>
         <a href="https://twitter.com/thecoopg" target="_blank">
           <Twitter />
@@ -106,19 +106,22 @@
 <script>
   import anime from 'animejs/lib/anime.es';
 
-  import Facebook from '../components/socials/Facebook.vue';
+  // import Facebook from '../components/socials/Facebook.vue';
+  // import LinkedIn from '../components/socials/LinkedIn.vue';
+
   import Twitter from '../components/socials/Twitter.vue';
   import Instagram from '../components/socials/Instagram.vue';
-  import LinkedIn from '../components/socials/LinkedIn.vue';
+  import Twitch from '../components/socials/Twitch.vue';
+  import Github from '../components/socials/Github.vue';
 
   const closedBottom = '-50vh';
 
   export default {
     components: {
-      Facebook,
       Twitter,
       Instagram,
-      LinkedIn
+      Twitch,
+      Github
     },
     mounted() {
       // When the dropdown menu is hovered...
