@@ -22,13 +22,14 @@
 
   export default {
     components: { PostsList },
-    data({ posts }) {
-      return { posts }
+    data() {
+      return { 
+        posts: []
+      }
     },
-    async asyncData() {
+    async mounted() {
       const projectsResp = await fetch(API.BASE_URL + 'blog');
-      const posts = await projectsResp.json();
-      return { posts };
+      this.posts = await projectsResp.json();
     }
   }
 </script>

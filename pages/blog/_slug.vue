@@ -1,5 +1,5 @@
 <template>
-  <div class="content-container">
+  <div v-if="post" class="content-container">
     <div class="post-info">
       <h1 class="title">🗞️ {{ post.title }}</h1>
       <p>{{ post.author_username }} {{ fmtDate(post.date) }}</p>
@@ -37,21 +37,17 @@
 
   export default {
     components: { VueMarkdown },
+    data: () => ({
+      post: null
+    }),
     methods: {
       fmtDate: date => moment.unix(date).format("DD/MM/YYYY")
     },
-    async asyncData({ params, error, payload }) {
-      let post = null;
+    async mounted() {
+      const slug = this.$route.params.slug || null;
 
-      if (payload) post = payload;
-      else {        
-        const slug = params.slug || null;
-
-        const projectsResp = await fetch(API.BASE_URL + 'blog/' + slug);
-        post = await projectsResp.json();
-      }
-
-      return { post };
+      const projectsResp = await fetch(API.BASE_URL + 'blog/' + slug);
+      this.post = await projectsResp.json();
     }
   }
 </script>

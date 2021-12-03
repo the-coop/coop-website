@@ -13,13 +13,12 @@
     components: {
       ProjectsList
     },
-    data({ projects }) {
-      return { projects }
+    data() {
+      return { projects: [] }
     },
-    async asyncData() {
+    async mounted() {
       const projectsResp = await fetch(API.BASE_URL + 'projects');
-      const projects = await projectsResp.json();
-      return { projects };
+      this.projects = await projectsResp.json();
     }
   }
 </script>

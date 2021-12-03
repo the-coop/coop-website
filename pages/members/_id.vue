@@ -127,8 +127,8 @@
         user: null
       }
     },
-    async asyncData({ params }) {
-      const id = params.id;
+    async mounted() {
+      const id = this.$route.param.id;
 
       const userResp = await fetch(API.BASE_URL + 'members/build-single/' + id);
       const user = await userResp.json();
@@ -138,7 +138,7 @@
           .filter(user.role_list)
           .map(MembersUIHelper.decorate);
 
-      return { user };
+      this.user = user;
     }
   }
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div class="content-container">
+  <div v-if="project" class="content-container">
 
 
     <div class="project">
@@ -30,23 +30,16 @@
 
   export default {
     components: { VueMarkdown },
+    data: () => ({
+      project: null
+    }),
     methods: {
       fmtDate: date => moment.unix(date).format("DD/MM/YYYY")
     },
-    async asyncData({ params, error, payload }) {
-      let project = null;
-
-      if (payload) project = payload;
-      else {        
-        const slug = params.slug || null;
-
+    async mounted() {
+        const slug = this.$route.params.slug || null;
         const projectsResp = await fetch(API.BASE_URL + 'projects/' + slug);
-        project = await projectsResp.json();
-      }
-
-      console.log(project);
-
-      return { project };
+        this.project = await projectsResp.json();
     }
   }
 </script>

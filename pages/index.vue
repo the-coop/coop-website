@@ -107,45 +107,46 @@
       LoginBlock,
       ServicesList
     },
-    data({ posts, projects }) {
-      return { posts, projects }
+    data() {
+      return { 
+        posts: [],
+        postsTotal: 0,
+        projects: [],
+        projectsTotal: 0,
+        users: [],
+        usersTotal: 0 
+      };
     },
     destroyed() {
       // TODO: Reset the dynamic WorldView component to prevent sync errors/dev mostly.
     },
-    async asyncData() {
+    async mounted() {
       // Load the necessary posts.
       const blogResp = await fetch(API.BASE_URL + 'blog');
       let posts = await blogResp.json();
 
-      const postsTotal = posts.length;
+      this.postsTotal = posts.length;
 
       // Cap to the first two items.
-      posts = posts.slice(0, 2);
+      this.posts = posts.slice(0, 2);
 
       // Load the necessary projects.
       const projectsResp = await fetch(API.BASE_URL + 'projects');
       let projects = await projectsResp.json();
 
       // Cap to the first six items.
-      projects = projects.slice(0, 4);
+      this.projects = projects.slice(0, 4);
 
-      const projectsTotal = projects.length;
+      this.projectsTotal = projects.length;
 
       // Load the necessary users.
       const membersResp = await fetch(API.BASE_URL + 'members/build');
       let users = (await membersResp.json()) || [];
 
-      const usersTotal = users.length;
+      this.usersTotal = users.length;
     
       // Cap to the first six items.
-      users = users.slice(0, 6);
-
-      return { 
-        posts, postsTotal,
-        projects, projectsTotal,
-        users, usersTotal 
-      };
+      this.users = users.slice(0, 6);
     }
   }
 </script>
