@@ -70,6 +70,9 @@
         <a href="https://www.twitch.tv/thecoop_twich/" target="_blank">
           <Twitch />
         </a>
+        <a href="https://www.youtube.com/channel/UCC823jVQUkZtm8bcW-9bEKA" target="_blank">
+          <Youtube />
+        </a>
         <a href="https://github.com/the-coop/" target="_blank">
           <Github />
         </a>
@@ -89,6 +92,9 @@
         <a href="https://www.twitch.tv/thecoop_twich/" target="_blank">
           <Twitch />
         </a>
+        <a href="https://www.youtube.com/channel/UCC823jVQUkZtm8bcW-9bEKA" target="_blank">
+          <Youtube />
+        </a>
         <a href="https://github.com/the-coop/" target="_blank">
           <Github />
         </a>
@@ -106,22 +112,21 @@
 <script>
   import anime from 'animejs/lib/anime.es';
 
-  // import Facebook from '../components/socials/Facebook.vue';
-  // import LinkedIn from '../components/socials/LinkedIn.vue';
-
+  import Twitch from '../components/socials/Twitch.vue';
+  import Youtube from '../components/socials/Youtube.vue';
+  import Github from '../components/socials/Github.vue';
   import Twitter from '../components/socials/Twitter.vue';
   import Instagram from '../components/socials/Instagram.vue';
-  import Twitch from '../components/socials/Twitch.vue';
-  import Github from '../components/socials/Github.vue';
 
   const closedBottom = '-50vh';
 
   export default {
     components: {
-      Twitter,
-      Instagram,
       Twitch,
-      Github
+      Youtube,
+      Github,
+      Instagram,
+      Twitter
     },
     mounted() {
       // When the dropdown menu is hovered...
