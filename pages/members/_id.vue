@@ -128,7 +128,7 @@
       }
     },
     async mounted() {
-      const id = this.$route.param.id;
+      const id = this.$route.params.id;
 
       const userResp = await fetch(API.BASE_URL + 'members/build-single/' + id);
       const user = await userResp.json();
