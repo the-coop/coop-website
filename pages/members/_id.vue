@@ -122,7 +122,7 @@
   import MembersUIHelper from '~/lib/members/membersUIHelper';
 
   export default {
-    async data() {
+    data() {
       return {
         user: null
       }
