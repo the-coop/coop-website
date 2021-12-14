@@ -250,46 +250,67 @@
           canvas.getContext('experimental-webgl')
         )
       );
-      if (!supportsWebGL) return this.noWebGL = true;
-      else {
-        // Setup the engine.
-        createEngine();
 
-        // Setup the solar system geometry.
-        await createSolarSystem();
+      // Prevent WebGL access.
+      if (!supportsWebGL) 
+        return this.noWebGL = true;
 
-        // Run the engine.
-        runEngine();
+      // Setup the engine.
+      createEngine();
 
-        // If a tile specified on start, take me directly there.
-        if (this.tile) {
-          // Check it's a valid base.
-          const face = window.CONQUEST.faces[this.tile];
-          if (face?.structure?.mesh)
-            // Note: Maybe just lock to the tile itself and not the base?
-            setFocusTarget(face.structure.mesh);
-        }
+      // Setup the solar system geometry.
+      await createSolarSystem();
 
-        // Setup and run the game/level networking (socket based).
-        setupGroundNetworking(this.$auth.strategy.token.get());
+      // Run the engine.
+      runEngine();
 
-        // Display statistics to the UI.
-        const statsInterval = setInterval(() => {
-          // Update UI ref's property for rendering UI data.
-          if (!window.CONQUEST.me) return;
-
-          const player = window.CONQUEST.players[window.CONQUEST.me.id];
-
-          const currentPos = new THREE.Vector3();
-          player.mesh.getWorldPosition(currentPos);
-          window.CONQUEST.VIEW.UI.me.position = currentPos;
-          
-        }, 777);
-
-        // Start tutorial if appropriate.
-        if (!localStorage.getItem('skip-tutorial') && !this.silent)
-          this.tutorial = true;
+      // If a tile specified on start, take me directly there.
+      if (this.tile) {
+        // Check it's a valid base.
+        const face = window.CONQUEST.faces[this.tile];
+        if (face?.structure?.mesh)
+          // Note: Maybe just lock to the tile itself and not the base?
+          setFocusTarget(face.structure.mesh);
       }
+
+      // Setup and run the game/level networking (socket based).
+      setupGroundNetworking(this.$auth.strategy.token.get());
+
+      // Display statistics to the UI.
+      const statsInterval = setInterval(() => {
+        // Update UI ref's property for rendering UI data.
+        if (!window.CONQUEST.me) return;
+
+        const player = window.CONQUEST.players[window.CONQUEST.me.id];
+
+        const currentPos = new THREE.Vector3();
+        player.mesh.getWorldPosition(currentPos);
+        window.CONQUEST.VIEW.UI.me.position = currentPos;
+        
+      }, 777);
+
+      // Start tutorial if appropriate.
+      if (!localStorage.getItem('skip-tutorial') && !this.silent)
+        this.tutorial = true;
+
+      // Add resize listener for canvas and scene.
+      window.addEventListener('resize', () => {
+        // this.handleResize();
+
+
+        // Update sizes
+        // sizes.width = window.innerWidth;
+        // sizes.height = window.innerHeight;
+
+        // Update camera
+        // camera.aspect = sizes.width / sizes.height;
+        // camera.updateProjectionMatrix();
+
+        // Update renderer
+        // renderer.setSize(sizes.width, sizes.height);
+        // renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      });
     }
+
   }
 </script>
