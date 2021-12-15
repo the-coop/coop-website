@@ -105,5 +105,11 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+  },
+
+  // Avoid 404 page on non-static pages and turn off static pre-rendering.
+  ssr: false,
+  generate: {
+    fallback: true
   }
 }
