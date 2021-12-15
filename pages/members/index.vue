@@ -61,6 +61,16 @@
         // Limit to first 24 for pagination purposes.
         this.total = users.length;
 
+        // TODO: Replace this with chunked server side pagination, more performant.
+        // Needs sorting on the server side or it won't work
+        users.sort((a, b) => {
+          return (
+            (a.item_list || []).find(i => i.item_code === 'COOP_POINT') || 0
+            <
+            (b.item_list || []).find(i => i.item_code === 'COOP_POINT') || 0
+          );
+        });
+
         const additions = 
           users.slice(this.loaded, Math.min(this.loaded + 24, this.total))
             .map(member => {

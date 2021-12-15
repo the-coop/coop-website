@@ -143,6 +143,16 @@
       const membersResp = await fetch(API.BASE_URL + 'members/build');
       let users = (await membersResp.json()) || [];
 
+      // TODO: Replace this with chunked server side pagination, more performant.
+      // Needs sorting on the server side or it won't work
+      users.sort((a, b) => {
+        return (
+          (a.item_list || []).find(i => i.item_code === 'COOP_POINT') || 0
+          <
+          (b.item_list || []).find(i => i.item_code === 'COOP_POINT') || 0
+        );
+      });
+
       this.usersTotal = users.length;
     
       // Cap to the first six items.

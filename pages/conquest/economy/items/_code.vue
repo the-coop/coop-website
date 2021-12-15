@@ -6,9 +6,12 @@
     </h1>
 
     <h2 class="subtitle">Top Owners</h2>
-    <p v-for="i in item" :key="i.owner_id" class="ownership-item">
-      {{ i.owner_id }} x{{ i.quantity }}
-    </p>
+    <a 
+      v-for="i in item" :key="i.owner_id" 
+      :href="`/members/${i.owner_id}`"
+      class="ownership-item">
+      {{ i.username }} x {{ i.quantity }}
+    </a>
   </div>
 </template>
 
