@@ -78,6 +78,7 @@
 
 <script>
   export default {
+    
     data() {
       return {
         discordAuthURL: 
