@@ -19,9 +19,15 @@
         </div>
       </div>
 
-      <div class="advertisement">
-        <h2>Do you want to advertise here?</h2>
-        <p>We hope not, it isn't supported yet!</p>
+      <div class="advertisement" v-if="advert">
+        <h2>Community Ad</h2>
+        <a :href="advert.target_url">
+          <div 
+            class="advertisement-image" 
+            :style="{ backgroundImage: `url(${advert.image_url})` }"
+          />
+        </a>
+
       </div>
 
       <client-only>
@@ -114,7 +120,8 @@
         projects: [],
         projectsTotal: 0,
         users: [],
-        usersTotal: 0 
+        usersTotal: 0,
+        advert: null
       };
     },
     destroyed() {
@@ -143,6 +150,11 @@
       const membersResp = await fetch(API.BASE_URL + 'members/build');
       let users = (await membersResp.json()) || [];
 
+      // Load the latest advert
+      const advertResp = await fetch(API.BASE_URL + 'adverts/latest');
+      this.advert = await advertResp.json() || null;
+      console.log(this.advert);
+
       // TODO: Replace this with chunked server side pagination, more performant.
       // Needs sorting on the server side or it won't work
       users.sort((a, b) => {
@@ -166,6 +178,7 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    flex-wrap: wrap;
   }
 
   .hero {
@@ -173,8 +186,21 @@
   }
 
   .advertisement {
-    margin-top: 2rem;
+    flex: 100% 0 0;
+    margin-top: 5rem;
     color: silver;
+  }
+
+  .advertisement h2 {
+    margin-top: 0;
+  }
+
+  .advertisement-image {
+    width: 100%;
+    height: 30vh;
+
+    background-position: center;
+    background-size: cover;
   }
 
   .actions {
@@ -199,10 +225,29 @@
     opacity: .125;
   }
 
-  @media screen and (min-width: 850px) {
+  @media screen and (min-width: 950px) {
     .home {
       flex-direction: row;
       justify-content: space-between;
+    }
+
+    .home {
+      flex-wrap: nowrap;
+    }
+
+    .advertisement {
+      margin-top: 0;
+      flex: 39% 0 0;
+    }
+  }
+
+  @media screen and (min-width: 1450px) {
+    .home {
+      flex-wrap: nowrap;
+    }
+
+    .advertisement {
+      flex: 41% 0 0;
     }
   }
 </style>
