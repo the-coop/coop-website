@@ -66,32 +66,20 @@
 
           <div class="dropdown-content">
             <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
-              🗡 Dashboard
+              📡 Dashboard
             </NuxtLink>
 
-            <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" @click.native="closeMenu">
-              🔑 Play
+            <NuxtLink to="/conquest/world" class="nav-link" @click.native="closeMenu">
+              🕹️ Play
             </NuxtLink>
 
-            <NuxtLink to="/blog" class="nav-link" @click.native="closeMenu">
-              🗞️ Items
+            <NuxtLink to="/conquest/economy/items" class="nav-link" @click.native="closeMenu">
+              🎁 Items
             </NuxtLink>
 
-            <NuxtLink to="/projects" class="nav-link" @click.native="closeMenu">
-              👷 Trades
+            <NuxtLink to="/conquest/economy/trade" class="nav-link" @click.native="closeMenu">
+              💰 Trades
             </NuxtLink>
-
-            <!-- Actions for guests/non-users/logged out users -->
-            <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" @click.native="closeMenu">
-              🔑 Login
-            </NuxtLink>
-
-            <a 
-              @click="closeMenu"
-              v-show="!$auth.$state.loggedIn" 
-              href="https://discord.gg/Z2n6wbWj2t" target="_blank" class="nav-link">
-              👋 Join
-            </a>
 
             <!-- Actions for logged in users -->
             <!-- <NuxtLink v-show="$auth.$state.loggedIn" 
@@ -102,7 +90,7 @@
 
             <span v-show="$auth.$state.loggedIn" 
               class="nav-link"
-              @click="() => { logout(); closeMenu(); }">⏏️ Logout</span>
+              @click="() => (logout() && closeMenu())">⏏️ Logout</span>
           </div>
         </div>
 

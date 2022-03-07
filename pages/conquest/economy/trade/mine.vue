@@ -1,7 +1,12 @@
 <template>
   <div class="content-container">
     <h1 class="title">Your trades</h1>
-    <div class="details">
+
+    <h2 :v-if="!trades" class="no-trades">
+      You have no currently active/ongoing trades.
+    </h2>
+
+    <div :v-if="trades" class="details">
       <!-- <div v-if="trade" class="details">
         {{ trade.id }}
 
@@ -14,15 +19,22 @@
       </div> -->
     </div>
 
-    <NuxtLink class="" to="/conquest/economy/trade">
-      <button>Listings</button>
+    <NuxtLink to="/conquest/economy/trade">
+      <button class="button secondary">Listings</button>
     </NuxtLink>
-    <NuxtLink class="" to="/conquest/economy/trade/add">
-      <button>Create</button>
+    <NuxtLink to="/conquest/economy/trade/add">
+      <button class="button">Create</button>
     </NuxtLink>
-    <button v-on:click="showWIP">Create</button>
   </div>
 </template>
+
+<style lang="scss" scoped>
+  @use "/assets/style/_colour" as color;
+
+  .no-trades {
+    color: color.$gray;
+  }
+</style>
 
 <script>
   import API from '~/lib/api/api';

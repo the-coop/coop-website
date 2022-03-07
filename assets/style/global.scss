@@ -1,3 +1,5 @@
+@use "./_colour" as color;
+
 body {
     margin: 0;
     font-family: Poppins, sans-serif;
@@ -43,8 +45,8 @@ html {
 
   cursor: pointer;
 
-  background-color: #ff6565;
-  border: .125em solid #ff6565;
+  background-color: color.$red;
+  border: .125em solid color.$red;
   color: #fefefe;
 
   font-size: 1.15em;
@@ -56,16 +58,17 @@ html {
 
 .button:hover {
   background-color: transparent;
-  color: #ff6565;
+  color: color.$red;
 }
 
 .button.secondary {
   background-color: transparent;
-  color: #ff6565;
+  color: color.$red;
 }
 
 .button.secondary:hover {
-  background-color: #ff6565;
+  background-color: rgb(38, 38, 38);
+  border-color: rgb(38, 38, 38);
   color: white;
 }
 

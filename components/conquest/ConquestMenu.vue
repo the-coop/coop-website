@@ -47,7 +47,7 @@
     <div class="conquest-menu-item disabled">
       <span 
         class="conquest-menu-item-link-label"
-        to="/conquest/leaderboard">Info: Conflict</span>
+        to="/conquest/leaderboard">Conflict</span>
     </div>
   </div>
 </template>
