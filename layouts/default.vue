@@ -61,9 +61,54 @@
           </div>
         </div>
 
-        <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
+        <div class="dropdown">
+          <span class="dropdown-label" @click="toggleDropdown">🗡 Conquest</span>
+
+          <div class="dropdown-content">
+            <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
+              🗡 Dashboard
+            </NuxtLink>
+
+            <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" @click.native="closeMenu">
+              🔑 Play
+            </NuxtLink>
+
+            <NuxtLink to="/blog" class="nav-link" @click.native="closeMenu">
+              🗞️ Items
+            </NuxtLink>
+
+            <NuxtLink to="/projects" class="nav-link" @click.native="closeMenu">
+              👷 Trades
+            </NuxtLink>
+
+            <!-- Actions for guests/non-users/logged out users -->
+            <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" @click.native="closeMenu">
+              🔑 Login
+            </NuxtLink>
+
+            <a 
+              @click="closeMenu"
+              v-show="!$auth.$state.loggedIn" 
+              href="https://discord.gg/Z2n6wbWj2t" target="_blank" class="nav-link">
+              👋 Join
+            </a>
+
+            <!-- Actions for logged in users -->
+            <!-- <NuxtLink v-show="$auth.$state.loggedIn" 
+              :to="$auth.$state.loggedIn ? '/members/' + $auth.user.id : '/members'"
+              class="nav-link" @click.native="closeMenu">
+              👤 Profile
+            </NuxtLink> -->
+
+            <span v-show="$auth.$state.loggedIn" 
+              class="nav-link"
+              @click="() => { logout(); closeMenu(); }">⏏️ Logout</span>
+          </div>
+        </div>
+
+        <!-- <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
           🗡 Conquest
-        </NuxtLink>
+        </NuxtLink> -->
       </nav>
 
       <div class="header-socials">
@@ -118,7 +163,7 @@
   import Twitter from '../components/socials/Twitter.vue';
   import Instagram from '../components/socials/Instagram.vue';
 
-  const closedBottom = '-50vh';
+  const closedBottom = '-100%';
 
   export default {
     components: {

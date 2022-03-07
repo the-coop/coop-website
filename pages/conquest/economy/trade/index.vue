@@ -14,13 +14,18 @@
       </div>
     </div>
 
-    <button v-on:click="showWIP">My Trades</button>
-    <button v-on:click="showWIP">Add</button>
+    <NuxtLink class="" to="/conquest/economy/trade/mine">
+      <button>My Trades</button>
+    </NuxtLink>
+    <NuxtLink class="" to="/conquest/economy/trade/add">
+      <button>Add</button>
+    </NuxtLink>
   </div>
 </template>
 
 <script>
-import API from '~/lib/api/api';
+  import API from '~/lib/api/api';
+
   export default {
     data() {
       return { 
