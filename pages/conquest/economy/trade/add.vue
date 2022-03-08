@@ -82,13 +82,14 @@
 
         const response = await fetch(API.BASE_URL + 'trades/create', {
           method: 'POST',
-          body: {
+          body: JSON.stringify({
             offer_item: this.offer_item,
             offer_qty: this.offer_qty,
             receive_item: this.receive_item,
             receive_qty: this.receive_qty
-          },
+          }),
           headers: {
+            'Content-Type': 'application/json',
             "Authorization": this.$auth.strategy.token.get()
           }
         });
