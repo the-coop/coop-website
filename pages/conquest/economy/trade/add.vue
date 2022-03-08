@@ -78,7 +78,7 @@
       async add() {
         this.processing = true;
 
-        console.log(this.offer_item, this.offer_qty, this.receive_item, this.receive_qty);
+        // console.log(this.offer_item, this.offer_qty, this.receive_item, this.receive_qty);
 
         const response = await fetch(API.BASE_URL + 'trades/create', {
           method: 'POST',
@@ -89,9 +89,10 @@
             receive_qty: this.receive_qty
           },
           headers: {
-            "Authorization": "Bearer " + this.$auth.strategy.token.get()
+            "Authorization": this.$auth.strategy.token.get()
           }
         });
+        
         console.log(response);
       }
     },
@@ -99,9 +100,7 @@
       // const tradesResp = await API.get('economy/trades');
       // const trades = tradesResp.data;
       // this.trades = trades;
-      // console.log(trades);
-
-
+      // console.log(trades)
     }
   }
 </script>
