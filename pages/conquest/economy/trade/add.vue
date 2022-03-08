@@ -87,6 +87,9 @@
             offer_qty: this.offer_qty,
             receive_item: this.receive_item,
             receive_qty: this.receive_qty
+          },
+          headers: {
+            "Authorization": "Bearer " + this.$auth.strategy.token.get()
           }
         });
         console.log(response);
