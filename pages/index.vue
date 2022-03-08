@@ -72,13 +72,13 @@
       </NuxtLink>
     </div>
 
-    <div class="content-container">
+    <!-- <div class="content-container">
       <h1 class="title">🏷️ Services</h1>
       <ServicesList />
       <NuxtLink to="/services" class="center-cta">
         ALL SERVICES 🏷️
       </NuxtLink>
-    </div>
+    </div> -->
 
     <div class="content-container">
       <h1 class="title">🗡 Conquest</h1>

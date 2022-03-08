@@ -20,9 +20,9 @@
           <span class="dropdown-label" @click="toggleDropdown">🥚 Community</span>
 
           <div class="dropdown-content">
-            <NuxtLink to="/services" class="nav-link" @click.native="closeMenu">
+            <!-- <NuxtLink to="/services" class="nav-link" @click.native="closeMenu">
               🏷️ Services
-            </NuxtLink>
+            </NuxtLink> -->
             
             <NuxtLink to="/blog" class="nav-link" @click.native="closeMenu">
               🗞️ Blog
@@ -88,9 +88,10 @@
               👤 Profile
             </NuxtLink> -->
 
-            <span v-show="$auth.$state.loggedIn" 
+            <!-- <span v-show="$auth.$state.loggedIn" 
               class="nav-link"
               @click="() => (logout() && closeMenu())">⏏️ Logout</span>
+            -->
           </div>
         </div>
 

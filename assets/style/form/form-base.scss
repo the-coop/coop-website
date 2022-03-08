@@ -4,6 +4,10 @@
     color: color.$red;
 }
 
+.form.disabled {
+    opacity: .4;
+}
+
 .fieldset {
     margin-bottom: 1.5em;
 }

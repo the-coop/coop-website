@@ -1,20 +1,21 @@
 <template>
   <div class="content-container">
-    <h1 class="title">Create a trade</h1>
+    <h1 v-if="!processing" class="title">Create a trade</h1>
+    <h1 v-if="processing" class="title">Submitting your trade</h1>
  
     <div v-if="$auth.$state.loggedIn">
-      <form class="form">
+      <form :class="`form ${processing ? 'disabled' : ''}`">
         <div class="fieldset">
           <span class="fieldset-title">Offering</span>
 
           <div class="input">
-            <span class="input-label">Offering Item [ITEM_CODE]</span>
-            <input class="input-target" type="text" name="offer_item" />
+            <span class="input-label">Offering Item</span>
+            <input :disabled="processing" class="input-target" type="text" name="offer_item" placeholder="[ITEM_CODE]" />
           </div>
 
           <div class="input">
-            <span class="input-label">Offering Amount [ITEM_CODE]</span>
-            <input class="input-target" type="number" name="offer_qty" />
+            <span class="input-label">Offering Amount</span>
+            <input :disabled="processing" class="input-target" placeholder="1" type="number" name="offer_qty" />
           </div>
         </div>
 
@@ -22,53 +23,74 @@
           <span class="fieldset-title">Attaining (receive)</span>
 
           <div class="input">
-            <span class="input-label">Attaining Item [ITEM_CODE]</span>
-            <input class="input-target" type="text" name="receive_item" />
+            <span class="input-label">Attaining Item</span>
+            <input :disabled="processing" class="input-target" type="text" name="receive_item" placeholder="[ITEM_CODE]" />
           </div>
 
           <div class="input">
-            <span class="input-label">Attaining Amount [ITEM_CODE]</span>
-            <input class="input-target" type="number" name="receive_qty" />
+            <span class="input-label">Attaining Amount</span>
+            <input :disabled="processing" class="input-target"  placeholder="1" type="number" name="receive_qty" />
           </div>
         </div>
       </form>
 
-      <NuxtLink class="" to="/conquest/economy/trade">
+      <NuxtLink to="/conquest/economy/trade">
         <button class="button secondary">Listings</button>
       </NuxtLink>
-      <button class="button" v-on:click="showWIP">Confirm</button>
+      <button class="button" v-on:click="add">Confirm</button>
+      <!-- <button class="button" v-on:click="add">Confirm</button> -->
     </div>
 
     <div v-if="!$auth.$state.loggedIn">
       <h2 class="subtitle">Please login in order to authorise trading.</h2>
     </div>
+
+    <PopupWrapper ref="popups" />
   </div>
 </template>
 
 <style lang="scss" scoped>
   @import "/assets/style/form/form-base.scss";
 
-  // .item {
-  //   padding: .75em;
-  //   color: colour.$red;
-  // }
+  .form {
+    margin-top: 2em;
+  }
 </style>
 
 <script>
   import API from '~/lib/api/api';
+  import PopupWrapper from '~/components/features/popup/PopupWrapper';
 
   export default {
     data() {
       return { 
-        trade: null
+        trade: null,
+        processing: false,
+        offer_item: null,
+        offer_qty: 1,
+        receive_item: null,
+        receive_qty: 1
       };
     },
+    components: { PopupWrapper },
     methods: {
-      loadTrade() {
+      async add() {
+        this.processing = true;
 
-      },
-      showWIP() {
-        alert('WIP...');
+        const response = await fetch(API.BASE_URL + 'trades/create', {
+          method: 'POST',
+          body: {
+            offer_item: this.offer_item,
+            offer_qty: this.offer_qty,
+            receive_item: this.receive_item,
+            receive_qty: this.receive_qty
+          }
+        });
+        console.log(response);
+
+        // alert('WIP...');
+        console.log(this.$refs.popups);
+        console.log(this.$refs.popups.add);
       }
     },
     async mounted() {
@@ -76,6 +98,8 @@
       // const trades = tradesResp.data;
       // this.trades = trades;
       // console.log(trades);
+
+
     }
   }
 </script>
