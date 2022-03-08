@@ -10,12 +10,12 @@
 
           <div class="input">
             <span class="input-label">Offering Item</span>
-            <input :disabled="processing" class="input-target" type="text" name="offer_item" placeholder="[ITEM_CODE]" />
+            <input v-model="offer_item" :disabled="processing" class="input-target" type="text" name="offer_item" placeholder="[ITEM_CODE]" />
           </div>
 
           <div class="input">
             <span class="input-label">Offering Amount</span>
-            <input :disabled="processing" class="input-target" placeholder="1" type="number" name="offer_qty" />
+            <input v-model="offer_qty" :disabled="processing" class="input-target" placeholder="1" type="number" name="offer_qty" />
           </div>
         </div>
 
@@ -24,12 +24,12 @@
 
           <div class="input">
             <span class="input-label">Attaining Item</span>
-            <input :disabled="processing" class="input-target" type="text" name="receive_item" placeholder="[ITEM_CODE]" />
+            <input v-model="receive_item" :disabled="processing" class="input-target" type="text" name="receive_item" placeholder="[ITEM_CODE]" />
           </div>
 
           <div class="input">
             <span class="input-label">Attaining Amount</span>
-            <input :disabled="processing" class="input-target"  placeholder="1" type="number" name="receive_qty" />
+            <input v-model="receive_qty" :disabled="processing" class="input-target"  placeholder="1" type="number" name="receive_qty" />
           </div>
         </div>
       </form>
@@ -66,6 +66,7 @@
       return { 
         trade: null,
         processing: false,
+
         offer_item: null,
         offer_qty: 1,
         receive_item: null,
@@ -77,6 +78,8 @@
       async add() {
         this.processing = true;
 
+        console.log(this.offer_item, this.offer_qty, this.receive_item, this.receive_qty);
+
         const response = await fetch(API.BASE_URL + 'trades/create', {
           method: 'POST',
           body: {
@@ -87,10 +90,6 @@
           }
         });
         console.log(response);
-
-        // alert('WIP...');
-        console.log(this.$refs.popups);
-        console.log(this.$refs.popups.add);
       }
     },
     async mounted() {
