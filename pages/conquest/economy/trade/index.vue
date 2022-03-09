@@ -6,17 +6,32 @@
       There are currently no active/ongoing trades.
     </h2>
 
-    <div v-if="trades" class="rows subtitle">
-      <div v-for="t in trades" :key="t.id" class="rows">
-        {{ t.id }}
+    <div v-if="trades">
+      <table class="trades">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Offering</th>
+            <th>Receiving</th>
+            <th>Offer Qty</th>
+            <th>Receive Qty</th>
+            <th>Trader</th>
+          </tr>
+        </thead>
+        <tr v-for="t in trades" :key="t.id" class="rows" v-on:click="ev => view(t.id)">
+          <td>{{ t.id }}</td>
 
-        {{ t.offer_item }}
-        {{ t.offer_qty }}
+          <td>{{ t.offer_item }}</td>
+          <td>{{ t.receive_item }}</td>
 
-        {{ t.receive_item }}
-        {{ t.receive_qty }}
-        {{ t.trader_username }}
-      </div>
+          <td>{{ t.offer_qty }}</td>
+          <td>{{ t.receive_qty }}</td>
+
+          <td>{{ t.trader_username }}</td>
+        </tr>
+      </table>
+
+      <h4 class="subtitle">*** This page should allow clicking specific trades for details</h4>
     </div>
 
     <NuxtLink to="/conquest/economy/trade/mine">
@@ -33,6 +48,20 @@
 
   .no-trades {
     color: color.$gray;
+  }
+  .trades {
+    width: 100%;
+    color: color.$gray;
+
+    margin-bottom: 1em;
+  }
+  .trades thead {
+    font-weight: bold;
+    text-decoration: underline;
+  }
+  .rows:hover {
+    color: white;
+    cursor: pointer;
   }
   // .item {
   //   padding: .75em;
@@ -52,6 +81,9 @@
     methods: {
       showWIP() {
         alert('WIP...');
+      },
+      view(tradeID) {
+        console.log(tradeID);
       }
     },
     async mounted() {

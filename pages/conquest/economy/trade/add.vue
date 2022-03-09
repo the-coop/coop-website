@@ -1,13 +1,13 @@
 <template>
   <!-- TODO: -->
-  <!-- Add form validation -->
   <!-- Make form item code fields upper case only -->
-  <!-- Clear/empty values for retry -->
 
   <div class="content-container">
-    <h1 v-if="!processing && !success" class="title">Create a trade</h1>
-    <h1 v-if="processing" class="title">Submitting your trade</h1>
-    <h1 v-if="success" class="title">Trade submitted</h1>
+    <div v-if="$auth.$state.loggedIn">
+      <h1 v-if="!processing && !success" class="title">Create a trade</h1>
+      <h1 v-if="processing" class="title">Submitting your trade</h1>
+      <h1 v-if="success" class="title">Trade submitted</h1>
+    </div>
  
     <div v-if="$auth.$state.loggedIn">
       <form v-if="!success" :class="`form ${processing ? 'disabled' : ''}`">
@@ -17,7 +17,7 @@
           <div class="input">
             <span class="input-label">Offering Item</span>
             <input required v-model="offer_item" :disabled="processing" 
-              :class="`input-target ${errors.invalid_offer_item ? 'errored' : ''}`"
+              :class="`item-code input-target ${errors.invalid_offer_item ? 'errored' : ''}`"
               type="text" name="offer_item" placeholder="[ITEM_CODE]" />
           </div>
 
@@ -35,7 +35,7 @@
           <div class="input">
             <span class="input-label">Attaining Item</span>
             <input required v-model="receive_item" :disabled="processing" 
-              :class="`input-target ${errors.invalid_receive_item ? 'errored' : ''}`" 
+              :class="`item-code input-target ${errors.invalid_receive_item ? 'errored' : ''}`" 
               type="text" name="receive_item" placeholder="[ITEM_CODE]" />
           </div>
 
@@ -64,7 +64,7 @@
     </div>
 
     <div v-if="!$auth.$state.loggedIn">
-      <h2 class="subtitle">Please login in order to authorise trading.</h2>
+      <h2 class="subtitle">Please login (🥚 Community menu) in order to authorise trading.</h2>
     </div>
 
     <PopupWrapper ref="popups" />
@@ -80,6 +80,10 @@
 
   .errored {
     background-color: #5b0000;
+  }
+
+  .item-code {
+    text-transform: uppercase;
   }
 </style>
 
@@ -124,9 +128,9 @@
         const data = await (await fetch(API.BASE_URL + 'trades/create', {
           method: 'POST',
           body: JSON.stringify({
-            offer_item: this.offer_item,
+            offer_item: this.offer_item.toUpperCase(),
             offer_qty: this.offer_qty,
-            receive_item: this.receive_item,
+            receive_item: this.receive_item.toUpperCase(),
             receive_qty: this.receive_qty
           }),
           headers: {
