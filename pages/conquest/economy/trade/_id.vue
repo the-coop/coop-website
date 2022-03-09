@@ -1,6 +1,6 @@
 <template>
   <div class="content-container">
-    <h1 class="title">Trade Details #{{ trade.id }}</h1>
+    <!-- <h1 class="title">Trade Details #{{ trade.id }}</h1> -->
     <h4 class="subtitle">*** This page should allow clicking specific trades for details</h4>
 
     <h2 v-if="!trades" class="no-trades">

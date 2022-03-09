@@ -203,7 +203,8 @@
       },
       toggleMenu(ev) {
         const menu = document.querySelector('.navigation');
-        const targetBottom = menu.style.bottom === '0vh' ? closedBottom : '0vh';
+        const isOpen = menu.style.bottom === '0vh';
+        const targetBottom = isOpen ? closedBottom : '0vh';
         anime({
           targets: '.navigation',
           bottom: targetBottom,
@@ -211,8 +212,24 @@
         });
 
         // If mobile, attempt to toggle containing dropdown. :)
-        if (this.isMobileSize())
+        if (this.isMobileSize()) {
+          // Make sure the desktop menu stays open.
           ev.target.parentElement.parentElement.classList.toggle('open');
+
+          // Attach mobile menu self-hiding.
+          const menuCloser = this.closeMenu;
+          function blurHandler(ev) {
+            ev.preventDefault();
+
+            if (ev.composedPath().includes(menu) !== true) {
+              document.removeEventListener('click', this);
+              menuCloser();
+            }
+          }
+
+          if (!isOpen)
+            document.addEventListener('click', blurHandler);
+        }
       }
     },
     data() {

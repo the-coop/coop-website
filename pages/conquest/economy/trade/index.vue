@@ -79,11 +79,8 @@
       };
     },
     methods: {
-      showWIP() {
-        alert('WIP...');
-      },
       view(tradeID) {
-        console.log(tradeID);
+        this.$router.push({ path: 'trade/' + tradeID });
       }
     },
     async mounted() {
