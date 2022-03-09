@@ -65,7 +65,9 @@ html {
 
 .button.secondary {
   background-color: transparent;
-  color: color.$red;
+
+  color: #717171;
+  border-color: #717171;
 }
 
 .button.secondary:hover {
@@ -74,6 +76,14 @@ html {
   color: white;
 }
 
+.button.confirm {
+  background-color: #0a984b;
+  border-color: #0a740d;
+}
+.button.confirm:hover {
+  background-color: transparent;
+  color: #0a984b;
+}
 
 .center-cta {
   display: block;

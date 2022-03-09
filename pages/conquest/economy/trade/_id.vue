@@ -3,9 +3,9 @@
     <!-- <h1 class="title">Trade Details #{{ trade.id }}</h1> -->
     <h4 class="subtitle">*** This page should allow clicking specific trades for details</h4>
 
-    <h2 v-if="!trades" class="no-trades">
-      There are currently no active/ongoing trades.
-    </h2>
+    <!-- <h2 v-if="!trades" class="no-trades"> -->
+      <!-- There are currently no active/ongoing trades. -->
+    <!-- </h2> -->
 
     <!-- {{ t.id }}
 
@@ -16,11 +16,14 @@
     {{ t.receive_qty }}
     {{ t.trader_username }} -->
 
-    <NuxtLink to="/conquest/economy/trade/mine">
-      <button class="button secondary">My Trades</button>
+    <NuxtLink to="/conquest/economy/trade">
+      <button class="button secondary">Back</button>
     </NuxtLink>
     <NuxtLink to="/conquest/economy/trade/add">
-      <button class="button">Add</button>
+      <button class="button">Cancel</button>
+    </NuxtLink>
+    <NuxtLink to="/conquest/economy/trade/add">
+      <button class="button confirm">Accept</button>
     </NuxtLink>
   </div>
 </template>
@@ -39,12 +42,13 @@
   export default {
     data() {
       return { 
-        trades: [] 
+        trade: [] 
       };
     },
     methods: {
     },
     async mounted() {
+
       // const tradesResp = await API.get('economy/trades');
       // const trades = tradesResp.data;
       // this.trades = trades;
