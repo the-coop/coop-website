@@ -298,6 +298,10 @@
       fill: #ff6565;
     }
 
+    .mobile-nav-trigger:hover {
+      fill: white;
+    }
+
       .dropdown {
         display: inline-block;
         position: relative;
