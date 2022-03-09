@@ -1,29 +1,32 @@
 <template>
   <div class="content-container">
-    <!-- <h1 class="title">Trade Details #{{ trade.id }}</h1> -->
-    <h4 class="subtitle">*** This page should allow clicking specific trades for details</h4>
 
-    <!-- <h2 v-if="!trades" class="no-trades"> -->
-      <!-- There are currently no active/ongoing trades. -->
-    <!-- </h2> -->
+    <h1 v-if="trade" class="title">{{ trade.trader_username }}'s trade #{{ trade.id }}</h1>
+    <h2 class="subtitle">View specifics for and interacting with this trade.</h2>
 
-    <!-- {{ t.id }}
+    <div v-if="trade">
+      {{ trade.offer_item }}
+      {{ trade.offer_qty }}
 
-    {{ t.offer_item }}
-    {{ t.offer_qty }}
-
-    {{ t.receive_item }}
-    {{ t.receive_qty }}
-    {{ t.trader_username }} -->
+      {{ trade.receive_item }}
+      {{ trade.receive_qty }}
+      {{ trade.trader_username }}
+    </div>
 
     <NuxtLink to="/conquest/economy/trade">
       <button class="button secondary">Back</button>
     </NuxtLink>
-    <NuxtLink to="/conquest/economy/trade/add">
-      <button class="button">Cancel</button>
-    </NuxtLink>
-    <NuxtLink to="/conquest/economy/trade/add">
-      <button class="button confirm">Accept</button>
+    
+    <button 
+      v-if="this.$auth.user && this.$auth.user.id == trade.trader_id"
+      class="button">Cancel</button>
+
+    <button 
+      v-if="this.$auth.user && this.$auth.user.id !== trade.trader_id"
+      class="button confirm">Accept</button>
+
+    <NuxtLink v-if="!this.$auth.user" to="/auth/login">
+      <button class="button">Login</button>
     </NuxtLink>
   </div>
 </template>
@@ -46,13 +49,43 @@
       };
     },
     methods: {
+      async accept() {
+        const data = await (await fetch(API.BASE_URL + 'trades/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            "Authorization": this.$auth.strategy.token.get()
+          }
+        }))
+          .json();
+        console.log(data);
+      },
+      async cancel() {
+        const data = await (await fetch(
+          API.BASE_URL + 'trades/cancel/' + this.$route.params.id, 
+          {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              "Authorization": this.$auth.strategy.token.get()
+            }
+          }
+        )).json();
+
+        console.log(data);
+      }
     },
     async mounted() {
+      const id = this.$route.params.id;
+      console.log(id);
+      
+      const tradeResp = await API.get('trades/' + id);
+      const trade = tradeResp.data;
+      this.trade = trade;
 
-      // const tradesResp = await API.get('economy/trades');
-      // const trades = tradesResp.data;
-      // this.trades = trades;
-      // console.log(trades);
+      console.log(trade);
+
+      // console.log(this.$auth.user);
     }
   }
 </script>

@@ -6,17 +6,27 @@
       You have no currently active/ongoing trades.
     </h2>
 
-    <div :v-if="trades" class="details">
-      <!-- <div v-if="trade" class="details">
-        {{ trade.id }}
+    <div v-if="trades">
+      <table class="trades">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Offering</th>
+            <th>Receiving</th>
+            <th>Offer Qty</th>
+            <th>Receive Qty</th>
+          </tr>
+        </thead>
+        <tr v-for="t in trades" :key="t.id" class="rows" v-on:click="ev => view(t.id)">
+          <td>{{ t.id }}</td>
 
-        {{ trade.offer_item }}
-        {{ trade.offer_qty }}
+          <td>{{ t.offer_item }}</td>
+          <td>{{ t.receive_item }}</td>
 
-        {{ trade.receive_item }}
-        {{ trade.receive_qty }}
-        {{ trade.trader_username }}
-      </div> -->
+          <td>{{ t.offer_qty }}</td>
+          <td>{{ t.receive_qty }}</td>
+        </tr>
+      </table>
     </div>
 
     <NuxtLink to="/conquest/economy/trade">
@@ -33,6 +43,20 @@
 
   .no-trades {
     color: color.$gray;
+  }
+  .trades {
+    width: 100%;
+    color: color.$gray;
+
+    margin-bottom: 1em;
+  }
+  .trades thead {
+    font-weight: bold;
+    text-decoration: underline;
+  }
+  .rows:hover {
+    color: white;
+    cursor: pointer;
   }
 </style>
 
@@ -54,10 +78,19 @@
       }
     },
     async mounted() {
-      // const tradesResp = await API.get('economy/trades');
-      // const trades = tradesResp.data;
-      // this.trades = trades;
-      // console.log(trades);
+      const trades = await (await fetch(
+        API.BASE_URL + 'trades/mine',
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            "Authorization": this.$auth.strategy.token.get()
+          }
+        }
+      )).json();
+
+      this.trades = trades;
+      console.log(trades);
     }
   }
 </script>

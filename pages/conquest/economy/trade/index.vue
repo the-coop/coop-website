@@ -30,8 +30,6 @@
           <td>{{ t.trader_username }}</td>
         </tr>
       </table>
-
-      <h4 class="subtitle">*** This page should allow clicking specific trades for details</h4>
     </div>
 
     <NuxtLink to="/conquest/economy/trade/mine">
