@@ -48,9 +48,13 @@
         </div>
       </form>
 
-      <h2 class="subtitle" v-if="success">
-        Your trade was successfully submit, use the buttons below to return to listings or place another trade.
-      </h2>
+      <div class="subtitle" v-if="success">
+        <strong>-></strong> {{ trade.offer_qty }} x {{ trade.offer_item }} <br />
+        <strong>&lt;-</strong> {{ trade.receive_qty }} x {{ trade.receive_item }} <br />
+        <!-- Add link to view trade specifically. -->
+
+        <p>Thank you, {{ trade.trader_username }}. Your trade (#{{ trade.id }}) was successfully submitted, use the buttons below to return to listings or place another trade.</p>
+      </div>
 
       <NuxtLink to="/conquest/economy/trade">
         <button class="button secondary">Listings</button>
@@ -86,6 +90,7 @@
   export default {
     data() {
       return { 
+        trade: null,
         processing: false,
 
         offer_item: null,
@@ -101,6 +106,7 @@
     methods: {
       reset() {
         // processing: false,
+        this.trade = null;
 
         this.offer_item = null;
         this.offer_qty = 1;
@@ -115,7 +121,7 @@
         this.processing = true;
 
         // Attempt trade order.
-        const response = await fetch(API.BASE_URL + 'trades/create', {
+        const data = await (await fetch(API.BASE_URL + 'trades/create', {
           method: 'POST',
           body: JSON.stringify({
             offer_item: this.offer_item,
@@ -127,14 +133,17 @@
             'Content-Type': 'application/json',
             "Authorization": this.$auth.strategy.token.get()
           }
-        });
-        const data = await response.json();
+        }))
+          .json();
+
         console.log(data);
 
         // Handle validation.
-        if (data.success)
+        if (data.success) {
           this.success = true;
-        else
+          this.trade = data.created_trade;
+
+        } else
           this.errors = data.errors;
 
         // console.log(this.errors);

@@ -54,6 +54,9 @@
           </div>
         </div>
 
+        <h4>Trades</h4>
+        <span>coming soon</span>
+
         <h3>Conquest</h3>
         
         <div>
