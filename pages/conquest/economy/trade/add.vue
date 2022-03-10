@@ -60,6 +60,7 @@
         <button class="button secondary">Listings</button>
       </NuxtLink>
       <button v-if="!success" class="button" v-on:click="add">Confirm</button>
+      <button v-if="success" class="button secondary" v-on:click="view">View</button>
       <button v-if="success" class="button" v-on:click="reset">Reset</button>
     </div>
 
@@ -67,7 +68,7 @@
       <h2 class="subtitle">Please login (🥚 Community menu) in order to authorise trading.</h2>
     </div>
 
-    <PopupWrapper ref="popups" />
+    <!-- <PopupWrapper ref="popups" /> -->
   </div>
 </template>
 
@@ -119,6 +120,9 @@
 
         this.success = false;
         this.errors = {};
+      },
+      view() {
+        this.$router.push({ path: '/conquest/economy/trade/' + this.trade.id });
       },
       async add() {
         // Disable re-submission whilst processing.
