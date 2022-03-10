@@ -93,3 +93,4 @@ sw.*
 .vs/VSWorkspaceState.json
 .vs/ProjectSettings.json
 .vs/coopwebsite2/v16/.suo
+.vs/coopwebsite2/config/applicationhost.config
