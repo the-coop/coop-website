@@ -225,7 +225,7 @@
     opacity: .125;
   }
 
-  @media screen and (min-width: 950px) {
+  @media screen and (min-width: 850px) {
     .home {
       flex-direction: row;
       justify-content: space-between;
@@ -241,7 +241,7 @@
     }
   }
 
-  @media screen and (min-width: 1450px) {
+  @media screen and (min-width: 1200px) {
     .home {
       flex-wrap: nowrap;
     }

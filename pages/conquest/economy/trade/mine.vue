@@ -70,25 +70,12 @@
       };
     },
     methods: {
-      loadTrade() {
-
-      },
-      showWIP() {
-        alert('WIP...');
-      }
     },
     async mounted() {
-      if (this.$auth.user)
-      this.trades = await (await fetch(
-        API.BASE_URL + 'trades/mine',
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            "Authorization": this.$auth.strategy.token.get()
-          }
-        }
-      )).json();
+      if (this.$auth.user) {
+        const tradesResp = await API.aut('trades/mine', this.$auth);
+        this.trades = tradesResp.data;
+      }
     }
   }
 </script>

@@ -416,7 +416,7 @@
     }
   }
 
-  @media screen and (min-width: 666px) {
+  @media screen and (min-width: 850px) {
     .default {
       padding: 0 5em 7.5em;
     }
