@@ -250,6 +250,8 @@
     position: relative;
     width: 100%;
     box-sizing: border-box;
+
+    overflow-x: hidden;
   }
 
   .header {
@@ -376,6 +378,9 @@
         margin-left: 3.5em;
         text-decoration: none;
         cursor: pointer;
+      }
+      .nav-link:first-child {
+        margin-left: 0;
       }
 
       button.nav-link {

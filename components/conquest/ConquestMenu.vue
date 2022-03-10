@@ -1,15 +1,5 @@
 <template>
   <div class="conquest-menu">
-    <!-- 
-      <NuxtLink to="/conquest/fight" class="conquest-menu-item">
-        <img 
-          class="conquest-menu-image"
-          src="/conquest/fight.jpeg" alt="Conquest fight level thumbnail">
-        <span class="conquest-menu-item-link-label">
-          Fight
-        </span>
-      </NuxtLink>
-    -->
     <NuxtLink to="/conquest/world" class="conquest-menu-item">
       <img 
         class="conquest-menu-image"
