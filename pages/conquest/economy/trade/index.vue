@@ -32,7 +32,7 @@
       </table>
     </div>
 
-    <NuxtLink to="/conquest/economy/trade/mine">
+    <NuxtLink v-if="$auth.user" to="/conquest/economy/trade/mine">
       <button class="button secondary">My Trades</button>
     </NuxtLink>
     <NuxtLink to="/conquest/economy/trade/add">
@@ -61,10 +61,6 @@
     color: white;
     cursor: pointer;
   }
-  // .item {
-  //   padding: .75em;
-  //   color: colour.$red;
-  // }
 </style>
 
 <script>
@@ -85,7 +81,6 @@
       const tradesResp = await API.get('economy/trades');
       const trades = tradesResp.data;
       this.trades = trades;
-      console.log(trades);
     }
   }
 </script>

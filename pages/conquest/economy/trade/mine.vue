@@ -2,7 +2,7 @@
   <div class="content-container">
     <h1 class="title">Your trades</h1>
 
-    <h2 :v-if="!trades" class="no-trades">
+    <h2 :v-if="$auth.user && !trades" class="subtitle">
       You have no currently active/ongoing trades.
     </h2>
 
@@ -78,7 +78,8 @@
       }
     },
     async mounted() {
-      const trades = await (await fetch(
+      if (this.$auth.user)
+      this.trades = await (await fetch(
         API.BASE_URL + 'trades/mine',
         {
           method: 'GET',
@@ -88,9 +89,6 @@
           }
         }
       )).json();
-
-      this.trades = trades;
-      console.log(trades);
     }
   }
 </script>

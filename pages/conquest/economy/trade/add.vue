@@ -97,9 +97,9 @@
         trade: null,
         processing: false,
 
-        offer_item: null,
+        offer_item: '',
         offer_qty: 1,
-        receive_item: null,
+        receive_item: '',
         receive_qty: 1,
 
         success: false,
@@ -112,9 +112,9 @@
         // processing: false,
         this.trade = null;
 
-        this.offer_item = null;
+        this.offer_item = '';
         this.offer_qty = 1;
-        this.receive_item = null;
+        this.receive_item = '';
         this.receive_qty = 1;
 
         this.success = false;

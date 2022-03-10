@@ -10,7 +10,8 @@
 
       {{ trade.receive_item }}
       {{ trade.receive_qty }}
-      {{ trade.trader_username }}
+
+      <!-- AGE -->
     </div>
 
     <NuxtLink to="/conquest/economy/trade">
@@ -18,11 +19,13 @@
     </NuxtLink>
     
     <button 
-      v-if="this.$auth.user && this.$auth.user.id == trade.trader_id"
+      v-on:click="cancel"
+      v-if="trade && this.$auth.user && this.$auth.user.id == trade.trader_id"
       class="button">Cancel</button>
 
     <button 
-      v-if="this.$auth.user && this.$auth.user.id !== trade.trader_id"
+      v-on:click="accept"
+      v-if="trade && this.$auth.user && this.$auth.user.id !== trade.trader_id"
       class="button confirm">Accept</button>
 
     <NuxtLink v-if="!this.$auth.user" to="/auth/login">
@@ -33,10 +36,6 @@
 
 <style lang="scss" scoped>
   @use "/assets/style/_colour" as color;
-
-  .no-trades {
-    color: color.$gray;
-  }
 </style>
 
 <script>
@@ -45,7 +44,9 @@
   export default {
     data() {
       return { 
-        trade: [] 
+        trade: null,
+        cancelled: false,
+        accepted: false
       };
     },
     methods: {
@@ -59,25 +60,33 @@
         }))
           .json();
         console.log(data);
+
+        this.accepted = true;
       },
       async cancel() {
-        const data = await (await fetch(
-          API.BASE_URL + 'trades/cancel/' + this.$route.params.id, 
-          {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-              "Authorization": this.$auth.strategy.token.get()
+        try {
+          const data = await (await fetch(
+            API.BASE_URL + 'trades/' + this.$route.params.id, 
+            {
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json',
+                "Authorization": this.$auth.strategy.token.get()
+              }
             }
-          }
-        )).json();
+          )).json();
+  
+          console.log(data);
+  
+          this.cancelled = true;
 
-        console.log(data);
+        } catch(e) {
+          console.log('No longer authorised.')
+        }
       }
     },
     async mounted() {
       const id = this.$route.params.id;
-      console.log(id);
       
       const tradeResp = await API.get('trades/' + id);
       const trade = tradeResp.data;
@@ -85,6 +94,8 @@
 
       console.log(trade);
 
+      // console.log(id);
+      // console.log(trade);
       // console.log(this.$auth.user);
     }
   }
