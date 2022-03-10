@@ -2,11 +2,11 @@
   <div class="content-container">
     <h1 class="title">Your trades</h1>
 
-    <h2 v-if="$auth.user && !trades" class="subtitle">
+    <h2 v-if="$auth.user && trades.length === 0" class="subtitle">
       You have no currently active/ongoing trades.
     </h2>
 
-    <div v-if="trades">
+    <div v-if="trades.length > 0">
       <table class="trades">
         <thead>
           <tr>
@@ -66,7 +66,7 @@
   export default {
     data() {
       return { 
-        trades: null
+        trades: []
       };
     },
     methods: {
