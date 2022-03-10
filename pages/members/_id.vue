@@ -11,7 +11,7 @@
 
         <h3>Roles</h3>
         <div class="roles-wrapper">
-          <span v-for="role in user.role_list" :key="role">
+          <span v-for="role in user.role_list" :key="role" class="role">
             {{ role }}
           </span>
         </div>
@@ -118,6 +118,14 @@
   .meta-link:hover {
     color: #ff6565;
   }
+
+  .role {
+    border-radius: 8px;
+    background-color: #444;
+    padding: 5px;
+    margin: 5px;
+  }
+
 </style>
 
 <script>
