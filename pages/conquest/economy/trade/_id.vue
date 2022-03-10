@@ -163,6 +163,7 @@
       async accept() {
         const data = await (await fetch(API.BASE_URL + 'trades/accept', {
           method: 'POST',
+          body: JSON.stringify({ trade_id: this.trade.id }),
           headers: {
             'Content-Type': 'application/json',
             "Authorization": this.$auth.strategy.token.get()
@@ -170,9 +171,10 @@
         }))
           .json();
 
-        console.log(data);
+        if (data.success)
+          this.accepted = true;
 
-        this.accepted = true;
+        console.log(data);
       },
       async cancel() {
         try {
@@ -187,10 +189,11 @@
             }
           )).json();
   
-          console.log(data);
-  
-          this.cancelled = true;
+          if (data.success)
+            this.cancelled = true;
 
+          console.log(data);
+          
         } catch(e) {
           console.log('No longer authorised.')
         }

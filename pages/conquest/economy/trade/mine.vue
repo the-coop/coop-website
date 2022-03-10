@@ -2,7 +2,7 @@
   <div class="content-container">
     <h1 class="title">Your trades</h1>
 
-    <h2 :v-if="$auth.user && !trades" class="subtitle">
+    <h2 v-if="$auth.user && !trades" class="subtitle">
       You have no currently active/ongoing trades.
     </h2>
 
@@ -70,10 +70,13 @@
       };
     },
     methods: {
+      view(tradeID) {
+        this.$router.push({ path: '/conquest/economy/trade/' + tradeID });
+      }
     },
     async mounted() {
       if (this.$auth.user) {
-        const tradesResp = await API.aut('trades/mine', this.$auth);
+        const tradesResp = await API.getAuthed('trades/mine', this.$auth);
         this.trades = tradesResp.data;
       }
     }
