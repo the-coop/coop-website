@@ -2,6 +2,7 @@
   <div class="worldview">
     <h1 class="error-text" v-if="!WEBGL_SUPPORT && !silent">Loading error...</h1>
 
+    <canvas id="canvas" />
     <button id="toggle_controls">SWITCH</button>
   </div>
 </template>
@@ -52,7 +53,7 @@
 
     },
     async mounted() {
-      const canvas = document.createElement('canvas');
+      const canvas = document.getElementById('canvas');
       const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 200);
 
       // Check if WebGL is supported.
