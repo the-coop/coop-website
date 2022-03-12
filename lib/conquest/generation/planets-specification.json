@@ -1,0 +1,35 @@
+{
+    "name": "sun",
+    "surface": 5,
+    "spin": 0.1,
+    "SOISize": 100,
+    "emissive": 1,
+    "surfaceGravity": 300,
+    "color": "#ffff00",
+    "position": [0, 0, 0],
+    "children": [
+        {
+            "name": "lilOne",
+            "spin": 0.1,
+            "velocity": 0.02,
+            "surface": 1,
+            "SOISize": 10,
+            "surfaceGravity": 300,
+            "children": [],
+            "color": "#00ff00",
+            "position": [15, 0, 5]
+        },
+        {
+            "name": "lilOneTwo",
+            "velocity": 0.01,
+            "spin": 0.1,
+            "surface": 1,
+            "SOISize": 10,
+            "surfaceGravity": 300,
+            "children": [],
+            "color": "#00ff00",
+            "position": [ 15, 0, 30 ],
+            "ring": true
+        }
+    ]
+}
