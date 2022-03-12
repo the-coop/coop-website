@@ -8,6 +8,11 @@
 </template>
 
 <style scoped>
+  #toggle_controls {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+  }
   .worldview {
     width: 100vw;
     height: 100vh;
