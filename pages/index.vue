@@ -182,7 +182,12 @@
   }
 
   .hero {
+    flex: calc(59% - 3em) 0 0;
     z-index: 1;
+  }
+
+  .hero .subtitle {
+    width: auto;
   }
 
   .advertisement {
