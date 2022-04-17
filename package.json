@@ -19,6 +19,7 @@
     "babel-runtime": "^6.26.0",
     "body-parser": "^1.19.0",
     "consola": "^2.15.3",
+    "coopconfig": "https://github.com/the-coop/coopconfig.git",
     "fibers": "^5.0.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
