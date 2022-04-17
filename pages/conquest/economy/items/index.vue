@@ -22,7 +22,7 @@
             {{ i.total_qty }}
           </td>
           <td>
-            0
+            {{ i.share }}
           </td>
         </tr>
       </tbody>
@@ -68,8 +68,6 @@
     methods: {
       navigateItem(itemCode) {
         this.$router.push({ path: `/conquest/economy/items/${itemCode}` });
-        // console.log(itemCode);
-        // :href=""
       }
     },
     data() {

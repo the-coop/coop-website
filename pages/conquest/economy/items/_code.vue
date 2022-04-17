@@ -16,7 +16,7 @@
       <tbody>
         <tr 
           class="item" 
-          v-on:click="() => navigateItem(i.item_code)"
+          v-on:click="() => navigateUser(i.owner_id)"
           v-for="i in item" :key="i.username">
           <td> 
             {{ i.username }}
@@ -73,6 +73,12 @@
       return { 
         item: null
       };
+    },
+    methods: {
+      navigateUser(userID) {
+        console.log(userID);
+        this.$router.push({ path: `/members/${userID}` });
+      }
     },
     async mounted() {
       this.item = (await API.get('economy/items/' + this.$route.params.code)).data;

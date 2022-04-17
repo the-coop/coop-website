@@ -49,7 +49,7 @@
               v-for="i in user.item_list" 
               :href="`/conquest/economy/items/${i.item_code}`"
               :key="`items-list-${i.item_code}`">
-              {{ i.item_code }}x{{ i.quantity }}
+              {{ i.item_code }} x {{ i.quantity.toFixed(2) }}
             </a>
           </div>
         </div>
@@ -102,7 +102,14 @@
   }
 
   .items {
-    width: 50%;
+    /* width: 50%; */
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .items a {
+    margin: 0 .75em .35em 0;
+    color: rgb(172, 172, 213);
   }
 
   .items span {
