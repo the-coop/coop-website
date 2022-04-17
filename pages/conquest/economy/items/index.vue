@@ -2,23 +2,62 @@
   <div class="content-container">
     <h1 class="title">Items</h1>
 
-    <div class="items">
-      <a 
-        v-for="i in items" :key="i.item_code" 
-        :href="`/conquest/economy/items/${i.item_code}`"
-        class="item">
-        {{ i.item_code }}x{{ i.total_qty }}
-      </a>
-    </div>
+    <table class="items">
+      <thead>
+        <tr>
+          <td>Item</td>
+          <td>Total Qty</td>
+          <td>Per Beak</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr 
+          class="item" 
+          v-on:click="() => navigateItem(i.item_code)"
+          v-for="i in items" :key="i.item_code">
+          <td> 
+            {{ i.item_code }}
+          </td>
+          <td>
+            {{ i.total_qty }}
+          </td>
+          <td>
+            0
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
 <style lang="scss" scoped>
   @use "/assets/style/_colour.scss";
+  // @use "/assets/style/_colour.scss";
+
+  .items {
+    width: 100%;
+  }
+
+  .items thead {
+    color: colour.$gray;
+  }
+
+  .items tbody td {
+    color: rgb(116, 116, 116);
+  }
+
+  .items tbody a {
+    color: colour.$red;
+  }
+
 
   .item {
-    padding: .75em;
     color: colour.$red;
+    cursor: pointer;
+  }
+
+  .item:hover {
+    opacity: .8;
   }
 </style>
 
@@ -26,6 +65,13 @@
   import API from '~/lib/api/api';
   
   export default {
+    methods: {
+      navigateItem(itemCode) {
+        this.$router.push({ path: `/conquest/economy/items/${itemCode}` });
+        // console.log(itemCode);
+        // :href=""
+      }
+    },
     data() {
       return { 
         items: [] 
@@ -33,7 +79,6 @@
     },
     async mounted() {
       this.items = (await API.get('economy/items')).data;
-      console.log(this.items);
     }
   }
 </script>

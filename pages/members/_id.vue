@@ -120,10 +120,13 @@
   }
 
   .role {
+    display: inline-block;
+
     border-radius: 8px;
     background-color: #444;
-    padding: 5px;
-    margin: 5px;
+
+    padding: .125em .5em;
+    margin: .125em;
   }
 
 </style>

@@ -6,12 +6,27 @@
     </h1>
 
     <h2 class="subtitle">Top Owners</h2>
-    <a 
-      v-for="i in item" :key="i.owner_id" 
-      :href="`/members/${i.owner_id}`"
-      class="ownership-item">
-      {{ i.username }} x {{ i.quantity }}
-    </a>
+    <table class="items">
+      <thead>
+        <tr>
+          <td>Owner</td>
+          <td>Qty</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr 
+          class="item" 
+          v-on:click="() => navigateItem(i.item_code)"
+          v-for="i in item" :key="i.username">
+          <td> 
+            {{ i.username }}
+          </td>
+          <td>
+            {{ i.quantity }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
@@ -21,6 +36,32 @@
   .ownership-item {
     padding: .75em;
     color: colour.$red;
+  }
+
+  .items {
+    width: 100%;
+  }
+
+  .items thead {
+    color: colour.$gray;
+  }
+
+  .items tbody td {
+    color: rgb(116, 116, 116);
+  }
+
+  .items tbody a {
+    color: colour.$red;
+  }
+
+
+  .item {
+    color: colour.$red;
+    cursor: pointer;
+  }
+
+  .item:hover {
+    opacity: .8;
   }
 </style>
 
