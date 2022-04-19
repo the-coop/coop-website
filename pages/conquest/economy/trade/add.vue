@@ -114,7 +114,7 @@
 </style>
 
 <script>
-  import ITEMS from 'coopshared/config/items';
+  import ITEMS from 'coopshared/config/items.mjs';
   import API from '~/lib/api/api';
   import PopupWrapper from '~/components/features/popup/PopupWrapper.vue';
   import ItemCodeInputSuggestions from '~/components/trade/ItemCodeInputSuggestions.vue';
