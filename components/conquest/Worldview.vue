@@ -2,9 +2,9 @@
   <div class="worldview">
     <h1 class="error-text" v-if="!WEBGL_SUPPORT && !silent">Loading error...</h1>
 
+    <button v-if="!silent" id="toggle_controls">SWITCH</button>
     <canvas id="canvas" />
 
-    <button v-if="!silent" id="toggle_controls">SWITCH</button>
   </div>
 </template>
 
