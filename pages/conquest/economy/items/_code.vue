@@ -1,37 +1,52 @@
 <template>
   <div class="content-container">
-    <h1 class="title">
-      Item Overview
-      ({{ this.$route.params.code }})
-    </h1>
+    <ItemIcon 
+      width="7.5em"
+      :code="this.$route.params.code"
+    />
+    <div class="title">
+      <span>Item Overview</span>
+      <!-- ({{ this.$route.params.code }}) -->
 
-    <h2 class="subtitle">Top Owners</h2>
-    <table class="items">
-      <thead>
-        <tr>
-          <td>Owner</td>
-          <td>Qty</td>
-        </tr>
-      </thead>
-      <tbody>
-        <tr 
-          class="item" 
-          v-on:click="() => navigateUser(i.owner_id)"
-          v-for="i in item" :key="i.username">
-          <td> 
-            {{ i.username }}
-          </td>
-          <td>
-            {{ i.quantity }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
+        (<ItemIcon 
+          :code="this.$route.params.code"
+          :label="this.$route.params.code"
+        />)
+    </div>
+
+    <div class="overview-section">
+      <h2 class="subtitle">Top Owners</h2>
+      <table class="items">
+        <thead>
+          <tr>
+            <td>Owner</td>
+            <td>Qty</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr 
+            class="item" 
+            v-on:click="() => navigateUser(i.owner_id)"
+            v-for="i in item" :key="i.username">
+            <td> 
+              {{ i.username }}
+            </td>
+            <td>
+              {{ i.quantity }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
   @use "/assets/style/_colour.scss";
+
+  .overview-section {
+    margin-top: 2em;
+  }
 
   .ownership-item {
     padding: .75em;
@@ -55,18 +70,20 @@
   }
 
 
-  .item {
-    color: colour.$red;
-    cursor: pointer;
-  }
+  // .item {
+  //   color: colour.$red;
+  //   cursor: pointer;
+  // }
 
-  .item:hover {
-    opacity: .8;
-  }
+  // .item:hover {
+  //   opacity: .8;
+  // }
 </style>
 
 <script>
   import API from '~/lib/api/api';
+  import ItemIcon from '~/components/conquest/ItemIcon';
+
 
   export default {
     data() {
@@ -83,6 +100,9 @@
     async mounted() {
       this.item = (await API.get('economy/items/' + this.$route.params.code)).data;
       console.log(this.item);
+    },
+    components: {
+      ItemIcon
     }
   }
 </script>

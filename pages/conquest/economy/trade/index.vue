@@ -21,8 +21,12 @@
         <tr v-for="t in trades" :key="t.id" class="rows" v-on:click="ev => view(t.id)">
           <td>{{ t.id }}</td>
 
-          <td>{{ t.offer_item }}</td>
-          <td>{{ t.receive_item }}</td>
+          <td>
+            <ItemIcon :code="t.offer_item" :label="t.offer_item" />
+          </td>
+          <td>
+            <ItemIcon :code="t.receive_item" :label="t.receive_item" />
+          </td>
 
           <td>{{ t.offer_qty }}</td>
           <td>{{ t.receive_qty }}</td>
@@ -65,8 +69,10 @@
 
 <script>
   import API from '~/lib/api/api';
+  import ItemIcon from '~/components/conquest/ItemIcon.vue';
 
   export default {
+    components: { ItemIcon },
     data() {
       return { 
         trades: [] 

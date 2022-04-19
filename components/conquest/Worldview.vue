@@ -3,7 +3,8 @@
     <h1 class="error-text" v-if="!WEBGL_SUPPORT && !silent">Loading error...</h1>
 
     <canvas id="canvas" />
-    <button id="toggle_controls">SWITCH</button>
+
+    <button v-if="!silent" id="toggle_controls">SWITCH</button>
   </div>
 </template>
 
@@ -152,13 +153,15 @@
       resizer();
 
       // Temporary measure for testing cameras
-      const toggleBtn = document.getElementById('toggle_controls');
-      toggleBtn.addEventListener('click', e => {
-          if (WORLD.settings.view.DESIRED_CAMERA_KEY === ExperienceManager.CAMERA_KEYS.FIRST_PERSON)
-              WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.TRACKBALL
-          else
-              WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.FIRST_PERSON
-      });
+      if (!this.silent) {
+        const toggleBtn = document.getElementById('toggle_controls');
+        toggleBtn.addEventListener('click', e => {
+            if (WORLD.settings.view.DESIRED_CAMERA_KEY === ExperienceManager.CAMERA_KEYS.FIRST_PERSON)
+                WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.TRACKBALL
+            else
+                WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.FIRST_PERSON
+        });
+      }
 
       Controls.initialise();
 

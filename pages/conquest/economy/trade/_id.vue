@@ -20,7 +20,9 @@
             cancelled ? '⬅ Trader Refunded' : '⬅ Buyer Receives'
           }}
         </span>
-        {{ trade.offer_item }}
+
+        <ItemIcon :code="trade.offer_item" :label="trade.offer_item" />
+
         <span class="trade-item-qty-flourish">x</span>
         <span class="trade-item-qty">
           {{ trade.offer_qty }}
@@ -34,7 +36,9 @@
         <span class="trade-item-label">
           ➡ Trader Receives 
         </span>
-        {{ trade.receive_item }}
+        
+        <ItemIcon :code="trade.receive_item" :label="trade.receive_item" />
+
         <span class="trade-item-qty-flourish">x</span>
         <span class="trade-item-qty">
           {{ trade.receive_qty }}
@@ -144,8 +148,12 @@
 
 <script>
   import API from '~/lib/api/api';
+  import ItemIcon from '~/components/conquest/ItemIcon.vue';
 
   export default {
+    components: {
+      ItemIcon
+    },
     data() {
       return { 
         trade: null,

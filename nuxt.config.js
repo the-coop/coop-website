@@ -1,4 +1,3 @@
-import axios from 'axios';
 import API from "./lib/api/api";
 
 const metaName = 'The Coop';
@@ -109,6 +108,10 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+    babel: {
+      "plugins": ["@babel/plugin-syntax-import-assertions"],
+      "presets": ['@nuxt/babel-preset-app']
+    }
   },
 
   // Avoid 404 page on non-static pages and turn off static pre-rendering.

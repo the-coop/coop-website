@@ -41,7 +41,6 @@
 
         <h3>Economy</h3>
 
-        <!-- TODO: Link each item code to item specific page -->
         <div v-if="user.item_list">
           <h4>Items</h4>
           <div class="items">
@@ -49,7 +48,11 @@
               v-for="i in user.item_list" 
               :href="`/conquest/economy/items/${i.item_code}`"
               :key="`items-list-${i.item_code}`">
-              {{ i.item_code }} x {{ i.quantity.toFixed(2) }}
+
+              <ItemIcon 
+                :code="i.item_code"
+                :label="`${i.item_code} x ${i.quantity.toFixed(2)}`"
+              />
             </a>
           </div>
         </div>
@@ -141,8 +144,12 @@
 <script>
   import API from '~/lib/api/api';
   import MembersUIHelper from '~/lib/members/membersUIHelper';
+  import ItemIcon from '~/components/conquest/ItemIcon';
 
   export default {
+    components: {
+      ItemIcon
+    },
     data() {
       return {
         user: null

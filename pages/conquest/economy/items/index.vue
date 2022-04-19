@@ -1,11 +1,11 @@
 <template>
   <div class="content-container">
-    <h1 class="title">Items</h1>
-
     <table class="items">
       <thead>
         <tr>
-          <td>Item</td>
+          <td>
+            <h1 class="title">Items</h1>
+          </td>
           <td>Total Qty</td>
           <td>Per Beak</td>
         </tr>
@@ -16,7 +16,7 @@
           v-on:click="() => navigateItem(i.item_code)"
           v-for="i in items" :key="i.item_code">
           <td> 
-            {{ i.item_code }}
+            <ItemIcon :code="i.item_code" :label="i.item_code" />
           </td>
           <td>
             {{ i.total_qty }}
@@ -44,6 +44,7 @@
 
   .items tbody td {
     color: rgb(116, 116, 116);
+    border-bottom: 0.125em solid rgb(170, 170, 170);
   }
 
   .items tbody a {
@@ -54,6 +55,7 @@
   .item {
     color: colour.$red;
     cursor: pointer;
+    padding-top: .3em;
   }
 
   .item:hover {
@@ -63,6 +65,7 @@
 
 <script>
   import API from '~/lib/api/api';
+  import ItemIcon from '~/components/conquest/ItemIcon.vue';
   
   export default {
     methods: {
@@ -77,6 +80,9 @@
     },
     async mounted() {
       this.items = (await API.get('economy/items')).data;
+    },
+    components: {
+      ItemIcon
     }
   }
 </script>
