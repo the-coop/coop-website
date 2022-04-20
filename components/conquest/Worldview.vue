@@ -39,6 +39,11 @@
 
   import ExperienceManager from '~/lib/conquest/experience/experienceManager';
 
+  import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+  import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';  
+  import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+
+
   export default {
     name: 'Worldview',
     props: {
@@ -95,6 +100,36 @@
         timeIncrement: Date.now()
       };
 
+      //TODO might need a setting to disable this for low power devices
+      //Set up HDR rendering
+      //WORLD.renderer.toneMapping = THREE.ReinhardToneMapping;
+
+      const renderScene = new RenderPass(WORLD.scene, WORLD.camera);
+
+      const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+
+      const bloomparams = {
+        exposure: 0.5,
+        bloomStrength: 1.5,
+        bloomThreshold: 0.7,
+        bloomRadius: 0.1
+      };
+
+
+      bloomPass.threshold = bloomparams.bloomThreshold;
+      bloomPass.strength = bloomparams.bloomStrength;
+      bloomPass.radius = bloomparams.bloomRadius;
+
+      WORLD.composer = new EffectComposer(WORLD.renderer);
+      WORLD.composer.addPass(renderScene);
+      WORLD.composer.addPass(bloomPass);
+
+
+
+
+
+
+
       // Set background colour
       WORLD.scene.background = new THREE.Color(0x050D22);
 
@@ -137,6 +172,10 @@
           }
       }
 
+      const light = new THREE.AmbientLight(0x404040); // soft white light
+      WORLD.scene.add(light);
+
+
       // Add stars to scene.
       WORLD.scene.add(starsContainer);
 
@@ -144,10 +183,14 @@
           // Update camera
           WORLD.camera.aspect = window.innerWidth / window.innerHeight;
           WORLD.camera.updateProjectionMatrix();
-        
+
+
+
           // Update renderer
           WORLD.renderer.setSize(window.innerWidth, window.innerHeight);
-          WORLD.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        WORLD.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        //todo super sampleing, this might be laggy
+        WORLD.composer.setSize(window.innerWidth * 2, window.innerHeight * 2);
       };
       window.addEventListener('resize', resizer);
       resizer();
