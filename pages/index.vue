@@ -121,7 +121,9 @@
         projectsTotal: 0,
         users: [],
         usersTotal: 0,
-        advert: null
+        advert: null,
+
+        hasVisited: false
       };
     },
     destroyed() {

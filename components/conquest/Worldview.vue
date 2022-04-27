@@ -4,7 +4,6 @@
 
     <button v-if="!silent" id="toggle_controls">SWITCH</button>
     <canvas id="canvas" />
-
   </div>
 </template>
 
@@ -43,6 +42,12 @@
   import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';  
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
+  const bloom = {
+    exposure: 0.5,
+    bloomStrength: 1.5,
+    bloomThreshold: 0.7,
+    bloomRadius: 0.1
+  };
 
   export default {
     name: 'Worldview',
@@ -90,10 +95,10 @@
         },
 
         settings: {
-            view: {
-                DESIRED_CAMERA_KEY: ExperienceManager.CAMERA_KEYS.TRACKBALL,
-                CURRENT_CAMERA_KEY: ExperienceManager.CAMERA_KEYS.TRACKBALL
-            }
+          view: {
+            DESIRED_CAMERA_KEY: ExperienceManager.CAMERA_KEYS.TRACKBALL,
+            CURRENT_CAMERA_KEY: ExperienceManager.CAMERA_KEYS.TRACKBALL
+          }
         },
 
         // Deterministic time variable.
@@ -101,34 +106,20 @@
       };
 
       //TODO might need a setting to disable this for low power devices
-      //Set up HDR rendering
+      //µSet up HDR rendering
       //WORLD.renderer.toneMapping = THREE.ReinhardToneMapping;
 
       const renderScene = new RenderPass(WORLD.scene, WORLD.camera);
 
       const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
 
-      const bloomparams = {
-        exposure: 0.5,
-        bloomStrength: 1.5,
-        bloomThreshold: 0.7,
-        bloomRadius: 0.1
-      };
-
-
-      bloomPass.threshold = bloomparams.bloomThreshold;
-      bloomPass.strength = bloomparams.bloomStrength;
-      bloomPass.radius = bloomparams.bloomRadius;
+      bloomPass.threshold = bloom.bloomThreshold;
+      bloomPass.strength = bloom.bloomStrength;
+      bloomPass.radius = bloom.bloomRadius;
 
       WORLD.composer = new EffectComposer(WORLD.renderer);
       WORLD.composer.addPass(renderScene);
       WORLD.composer.addPass(bloomPass);
-
-
-
-
-
-
 
       // Set background colour
       WORLD.scene.background = new THREE.Color(0x050D22);
@@ -172,23 +163,22 @@
           }
       }
 
-      const light = new THREE.AmbientLight(0x404040); // soft white light
+      // soft white global light
+      const light = new THREE.AmbientLight(0x404040); 
       WORLD.scene.add(light);
-
 
       // Add stars to scene.
       WORLD.scene.add(starsContainer);
 
       function resizer() {
-          // Update camera
-          WORLD.camera.aspect = window.innerWidth / window.innerHeight;
-          WORLD.camera.updateProjectionMatrix();
+        // Update camera
+        WORLD.camera.aspect = window.innerWidth / window.innerHeight;
+        WORLD.camera.updateProjectionMatrix();
 
-
-
-          // Update renderer
-          WORLD.renderer.setSize(window.innerWidth, window.innerHeight);
+        // Update renderer
+        WORLD.renderer.setSize(window.innerWidth, window.innerHeight);
         WORLD.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
         //todo super sampleing, this might be laggy
         WORLD.composer.setSize(window.innerWidth * 2, window.innerHeight * 2);
       };
@@ -208,7 +198,8 @@
 
       Controls.initialise();
 
-      engine();
+
+      engine(this);
     }
   }
 </script>
