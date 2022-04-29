@@ -19,6 +19,10 @@
 
 <template>
   <client-only>
-    <Worldview :tile="tile" />
+    <Worldview 
+      :tile="tile" 
+      :networking="true"
+      :intro="true"
+    />
   </client-only>
 </template>

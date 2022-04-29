@@ -24,8 +24,9 @@
   }
 </style>
 
-<script
-  >import * as THREE from 'three';
+<script>
+  import * as THREE from 'three';
+  import { Tween, Easing } from '@tweenjs/tween.js';
 
   import Controls from '~/lib/conquest/experience/controls';
   import { TrackballControls } from '~/lib/conquest/experience/TrackballControls';
@@ -34,7 +35,7 @@
   import buildSolarSystem from '~/lib/conquest/generation/buildSolarSystem';
 
   import PLANETS_SPECIFICATION from '~/lib/conquest/generation/planets-specification.json';
-  import Player from '~/lib/conquest/entities/player';
+  
 
   import ExperienceManager from '~/lib/conquest/experience/experienceManager';
 
@@ -49,6 +50,23 @@
     bloomRadius: 0.1
   };
 
+  // import Player from '~/lib/conquest/entities/player';
+  const spawn = () => {
+    // Add testing player (refactor into networking later).
+    // const player = new Player();
+
+    // @isoleucine, if this line is commented out, it breaks everything?
+    // WORLD.players.push(player);
+
+    // WORLD.me.player = player;
+    // WORLD.players[0].handle.position.set(0, -1, -1);
+
+    // // Add the mesh to the handle.
+    // player.handle.add(player.mesh);
+    // player.current_planet = WORLD.planets[1];
+    // player.current_planet.body.add(WORLD.players[0].handle);
+  };
+
   export default {
     name: 'Worldview',
     props: {
@@ -59,6 +77,14 @@
       tile: {
         type: String,
         default: null
+      },
+      intro: {
+        type: Boolean,
+        default: false
+      },
+      networking: {
+        type: Boolean,
+        default: false
       }
     },
     components: {},
@@ -68,6 +94,10 @@
     methods: {
 
     },
+
+    // TODO might need a setting to disable this for low power devices
+    // µSet up HDR rendering
+    // WORLD.renderer.toneMapping = THREE.ReinhardToneMapping;
     async mounted() {
       const canvas = document.getElementById('canvas');
       const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 200);
@@ -80,8 +110,7 @@
 
       // Used for shared state.
       window.WORLD = {
-        camera: camera,
-        renderer: new THREE.WebGLRenderer({ canvas: canvas, antialias: true }),
+        renderer: new THREE.WebGLRenderer({ canvas, antialias: true }),
         scene: new THREE.Scene,
         controls: new TrackballControls(camera, canvas),
         canvas,
@@ -97,22 +126,15 @@
         settings: {
           view: {
             DESIRED_CAMERA_KEY: ExperienceManager.CAMERA_KEYS.TRACKBALL,
-            CURRENT_CAMERA_KEY: ExperienceManager.CAMERA_KEYS.TRACKBALL
+            CURRENT_CAMERA_KEY: ExperienceManager.CAMERA_KEYS.TRACKBALL,
           }
         },
+
+        tween: null,
 
         // Deterministic time variable.
         timeIncrement: Date.now()
       };
-
-      // TODO If player logged in spawn/re-center world.
-
-
-
-
-      // TODO might need a setting to disable this for low power devices
-      // µSet up HDR rendering
-      // WORLD.renderer.toneMapping = THREE.ReinhardToneMapping;
 
       const renderScene = new RenderPass(WORLD.scene, WORLD.camera);
 
@@ -129,25 +151,15 @@
       // Set background colour
       WORLD.scene.background = new THREE.Color(0x050D22);
 
-      // Add testing player (refactor into networking later).
-      const player = new Player();
-
-      // @isoleucine, if this line is commented out, it breaks everything?
-      WORLD.players.push(player);
-
-
-      // WORLD.me.player = player;
-      // WORLD.players[0].handle.position.set(0, -1, -1);
-
-      // // Add the mesh to the handle.
-      // player.handle.add(player.mesh);
-
+      // Generate the world.
       WORLD.scene.add(buildSolarSystem(PLANETS_SPECIFICATION));
-      // player.current_planet = WORLD.planets[1];
-      // player.current_planet.body.add(WORLD.players[0].handle);
 
       // Configure and add camera.
-      camera.position.set(0, 30, 30);
+      this.intro ? 
+        camera.position.set(240, 240, 240)
+        :
+        camera.position.set(0, 30, 30);
+
       WORLD.scene.add(WORLD.camera);
 
       // Generate the stars.
@@ -203,10 +215,28 @@
             else
                 WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.FIRST_PERSON
         });
+
+        Controls.initialise();
       }
 
-      Controls.initialise();
+      // Begin networking
+      if (this.networking) {
+        console.log('Player should load and other players...');
+        console.log('Changes should be shown via network.');
 
+
+        // TODO If player logged in spawn/re-center world.
+        // WORLD.me
+      }
+
+      // Handle intro loading if applicable.
+      if (this.intro) {
+        WORLD.tween = new Tween(WORLD.camera.position)
+          .to({ x: 0, y: 10, z: 30 }, 2000)
+          .easing(Easing.Quadratic.Out)
+          .start()
+          .onComplete(() => WORLD.tween = null);
+      }
 
       engine(this);
     }
