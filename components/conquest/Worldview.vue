@@ -33,10 +33,11 @@
 
   import engine from '~/lib/conquest/engine';
   import buildSolarSystem from '~/lib/conquest/generation/buildSolarSystem';
+  import setupNetworking from '~/lib/conquest/network/setupNetworking';
 
   import PLANETS_SPECIFICATION from '~/lib/conquest/generation/planets-specification.json';
-  
 
+  import PlayerManager from '~/lib/conquest/entities/playerManager';
   import ExperienceManager from '~/lib/conquest/experience/experienceManager';
 
   import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -221,12 +222,22 @@
 
       // Begin networking
       if (this.networking) {
+        // Setup and run the game/level networking (socket based).
+        setupNetworking(this.$auth.strategy.token.get());
+
         console.log('Player should load and other players...');
         console.log('Changes should be shown via network.');
-
-
-        // TODO If player logged in spawn/re-center world.
-        // WORLD.me
+        console.log(this.$auth.user);
+        if (this.$auth.user) {
+          // Connect websockets.
+          // PlayerManager.isSpawned()
+          // PlayerM
+          // Spawn the player, unless unspawned.
+          // if (this.$auth.user)
+            // PlayerManager
+          // TODO If player logged in spawn/re-center world.
+          // WORLD.me
+        }
       }
 
       // Handle intro loading if applicable.
