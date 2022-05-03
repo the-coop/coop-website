@@ -2,13 +2,20 @@
   <div class="worldview">
     <h1 class="error-text" v-if="!WEBGL_SUPPORT && !silent">Loading error...</h1>
 
-    <button v-if="!silent" id="toggle_controls">SWITCH</button>
+
+    <div class="controls">
+      <button v-if="!silent" id="toggle_controls">SWITCH</button>
+      <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login">
+        🔑 Login
+      </NuxtLink>
+    </div>
+
     <canvas id="canvas" />
   </div>
 </template>
 
 <style scoped>
-  #toggle_controls {
+  .controls {
     position: absolute;
     z-index: 1;
     top: 0;
@@ -220,25 +227,9 @@
         Controls.initialise();
       }
 
-      // Begin networking
-      if (this.networking) {
-        // Setup and run the game/level networking (socket based).
+      // Setup and run the game/level networking (socket based).
+      if (this.networking && this.$auth.user)
         setupNetworking(this.$auth.strategy.token.get());
-
-        console.log('Player should load and other players...');
-        console.log('Changes should be shown via network.');
-        console.log(this.$auth.user);
-        if (this.$auth.user) {
-          // Connect websockets.
-          // PlayerManager.isSpawned()
-          // PlayerM
-          // Spawn the player, unless unspawned.
-          // if (this.$auth.user)
-            // PlayerManager
-          // TODO If player logged in spawn/re-center world.
-          // WORLD.me
-        }
-      }
 
       // Handle intro loading if applicable.
       if (this.intro) {
