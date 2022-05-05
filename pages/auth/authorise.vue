@@ -20,7 +20,7 @@
 
 <script>
   export default {
-    middleware: 'guest',
+    // middleware: 'guest',
     mounted() {
       // Attempt to authenticate, this page should only be arrived at during auth process.
       this.authenticate();
@@ -38,6 +38,10 @@
           const params = new URLSearchParams(window.location.search);
           const code = params.get('code');
           const method = params.get('method') || 'discord_oauth';
+          const state = params.get('state');
+
+          // Clear the messy codes in URL/router state.
+          this.$router.replace({ query: null });
 
           // Exchange grant token with access token to validate identity.
           const loginAttempt = await this.$auth.loginWith('local', { data: { code, method } });
@@ -53,6 +57,15 @@
 
           // Set as loaded.
           this.loaded = true;
+
+          // If known state redirect there, otherwise go to home.
+          switch (state) {
+            case 'game':
+              this.$router.push('/conquest/world');
+
+            default: 
+              this.$router.push('/');
+          }
 
         } catch(e) {
           this.error = e.message;

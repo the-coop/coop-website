@@ -1,9 +1,6 @@
 # coopwebsite
 
 <!-- TRADING -->
-<!-- Finish autocomplete -->
-<!-- Add invalid error on no matching item code -->
-
 
 ```bash
 # install dependencies

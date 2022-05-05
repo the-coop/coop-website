@@ -1,11 +1,16 @@
 <template>
   <div class="worldview">
     <h1 class="error-text" v-if="!WEBGL_SUPPORT && !silent">Loading error...</h1>
-
-
     <div class="controls">
       <button v-if="!silent" id="toggle_controls">SWITCH</button>
-      <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login">
+      <button 
+        v-show="$auth.$state.loggedIn" 
+        @click="spawn" 
+        v-if="!silent" id="spawn">
+        SPAWN
+      </button>
+      <NuxtLink v-show="!$auth.$state.loggedIn" 
+        :to="{ path: '/auth/login', query: { intent: 'game' }}">
         🔑 Login
       </NuxtLink>
     </div>
@@ -58,22 +63,7 @@
     bloomRadius: 0.1
   };
 
-  // import Player from '~/lib/conquest/entities/player';
-  const spawn = () => {
-    // Add testing player (refactor into networking later).
-    // const player = new Player();
-
-    // @isoleucine, if this line is commented out, it breaks everything?
-    // WORLD.players.push(player);
-
-    // WORLD.me.player = player;
-    // WORLD.players[0].handle.position.set(0, -1, -1);
-
-    // // Add the mesh to the handle.
-    // player.handle.add(player.mesh);
-    // player.current_planet = WORLD.planets[1];
-    // player.current_planet.body.add(WORLD.players[0].handle);
-  };
+  import Player from '~/lib/conquest/entities/player';
 
   export default {
     name: 'Worldview',
@@ -100,7 +90,33 @@
       WEBGL_SUPPORT: false
     }),
     methods: {
+      spawn() {
+        alert('iso')
 
+        // const focusTarget = window.CONQUEST.VIEW.focusTarget;
+        // const spawnFace = focusTarget.face_id;
+        // const spawnPos = window.CONQUEST.faces[spawnFace].position;
+        // console.log(focusTarget, spawnFace);
+        // window.CONQUEST.socket.emit('player_spawned', {
+        //   spawn_location: spawnPos,
+        //   // Make this dynamic so we can spawn on other planets. Elon.
+        //   orbit_influence: 'EARTH'
+        // });
+
+        // Add testing player (refactor into networking later).
+        // const player = new Player();
+
+        // @isoleucine, if this line is commented out, it breaks everything?
+        // WORLD.players.push(player);
+
+        // WORLD.me.player = player;
+        // WORLD.players[0].handle.position.set(0, -1, -1);
+
+        // // Add the mesh to the handle.
+        // player.handle.add(player.mesh);
+        // player.current_planet = WORLD.planets[1];
+        // player.current_planet.body.add(WORLD.players[0].handle);
+      }
     },
 
     // TODO might need a setting to disable this for low power devices
@@ -128,7 +144,7 @@
         players: [],
 
         me: {
-            player: null
+          player: null
         },
 
         settings: {
@@ -174,22 +190,22 @@
       const starsCount = 200;
       const starsContainer = new THREE.Group;
       for (let s = 0; s < starsCount; s++) {
-          const star = new THREE.Mesh(
-              new THREE.CircleGeometry(.1, .1),
-              new THREE.MeshBasicMaterial({ color: 0xffffff }) 
-          );
+        const star = new THREE.Mesh(
+          new THREE.CircleGeometry(.1, .1),
+          new THREE.MeshBasicMaterial({ color: 0xffffff }) 
+        );
 
-          // Calculate random star position.
-          star.position.x = Math.random() * 300 - 125;
-          star.position.y = Math.random() * 300 - 125;
-          star.position.z = Math.random() * 300 - 125;
+        // Calculate random star position.
+        star.position.x = Math.random() * 300 - 125;
+        star.position.y = Math.random() * 300 - 125;
+        star.position.z = Math.random() * 300 - 125;
 
-          // Limit the proximity of stars.
-          const distance = star.position.distanceTo(WORLD.planets[0].body.position);
-          if (distance > 50) {
-              starsContainer.add(star);
-              star.lookAt(WORLD.planets[0].body.position);
-          }
+        // Limit the proximity of stars.
+        const distance = star.position.distanceTo(WORLD.planets[0].body.position);
+        if (distance > 50) {
+          starsContainer.add(star);
+          star.lookAt(WORLD.planets[0].body.position);
+        }
       }
 
       // soft white global light
