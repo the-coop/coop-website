@@ -91,17 +91,27 @@
     }),
     methods: {
       spawn() {
-        alert('iso')
+        console.log('Should spawn.');
 
         // const focusTarget = window.CONQUEST.VIEW.focusTarget;
         // const spawnFace = focusTarget.face_id;
         // const spawnPos = window.CONQUEST.faces[spawnFace].position;
-        // console.log(focusTarget, spawnFace);
-        // window.CONQUEST.socket.emit('player_spawned', {
-        //   spawn_location: spawnPos,
-        //   // Make this dynamic so we can spawn on other planets. Elon.
-        //   orbit_influence: 'EARTH'
-        // });
+        // console.log(WORLD.planets[0].position);
+
+        const spawnPos = WORLD.planets[0].body.position;
+        // Offset from the planet?
+        spawnPos.set(50, 50, 50);
+
+        // const spawnPos = window.CONQUEST.faces[spawnFace].position;
+
+        window.WORLD.socket.emit('player_spawned', {
+          spawn_location: spawnPos,
+        //   // Pass the ID for the solar system
+        //   // Pass the ID for the current SOI
+        //   // Refactor backend to new keys/codes
+          orbit_influence: 'EARTH'
+        });
+
 
         // Add testing player (refactor into networking later).
         // const player = new Player();
@@ -153,6 +163,8 @@
             CURRENT_CAMERA_KEY: ExperienceManager.CAMERA_KEYS.TRACKBALL,
           }
         },
+
+        socket: null,
 
         tween: null,
 

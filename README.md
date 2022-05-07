@@ -1,5 +1,13 @@
 # coopwebsite
 
+<!-- Make player positions permanent, no log off/out? -->
+<!-- Let player spawn in -->
+<!-- Let player move -->
+<!-- Load other players -->
+<!-- Show movement of other players -->
+
+
+
 <!-- TRADING -->
 
 ```bash
