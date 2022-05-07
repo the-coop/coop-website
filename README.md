@@ -5,7 +5,7 @@
 <!-- Let player move -->
 <!-- Load other players -->
 <!-- Show movement of other players -->
-
+<!-- WORLD + LOCAL CHATS -->
 
 
 <!-- TRADING -->

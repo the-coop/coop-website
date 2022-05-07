@@ -257,7 +257,7 @@
 
       // Setup and run the game/level networking (socket based).
       if (this.networking && this.$auth.user)
-        setupNetworking(this.$auth.strategy.token.get());
+        setupNetworking(this.$auth.strategy.token.get(), this.$auth.user);
 
       // Handle intro loading if applicable.
       if (this.intro) {
