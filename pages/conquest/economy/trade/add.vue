@@ -44,7 +44,7 @@
             />
             <input required v-model="receive_item" :disabled="processing" 
               @input="itemCodeChange"
-
+              @focus="itemCodeChange"
               :class="`item-code input-target ${errors.invalid_receive_item ? 'errored' : ''}`" 
               type="text" name="receive_item" placeholder="[ITEM_CODE]" />
           </div>
