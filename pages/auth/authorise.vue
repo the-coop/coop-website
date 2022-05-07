@@ -62,6 +62,7 @@
           switch (state) {
             case 'game':
               this.$router.push('/conquest/world');
+              break;
 
             default: 
               this.$router.push('/');
