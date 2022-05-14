@@ -93,39 +93,30 @@
       spawn() {
         console.log('Should spawn.');
 
-        // const focusTarget = window.CONQUEST.VIEW.focusTarget;
-        // const spawnFace = focusTarget.face_id;
-        // const spawnPos = window.CONQUEST.faces[spawnFace].position;
-        // console.log(WORLD.planets[0].position);
+        const target = WORLD.planets[0];
+        console.log(target);
 
-        const spawnPos = WORLD.planets[0].body.position;
+        const spawnPos = target.body.position;
         // Offset from the planet?
-        spawnPos.set(50, 50, 50);
-
-        // const spawnPos = window.CONQUEST.faces[spawnFace].position;
+        // spawnPos.set(50, 50, 50);
 
         window.WORLD.socket.emit('player_spawned', {
           spawn_location: spawnPos,
-        //   // Pass the ID for the solar system
-        //   // Pass the ID for the current SOI
-        //   // Refactor backend to new keys/codes
-          orbit_influence: 'EARTH'
+          orbit_influence: target.name
+          // TODO: Pass the ID for the solar system
         });
 
+        const player = new Player();
 
-        // Add testing player (refactor into networking later).
-        // const player = new Player();
+        WORLD.players[this.$auth.user.id] = player;
+        WORLD.me.player = player;
 
-        // @isoleucine, if this line is commented out, it breaks everything?
-        // WORLD.players.push(player);
+        player.handle.position.set(0, -1, -1);
 
-        // WORLD.me.player = player;
-        // WORLD.players[0].handle.position.set(0, -1, -1);
-
-        // // Add the mesh to the handle.
-        // player.handle.add(player.mesh);
-        // player.current_planet = WORLD.planets[1];
-        // player.current_planet.body.add(WORLD.players[0].handle);
+        // Add the mesh to the handle.
+        player.handle.add(player.mesh);
+        player.current_planet = WORLD.planets[1];
+        player.current_planet.body.add(player.handle);
       }
     },
 
