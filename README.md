@@ -1,10 +1,12 @@
 # coopwebsite
 
-<!-- Make player positions permanent, no log off/out? -->
-<!-- Let player spawn in -->
-<!-- Let player move -->
+<!-- GUI for planet/moon/object selection. -->
+
 <!-- Load other players -->
 <!-- Show movement of other players -->
+<!-- // At the moment when the player reconnects they aren't already spawned -->
+<!-- Make player positions permanent, no log off/out? -->
+
 <!-- WORLD + LOCAL CHATS -->
 
 

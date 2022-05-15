@@ -63,7 +63,7 @@
     bloomRadius: 0.1
   };
 
-  import Player from '~/lib/conquest/entities/player';
+  // import Player from '~/lib/conquest/entities/player';
 
   export default {
     name: 'Worldview',
@@ -91,8 +91,7 @@
     }),
     methods: {
       spawn() {
-        console.log('Should spawn.');
-
+        // Move all of this to player recognised event?
         const target = WORLD.planets[0];
         console.log(target);
 
@@ -105,18 +104,6 @@
           orbit_influence: target.name
           // TODO: Pass the ID for the solar system
         });
-
-        const player = new Player();
-
-        WORLD.players[this.$auth.user.id] = player;
-        WORLD.me.player = player;
-
-        player.handle.position.set(0, -1, -1);
-
-        // Add the mesh to the handle.
-        player.handle.add(player.mesh);
-        player.current_planet = WORLD.planets[1];
-        player.current_planet.body.add(player.handle);
       }
     },
 
