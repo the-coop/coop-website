@@ -6,7 +6,7 @@
       <button 
         v-show="$auth.$state.loggedIn" 
         @click="spawn" 
-        v-if="!silent" id="spawn">
+        v-if="!silent && !spawned" id="spawn">
         SPAWN
       </button>
       <NuxtLink v-show="!$auth.$state.loggedIn" 
@@ -15,11 +15,24 @@
       </NuxtLink>
     </div>
 
+    <div class="info">
+      Target: {{ selected }}
+    </div>
+
     <canvas id="canvas" />
   </div>
 </template>
 
 <style scoped>
+  .info {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    right: 0;
+
+    background: rgba(255, 255, 255, 0.77);
+    padding: .25em 2.25em;
+  }
   .controls {
     position: absolute;
     z-index: 1;
@@ -49,7 +62,6 @@
 
   import PLANETS_SPECIFICATION from '~/lib/conquest/generation/planets-specification.json';
 
-  import PlayerManager from '~/lib/conquest/entities/playerManager';
   import ExperienceManager from '~/lib/conquest/experience/experienceManager';
 
   import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
@@ -62,8 +74,6 @@
     bloomThreshold: 0.7,
     bloomRadius: 0.1
   };
-
-  // import Player from '~/lib/conquest/entities/player';
 
   export default {
     name: 'Worldview',
@@ -87,7 +97,11 @@
     },
     components: {},
     data: () => ({
-      WEBGL_SUPPORT: false
+      WEBGL_SUPPORT: false,
+
+      spawned: false,
+
+      selected: null
     }),
     methods: {
       spawn() {
@@ -104,6 +118,9 @@
           orbit_influence: target.name
           // TODO: Pass the ID for the solar system
         });
+
+        // Update GUI actions related to spawnign.
+        this.spawned = true;
       }
     },
 
@@ -127,6 +144,8 @@
         controls: new TrackballControls(camera, canvas),
         canvas,
         camera,
+
+        socket: null,
         
         planets: [],
         players: [],
@@ -141,8 +160,6 @@
             CURRENT_CAMERA_KEY: ExperienceManager.CAMERA_KEYS.TRACKBALL,
           }
         },
-
-        socket: null,
 
         tween: null,
 
@@ -219,6 +236,11 @@
       };
       window.addEventListener('resize', resizer);
       resizer();
+
+      window.addEventListener('click', ev => {
+        console.log('Conquest clicked...');
+        console.log(ev);
+      });
 
       // Temporary measure for testing cameras
       if (!this.silent) {
