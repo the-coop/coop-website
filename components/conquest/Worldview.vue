@@ -148,7 +148,7 @@
         socket: null,
         
         planets: [],
-        players: [],
+        players: {},
 
         me: {
           player: null
@@ -247,9 +247,9 @@
         const toggleBtn = document.getElementById('toggle_controls');
         toggleBtn.addEventListener('click', e => {
             if (WORLD.settings.view.DESIRED_CAMERA_KEY === ExperienceManager.CAMERA_KEYS.FIRST_PERSON)
-                WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.TRACKBALL
+              WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.TRACKBALL
             else
-                WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.FIRST_PERSON
+              WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.FIRST_PERSON
         });
 
         Controls.initialise();
