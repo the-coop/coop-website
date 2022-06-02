@@ -11,33 +11,39 @@
 </template>
 
 <script> 
-  import WalletConnectProvider from "@walletconnect/web3-provider";
+  import WalletConnect from "@walletconnect/client";
+  import QRCodeModal from "algorand-walletconnect-qrcode-modal";
 
+  // https://developer.algorand.org/docs/get-details/walletconnect/
+  // https://docs.walletconnect.com/quick-start/dapps/web3-provider
+  
+  // import algosdk from "algosdk";
+  // import { formatJsonRpcRequest } from "@json-rpc-tools/utils";
 
   export default {
-    // props: ['']
-    // https://docs.walletconnect.com/quick-start/dapps/web3-provider,
+    
     mounted() {
-      //  Create WalletConnect Provider
-      const provider = new WalletConnectProvider({
-        infuraId: "27e484dcd9e3efcfd25a83a78777cdf1",
+      // Create a connector
+      this.connector = new WalletConnect({
+        bridge: "https://bridge.walletconnect.org", // Required
+        qrcodeModal: QRCodeModal,
       });
 
-      //  Enable session (triggers QR Code modal)
-      provider.enable();
+      // Check if connection is already established
+      if (!this.connector.connected) {
+        // create new session
+        this.connector.createSession();
+      }
     },
     data() {
       return {
+        connector: null
       }
     },
     methods: {
     }
   }
-  // https://developer.algorand.org/docs/get-details/walletconnect/
-  // import WalletConnect from "@walletconnect/client";
-  // import QRCodeModal from "algorand-walletconnect-qrcode-modal";
-  // import algosdk from "algosdk";
-  // import { formatJsonRpcRequest } from "@json-rpc-tools/utils";
+
 
   // // Create a connector
   // const connector = new WalletConnect({
