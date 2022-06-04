@@ -1,5 +1,9 @@
 # coopwebsite
 
+<!-- Menu from settings to logout (easier testing and good for players???) -->
+
+<!-- WalletConnect setup and optin -->
+
 <!-- GUI for planet/moon/object selection. -->
 
 <!-- Load other players -->

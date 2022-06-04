@@ -70,14 +70,13 @@
   }
 
 
-  // .item {
-  //   color: colour.$red;
-  //   cursor: pointer;
-  // }
+  .items .item {
+    cursor: pointer;
+  }
 
-  // .item:hover {
-  //   opacity: .8;
-  // }
+  .items .item:hover {
+    opacity: .8;
+  }
 </style>
 
 <script>

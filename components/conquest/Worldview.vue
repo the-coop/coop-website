@@ -1,22 +1,52 @@
 <template>
   <div class="worldview">
     <h1 class="error-text" v-if="!WEBGL_SUPPORT && !silent">Loading error...</h1>
-    <div class="controls">
-      <button v-if="!silent" id="toggle_controls">SWITCH</button>
+
+    <div 
+      class="settings-toggle"
+      @click="ev => { ev.preventDefault(); this.settingsOpen = !this.settingsOpen}"
+      v-if="!silent">
+      <Gear />
+    </div>
+
+    <div v-if="settingsOpen && !silent" class="settings">
+      <h1>SETTINGS</h1>
+
+      <span v-show="$auth.$state.loggedIn" 
+        class="primary-action"
+        @click="logout">⏏️ Logout</span>
+
+      <span class="primary-action" @click="toggleGUI">
+        🐛 GUI
+      </span>
+
+      <span class="primary-action" @click="closeSettings">
+        x Close
+      </span>
+    </div>
+
+    <div class="primary" v-if="!silent">
       <button 
+        class="primary-action"
         v-show="$auth.$state.loggedIn" 
         @click="spawn" 
         v-if="!silent && !spawned" id="spawn">
-        SPAWN
+        🧬 Spawn
       </button>
       <NuxtLink v-show="!$auth.$state.loggedIn" 
+        class="primary-action"
         :to="{ path: '/auth/login', query: { intent: 'game' }}">
         🔑 Login
       </NuxtLink>
     </div>
 
-    <div class="info">
+    <div class="info" v-if="!silent && guiOpen">
       Target: {{ selected }}
+      <p>
+        <button 
+          @click="changeCamera"
+          id="toggle_controls">SWITCH POV</button>
+      </p>
     </div>
 
     <canvas id="canvas" />
@@ -24,6 +54,9 @@
 </template>
 
 <style scoped>
+  * {
+    user-select: none;
+  }
   .info {
     position: absolute;
     z-index: 1;
@@ -33,10 +66,56 @@
     background: rgba(255, 255, 255, 0.77);
     padding: .25em 2.25em;
   }
-  .controls {
+  .settings-toggle {
     position: absolute;
     z-index: 1;
-    top: 0;
+
+    top: .35em;
+    left: .75em;
+
+    cursor: pointer;
+  }
+  .settings-toggle svg {
+    fill: #747474;
+    stroke: rgb(163, 162, 162);
+    width: 1.75em;
+  }
+  .settings-toggle:hover svg {
+    fill: #2d2d2d;
+    stroke: rgb(144, 144, 144);
+  }
+  .settings {
+    display: flex;
+    position: fixed;
+
+    height: 100%;
+    width: 100%;
+
+    background: rgba(23, 23, 23, 0.93);
+    color: white;
+
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+  }
+  .primary {
+    position: absolute;
+    z-index: 1;
+
+    bottom: .35em;
+    right: .75em;
+  }
+  .primary-action {
+    font-size: 3em;
+    color: rgba(255, 255, 255, 0.77);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .primary-action:hover {
+    opacity: .65;
   }
   .worldview {
     width: 100vw;
@@ -63,6 +142,8 @@
   import PLANETS_SPECIFICATION from '~/lib/conquest/generation/planets-specification.json';
 
   import ExperienceManager from '~/lib/conquest/experience/experienceManager';
+
+  import Gear from '../socials/Gear.vue';
 
   import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
   import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';  
@@ -95,15 +176,37 @@
         default: false
       }
     },
-    components: {},
+    components: {
+      Gear
+    },
     data: () => ({
       WEBGL_SUPPORT: false,
+
+      settingsOpen: false,
+      guiOpen: false,
 
       spawned: false,
 
       selected: null
     }),
     methods: {
+      changeCamera() {
+        if (WORLD.settings.view.DESIRED_CAMERA_KEY === ExperienceManager.CAMERA_KEYS.FIRST_PERSON)
+          WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.TRACKBALL;
+        else
+          WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.FIRST_PERSON;
+      },
+      logout() {
+        this.$auth.logout();
+        this.closeSettings();
+      },
+      toggleGUI() {
+        this.guiOpen = !this.guiOpen;
+        this.closeSettings();
+      },
+      closeSettings() {
+        this.settingsOpen = false;
+      },
       spawn() {
         // Move all of this to player recognised event?
         const target = WORLD.planets[0];
@@ -238,20 +341,16 @@
       resizer();
 
       window.addEventListener('click', ev => {
+        // Check that the click was on the canvas and not a menu etc.
+        if (ev.target !== canvas) return false;
+
         console.log('Conquest clicked...');
         console.log(ev);
+        console.log(ev.target);
       });
 
       // Temporary measure for testing cameras
       if (!this.silent) {
-        const toggleBtn = document.getElementById('toggle_controls');
-        toggleBtn.addEventListener('click', e => {
-            if (WORLD.settings.view.DESIRED_CAMERA_KEY === ExperienceManager.CAMERA_KEYS.FIRST_PERSON)
-              WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.TRACKBALL
-            else
-              WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.FIRST_PERSON
-        });
-
         Controls.initialise();
       }
 

@@ -483,7 +483,7 @@
       z-index: 3;
 
       background: #111111;
-      border-radius: 1rem;
+      border-radius: 1rem 0;
     }
   }
 </style>

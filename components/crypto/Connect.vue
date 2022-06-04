@@ -11,21 +11,39 @@
 </template>
 
 <script> 
+  import algosdk from "algosdk";
+  import { formatJsonRpcRequest } from "@json-rpc-tools/utils";
   import WalletConnect from "@walletconnect/client";
   import QRCodeModal from "algorand-walletconnect-qrcode-modal";
 
   // https://developer.algorand.org/docs/get-details/walletconnect/
   // https://docs.walletconnect.com/quick-start/dapps/web3-provider
-  
-  // import algosdk from "algosdk";
-  // import { formatJsonRpcRequest } from "@json-rpc-tools/utils";
+  const singleAssetOptInTxInteraction = async (chain, address)=> {
+    const suggestedParams = await apiGetTxnParams(chain);
+    const assetIndex = getAssetIndex(chain);
 
+    const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
+      from: address,
+      to: address,
+      amount: 0,
+      assetIndex,
+      note: new Uint8Array(Buffer.from("example note value")),
+      suggestedParams,
+    });
+
+    const txnsToSign = [
+      {
+        txn,
+        message: "This transaction opts you into the USDC asset if you have not already opted in.",
+      },
+    ];
+    return [txnsToSign];
+  };
+  
   export default {
-    
     mounted() {
-      // Create a connector
       this.connector = new WalletConnect({
-        bridge: "https://bridge.walletconnect.org", // Required
+        bridge: "https://bridge.walletconnect.org",
         qrcodeModal: QRCodeModal,
       });
 
@@ -42,8 +60,7 @@
     },
     methods: {
     }
-  }
-
+  };
 
   // // Create a connector
   // const connector = new WalletConnect({

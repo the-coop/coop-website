@@ -7,7 +7,7 @@
     head() {
       return {
         title: 'Coop conquest'
-      }
+      };
     },
     data() {
       return {
