@@ -249,7 +249,11 @@
         camera,
 
         socket: null,
-        
+
+
+        // TODO: Refactor into planets??
+        SOIDict: {},
+
         planets: [],
         players: {},
 
