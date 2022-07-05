@@ -41,5 +41,6 @@ Once clicked, you should now apppear in the game's infinite space as a cube-mode
 Press 'Spacebar' to activate thrusters and press arrow keys or WASD to move around. If you ever move out of the screen, panic not and refresh the webpage to respawn
 
 
+###### More Features coming soon.
 
 
