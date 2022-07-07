@@ -60,7 +60,7 @@
     "emissive": 1,
     "surfaceGravity": 300,
     "color": "#ffff00",
-    "position": [ 2, 1, 5 ],
+    "position": [ 200, 100, 50 ],
     "decorations": [
       {
         "type": "asteroids",
