@@ -139,7 +139,7 @@
   import buildSolarSystem from '~/lib/conquest/generation/buildSolarSystem';
   import setupNetworking from '~/lib/conquest/network/setupNetworking';
 
-  import PLANETS_SPECIFICATION from '~/lib/conquest/generation/planets-specification.json';
+  import UNIVERSE_SPECIFICATION from '~/lib/conquest/generation/universe-specification.json';
 
   import ExperienceManager from '~/lib/conquest/experience/experienceManager';
 
@@ -290,7 +290,10 @@
       WORLD.scene.background = new THREE.Color(0x050D22);
 
       // Generate the world.
-      WORLD.scene.add(buildSolarSystem(PLANETS_SPECIFICATION));
+      console.log(UNIVERSE_SPECIFICATION);
+      UNIVERSE_SPECIFICATION.map(solarSystemConfig => {
+        WORLD.scene.add(buildSolarSystem(solarSystemConfig));
+      });
 
       // Configure and add camera.
       this.intro ? 
