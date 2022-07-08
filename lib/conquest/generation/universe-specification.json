@@ -56,10 +56,10 @@
     "name": "second sun",
     "surface": 5,
     "spin": 0.1,
-    "SOISize": 100,
-    "emissive": 1,
+    "SOISize": 200,
+    "emissive": 0.75,
     "surfaceGravity": 300,
-    "color": "#ffff00",
+    "color": "#e34234",
     "position": [ 200, 100, 50 ],
     "decorations": [
       {
@@ -69,22 +69,11 @@
     ],
     "children": [
       {
-        "name": "lilOne",
-        "spin": 0.1,
-        "velocity": 0.02,
-        "surface": 1,
-        "SOISize": 10,
-        "surfaceGravity": 300,
-        "children": [],
-        "color": "#00ff00",
-        "position": [ 15, 0, 5 ]
-      },
-      {
         "name": "lilOneTwo",
         "velocity": 0.01,
         "spin": 0.1,
         "surface": 1,
-        "SOISize": 10,
+        "SOISize": 15,
         "surfaceGravity": 300,
         "children": [],
         "color": "#00ff00",
@@ -96,7 +85,7 @@
         "velocity": 0.001,
         "spin": 0.01,
         "surface": 2,
-        "SOISize": 10,
+        "SOISize": 20,
         "surfaceGravity": 300,
         "children": [],
         "color": "#00ff00",

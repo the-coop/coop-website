@@ -90,11 +90,7 @@ export default {
         endpoints: {
           logout: false,
           login: {
-            url: 
-              process.env.NODE_ENV === 'production' ?
-                API.BASE_URL + 'auth/access'
-                :
-                API.BASE_URL + 'auth/dev-access',
+            url: API.BASE_URL + 'auth/access',
             method: 'post' 
           },
           user: { 
