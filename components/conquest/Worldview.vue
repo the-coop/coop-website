@@ -132,16 +132,14 @@
   import * as THREE from 'three';
   import { Tween, Easing } from '@tweenjs/tween.js';
 
-  import Controls from '~/lib/conquest/experience/controls';
-  import { TrackballControls } from '~/lib/conquest/experience/TrackballControls';
+  import ControlsManager from '~/lib/conquest/experience/controls/controlsManager';
+  import { TrackballControls } from '~/lib/conquest/experience/controls/TrackballControls';
 
   import engine from '~/lib/conquest/engine';
   import buildSolarSystem from '~/lib/conquest/generation/buildSolarSystem';
   import setupNetworking from '~/lib/conquest/network/setupNetworking';
 
   import UNIVERSE_SPECIFICATION from '~/lib/conquest/generation/universe-specification.json';
-
-  import ExperienceManager from '~/lib/conquest/experience/experienceManager';
 
   import Gear from '../socials/Gear.vue';
 
@@ -358,7 +356,7 @@
 
       // Temporary measure for testing cameras
       if (!this.silent) {
-        Controls.initialise();
+        ControlsManager.initialise();
       }
 
       // Setup and run the game/level networking (socket based).
