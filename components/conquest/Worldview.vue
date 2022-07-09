@@ -189,10 +189,10 @@
     }),
     methods: {
       changeCamera() {
-        if (WORLD.settings.view.DESIRED_CAMERA_KEY === ExperienceManager.CAMERA_KEYS.FIRST_PERSON)
-          WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.TRACKBALL;
+        if (WORLD.settings.view.DESIRED_CAMERA_KEY === ControlsManager.CAMERA_KEYS.FIRST_PERSON)
+          WORLD.settings.view.DESIRED_CAMERA_KEY = ControlsManager.CAMERA_KEYS.TRACKBALL;
         else
-          WORLD.settings.view.DESIRED_CAMERA_KEY = ExperienceManager.CAMERA_KEYS.FIRST_PERSON;
+          WORLD.settings.view.DESIRED_CAMERA_KEY = ControlsManager.CAMERA_KEYS.FIRST_PERSON;
       },
       logout() {
         this.$auth.logout();
@@ -261,8 +261,8 @@
 
         settings: {
           view: {
-            DESIRED_CAMERA_KEY: ExperienceManager.CAMERA_KEYS.TRACKBALL,
-            CURRENT_CAMERA_KEY: ExperienceManager.CAMERA_KEYS.TRACKBALL,
+            DESIRED_CAMERA_KEY: ControlsManager.CAMERA_KEYS.TRACKBALL,
+            CURRENT_CAMERA_KEY: ControlsManager.CAMERA_KEYS.TRACKBALL,
           }
         },
 
