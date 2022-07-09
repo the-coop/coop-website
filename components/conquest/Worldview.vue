@@ -269,7 +269,8 @@
         tween: null,
 
         // Deterministic time variable.
-        timeIncrement: Date.now()
+        timeIncrement: Date.now(),
+        delta: 0.01
       };
 
       const renderScene = new RenderPass(WORLD.scene, WORLD.camera);
