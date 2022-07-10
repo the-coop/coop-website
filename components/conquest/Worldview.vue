@@ -54,9 +54,9 @@
         <p v-for="p in players" :key="p.id">
           {{ p.config.username }}
           <span>
-            X: {{ p.handle.position.x.toFixed(5) }}
-            Y: {{ p.handle.position.y.toFixed(5) }}
-            Z: {{ p.handle.position.z.toFixed(5) }}
+            X: {{ p.handle.position.x.toFixed(4) }}
+            Y: {{ p.handle.position.y.toFixed(4) }}
+            Z: {{ p.handle.position.z.toFixed(4) }}
           </span>
         </p>
       </div>
