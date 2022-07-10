@@ -49,7 +49,7 @@
           id="toggle_controls">SWITCH POV</button>
       </p>
 
-      <!-- TODO: Add all players here -->
+      <!-- Temporary debug GUI. -->
       <div>
         <p v-for="p in players" :key="p.id">
           {{ p.config.username }}
