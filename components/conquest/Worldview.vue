@@ -266,7 +266,6 @@
 
         socket: null,
 
-
         // TODO: Refactor into planets??
         SOIDict: {},
 
@@ -286,9 +285,8 @@
 
         tween: null,
 
-        // Deterministic time variable.
-        timeIncrement: Date.now(),
-        delta: 0.01
+        // Deterministic time variable
+        timeIncrement: Date.now()
       };
 
       const renderScene = new RenderPass(WORLD.scene, WORLD.camera);
