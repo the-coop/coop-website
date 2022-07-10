@@ -57,6 +57,10 @@
             X: {{ p.handle.position.x.toFixed(4) }}
             Y: {{ p.handle.position.y.toFixed(4) }}
             Z: {{ p.handle.position.z.toFixed(4) }}
+
+            G: {{ p.onGround }}
+            CV: {{ p.correctionVelocity }}
+            CT: {{ p.correctionTime }}
           </span>
         </p>
       </div>
