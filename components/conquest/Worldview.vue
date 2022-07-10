@@ -42,11 +42,24 @@
 
     <div class="info" v-if="!silent && guiOpen">
       Target: {{ selected }}
+
       <p>
         <button 
           @click="changeCamera"
           id="toggle_controls">SWITCH POV</button>
       </p>
+
+      <!-- TODO: Add all players here -->
+      <div>
+        <p v-for="p in players" :key="p.id">
+          {{ p.config.username }}
+          <span>
+            X: {{ p.handle.position.x.toFixed(5) }}
+            Y: {{ p.handle.position.y.toFixed(5) }}
+            Z: {{ p.handle.position.z.toFixed(5) }}
+          </span>
+        </p>
+      </div>
     </div>
 
     <canvas id="canvas" />
@@ -178,6 +191,9 @@
       Gear
     },
     data: () => ({
+      // Just for testing and GUI
+      players: [],
+
       WEBGL_SUPPORT: false,
 
       settingsOpen: false,
@@ -188,6 +204,9 @@
       selected: null
     }),
     methods: {
+      getPlayers() {
+        return Object.values(WORLD.players);
+      },
       changeCamera() {
         if (WORLD.settings.view.DESIRED_CAMERA_KEY === ControlsManager.CAMERA_KEYS.FIRST_PERSON)
           WORLD.settings.view.DESIRED_CAMERA_KEY = ControlsManager.CAMERA_KEYS.TRACKBALL;
@@ -350,6 +369,8 @@
         console.log(ev.target);
       });
 
+      // TODO: Add gui player position
+
       // Temporary measure for testing cameras
       if (!this.silent) {
         ControlsManager.initialise();
@@ -367,6 +388,9 @@
           .start()
           .onComplete(() => WORLD.tween = null);
       }
+
+      // Update mainly for GUI.
+      setInterval(() => this.players = this.getPlayers(), 150);
 
       engine(this);
     }
