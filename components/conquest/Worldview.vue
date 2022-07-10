@@ -208,16 +208,11 @@
       spawn() {
         // Move all of this to player recognised event?
         const target = WORLD.planets[0];
-        console.log(target);
-
         const spawnPos = target.body.position;
-        // Offset from the planet?
-        // spawnPos.set(50, 50, 50);
 
         window.WORLD.socket.emit('player_spawned', {
           spawn_location: spawnPos,
           orbit_influence: target.name
-          // TODO: Pass the ID for the solar system
         });
 
         // Update GUI actions related to spawnign.
