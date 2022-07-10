@@ -31,7 +31,7 @@
       </div>
 
       <client-only>
-        <Worldview :silent="true" :intro="true" />
+        <Worldview :silent="true" :intro="true" :networking="true" />
       </client-only>
     </div>
 
