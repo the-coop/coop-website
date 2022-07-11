@@ -244,7 +244,7 @@
     },
 
     // TODO might need a setting to disable this for low power devices
-    // µSet up HDR rendering
+    // Set up HDR rendering
     // WORLD.renderer.toneMapping = THREE.ReinhardToneMapping;
     async mounted() {
       const canvas = document.getElementById('canvas');
@@ -283,7 +283,7 @@
           }
         },
 
-        tween: null,
+        cameraAnimation: null,
 
         // Deterministic time variable
         timeIncrement: Date.now()
@@ -384,11 +384,11 @@
 
       // Handle intro loading if applicable.
       if (this.intro) {
-        WORLD.tween = new Tween(WORLD.camera.position)
+        WORLD.cameraAnimation = new Tween(WORLD.camera.position)
           .to({ x: 0, y: 10, z: 30 }, 2000)
           .easing(Easing.Quadratic.Out)
           .start()
-          .onComplete(() => WORLD.tween = null);
+          .onComplete(() => WORLD.cameraAnimation = null);
       }
 
       // Update mainly for GUI.
