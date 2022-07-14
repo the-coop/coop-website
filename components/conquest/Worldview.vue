@@ -40,6 +40,11 @@
       </NuxtLink>
     </div>
 
+    <!-- TODO: Implement properly -->
+    <div class="info" v-if="died">
+      YOU DIED
+    </div>
+
     <div class="info" v-if="!silent && guiOpen">
       Target: {{ selected }}
 
@@ -204,6 +209,7 @@
       guiOpen: false,
 
       spawned: false,
+      died: false,
 
       selected: null
     }),
@@ -258,6 +264,7 @@
 
       // Used for shared state.
       window.WORLD = {
+        component: this,
         renderer: new THREE.WebGLRenderer({ canvas, antialias: true }),
         scene: new THREE.Scene,
         controls: new TrackballControls(camera, canvas),
