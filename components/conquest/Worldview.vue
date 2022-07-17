@@ -155,7 +155,7 @@
   import { Tween, Easing } from '@tweenjs/tween.js';
 
   import ControlsManager from '~/lib/conquest/experience/controlsManager';
-  import { TrackballControls } from '~/lib/conquest/experience/controls/trackball/trackballControls';
+  import TrackballControls from '~/lib/conquest/experience/controls/trackball/trackballControls';
 
   import engine from '~/lib/conquest/engine';
   import buildSolarSystem from '~/lib/conquest/generation/buildSolarSystem';
