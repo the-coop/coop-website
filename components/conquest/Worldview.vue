@@ -58,10 +58,10 @@
       <div>
         <p v-for="p in players" :key="p.id">
           {{ p.config.username }}
-          <span>
-            X: {{ p.handle.position.x.toFixed(4) }}
-            Y: {{ p.handle.position.y.toFixed(4) }}
-            Z: {{ p.handle.position.z.toFixed(4) }}
+          <span :style="{ minWidth: '300px' }">
+            <p>X: {{ p.handle.position.x.toFixed(4) }}</p>
+            <p>Y: {{ p.handle.position.y.toFixed(4) }}</p>
+            <p>Z: {{ p.handle.position.z.toFixed(4) }}</p>
 
             G: {{ p.onGround }}
             CV: {{ p.correctionVelocity }}
@@ -155,7 +155,6 @@
   import { Tween, Easing } from '@tweenjs/tween.js';
 
   import ControlsManager from '~/lib/conquest/experience/controlsManager';
-  import TrackballControls from '~/lib/conquest/experience/controls/trackball/trackballControls';
 
   import engine from '~/lib/conquest/engine';
   import buildSolarSystem from '~/lib/conquest/generation/buildSolarSystem';
@@ -168,7 +167,7 @@
   import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
   import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';  
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-
+  
   const bloom = {
     exposure: 0.5,
     bloomStrength: 1.5,
@@ -218,10 +217,7 @@
         return Object.values(WORLD.players);
       },
       changeCamera() {
-        if (WORLD.settings.view.DESIRED_CAMERA_KEY === ControlsManager.CAMERA_KEYS.FIRST_PERSON)
-          WORLD.settings.view.DESIRED_CAMERA_KEY = ControlsManager.CAMERA_KEYS.TRACKBALL;
-        else
-          WORLD.settings.view.DESIRED_CAMERA_KEY = ControlsManager.CAMERA_KEYS.FIRST_PERSON;
+        ControlsManager.toggleCameraTemp();
       },
       logout() {
         this.$auth.logout();
@@ -249,9 +245,6 @@
       }
     },
 
-    // TODO might need a setting to disable this for low power devices
-    // Set up HDR rendering
-    // WORLD.renderer.toneMapping = THREE.ReinhardToneMapping;
     async mounted() {
       const canvas = document.getElementById('canvas');
       const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 200);
@@ -267,9 +260,12 @@
         component: this,
         renderer: new THREE.WebGLRenderer({ canvas, antialias: true }),
         scene: new THREE.Scene,
-        controls: new TrackballControls(camera, canvas),
         canvas,
         camera,
+
+        // Hardcode for now
+        input: null,
+        controls: null,
 
         socket: null,
 
@@ -285,8 +281,12 @@
 
         settings: {
           view: {
-            DESIRED_CAMERA_KEY: ControlsManager.CAMERA_KEYS.TRACKBALL,
-            CURRENT_CAMERA_KEY: ControlsManager.CAMERA_KEYS.TRACKBALL,
+            DESIRED_CAMERA_KEY: "TRACKBALL",
+            DESIRED_INPUT_KEY: "COMPUTER",
+
+            // Setting to null may trigger initialisation of input.
+            CURRENT_CAMERA_KEY: null,
+            CURRENT_INPUT_KEY: null
           }
         },
 
@@ -304,9 +304,14 @@
       bloomPass.strength = bloom.bloomStrength;
       bloomPass.radius = bloom.bloomRadius;
 
+      // Composer for post-processing.
       WORLD.composer = new EffectComposer(WORLD.renderer);
       WORLD.composer.addPass(renderScene);
       WORLD.composer.addPass(bloomPass);
+
+      // TODO might need a setting to disable this for low power devices
+      // Set up HDR rendering
+      // WORLD.renderer.toneMapping = THREE.ReinhardToneMapping;
 
       // Set background colour
       WORLD.scene.background = new THREE.Color(0x050D22);
@@ -317,12 +322,7 @@
         WORLD.scene.add(buildSolarSystem(solarSystemConfig));
       });
 
-      // Configure and add camera.
-      this.intro ? 
-        camera.position.set(240, 240, 240)
-        :
-        camera.position.set(0, 30, 30);
-
+      // Add our main camera to the engine.
       WORLD.scene.add(WORLD.camera);
 
       // Generate the stars.
@@ -347,7 +347,7 @@
         }
       }
 
-      // soft white global light
+      // Soft white global light
       const light = new THREE.AmbientLight(0x404040); 
       WORLD.scene.add(light);
 
@@ -369,38 +369,27 @@
       window.addEventListener('resize', resizer);
       resizer();
 
-      window.addEventListener('click', ev => {
-        // Check that the click was on the canvas and not a menu etc.
-        if (ev.target !== canvas) return false;
-
-        console.log('Conquest clicked...');
-        console.log(ev);
-        console.log(ev.target);
-      });
-
-      // TODO: Add gui player position
-
-      // Temporary measure for testing cameras
-      if (!this.silent) {
-        ControlsManager.initialise();
-      }
-
       // Setup and run the game/level networking (socket based).
       if (this.networking && this.$auth.user)
         setupNetworking(this.$auth.strategy.token.get(), this.$auth.user);
 
+      // Configure and add camera.
+      // this.intro ? 
+      camera.position.set(0, 45, 45);
+
       // Handle intro loading if applicable.
       if (this.intro) {
         WORLD.cameraAnimation = new Tween(WORLD.camera.position)
-          .to({ x: 0, y: 10, z: 30 }, 2000)
-          .easing(Easing.Quadratic.Out)
+          .to({ x: 0, y: 15, z: 40 }, 1250)
+          .easing(Easing.Quadratic.InOut)
           .start()
           .onComplete(() => WORLD.cameraAnimation = null);
       }
 
-      // Update mainly for GUI.
+      // DEV: Update mainly for GUI.
       setInterval(() => this.players = this.getPlayers(), 150);
 
+      // Start the engine, recursively.
       engine(this);
     }
   }
