@@ -218,6 +218,7 @@
 
       selected: null
     }),
+    
     methods: {
       getPlayers() {
         return Object.values(WORLD.players);
@@ -252,15 +253,21 @@
     },
 
     async mounted() {
-      let DETECTED_INPUT_KEY = isMobile() ? "MOBILE" : "COMPUTER";
+      const DETECTED_INPUT_KEY = isMobile() ? "MOBILE" : "COMPUTER";
 
-      // TODO: Check is console/detect console controller
+      // Detect console controller.
       window.addEventListener("gamepadconnected", function(e) {
-        console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
-        e.gamepad.index, e.gamepad.id,
-        e.gamepad.buttons.length, e.gamepad.axes.length);
-
-        // Switch to console controls.
+        console.log(
+          "Gamepad connected at index %d: %s. %d buttons, %d axes.",
+          e.gamepad.index, e.gamepad.id,
+          e.gamepad.buttons.length, e.gamepad.axes.length
+        );
+        WORLD.settings.view.DESIRED_INPUT_KEY = "CONSOLE";
+      });
+      window.addEventListener("gamepaddisconnected", function(e) {
+        console.log("Gamepad disconnected from index %d: %s",
+        e.gamepad.index, e.gamepad.id);
+        WORLD.settings.view.DESIRED_INPUT_KEY = "COMPUTER";
       });
 
       // Check if WebGL is supported.
@@ -405,6 +412,10 @@
 
       // Start the engine, recursively.
       engine(this);
+    },
+
+    async beforeUnmount() {
+      console.log('Testing');
     }
   }
 </script>
