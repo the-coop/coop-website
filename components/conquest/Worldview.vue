@@ -152,10 +152,10 @@
 
 <script>
   import * as THREE from 'three';
-  import { Tween, Easing } from '@tweenjs/tween.js';
 
   import ControlsManager from '~/lib/conquest/experience/controlsManager';
 
+  import resizer from '~/lib/conquest/experience/resizing';
   import engine from '~/lib/conquest/engine';
   import buildSolarSystem from '~/lib/conquest/generation/buildSolarSystem';
   import setupNetworking from '~/lib/conquest/network/setupNetworking';
@@ -167,6 +167,7 @@
   import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
   import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';  
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+  
 
   const isMobile = () => {
     let check = false;
@@ -255,6 +256,8 @@
     async mounted() {
       const DETECTED_INPUT_KEY = isMobile() ? "MOBILE" : "COMPUTER";
 
+      // TODO: On detection/disconnection should have a popup for switching.
+
       // Detect console controller.
       window.addEventListener("gamepadconnected", function(e) {
         console.log(
@@ -330,15 +333,10 @@
       WORLD.composer.addPass(renderScene);
       WORLD.composer.addPass(bloomPass);
 
-      // TODO might need a setting to disable this for low power devices
-      // Set up HDR rendering
-      // WORLD.renderer.toneMapping = THREE.ReinhardToneMapping;
-
       // Set background colour
       WORLD.scene.background = new THREE.Color(0x050D22);
 
       // Generate the world.
-      console.log(UNIVERSE_SPECIFICATION);
       UNIVERSE_SPECIFICATION.map(solarSystemConfig => {
         WORLD.scene.add(buildSolarSystem(solarSystemConfig));
       });
@@ -346,6 +344,7 @@
       // Add our main camera to the engine.
       WORLD.scene.add(WORLD.camera);
 
+      // TODO: Refactor out of here and add move to follow (surround) player.
       // Generate the stars.
       const starsCount = 200;
       const starsContainer = new THREE.Group;
@@ -375,37 +374,13 @@
       // Add stars to scene.
       WORLD.scene.add(starsContainer);
 
-      function resizer() {
-        // Update camera
-        WORLD.camera.aspect = window.innerWidth / window.innerHeight;
-        WORLD.camera.updateProjectionMatrix();
-
-        // Update renderer
-        WORLD.renderer.setSize(window.innerWidth, window.innerHeight);
-        WORLD.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-        //todo super sampleing, this might be laggy
-        WORLD.composer.setSize(window.innerWidth * 2, window.innerHeight * 2);
-      };
+      // Add screen resizing capability.
       window.addEventListener('resize', resizer);
       resizer();
 
       // Setup and run the game/level networking (socket based).
       if (this.networking && this.$auth.user)
         setupNetworking(this.$auth.strategy.token.get(), this.$auth.user);
-
-      // Configure and add camera.
-      // this.intro ? 
-      WORLD.camera.position.set(0, 45, 45);
-
-      // Handle intro loading if applicable.
-      if (this.intro) {
-        WORLD.cameraAnimation = new Tween(WORLD.camera.position)
-          .to({ x: 0, y: 15, z: 40 }, 1250)
-          .easing(Easing.Quadratic.InOut)
-          .start()
-          .onComplete(() => WORLD.cameraAnimation = null);
-      }
 
       // DEV: Update mainly for GUI.
       setInterval(() => this.players = this.getPlayers(), 150);
@@ -415,7 +390,7 @@
     },
 
     async beforeUnmount() {
-      console.log('Testing');
+      console.log('Testing Worldview beforeUnmount');
     }
   }
 </script>
