@@ -2,7 +2,7 @@
   {
     "name": "sun",
     "surface": 5,
-    "spin": 0.1,
+    "spin": 0.002,
     "SOISize": 100,
     "emissive": 1,
     "surfaceGravity": 30,
@@ -17,8 +17,8 @@
     "children": [
       {
         "name": "lilOne",
-        "spin": 0.1,
-        "velocity": 0.02,
+        "spin": 0.02,
+        "velocity": 0.002,
         "surface": 1,
         "SOISize": 10,
         "surfaceGravity": 30,
@@ -28,8 +28,8 @@
       },
       {
         "name": "lilOneTwo",
-        "velocity": 0.01,
-        "spin": 0.1,
+        "velocity": 0.001,
+        "spin": 0.02,
         "surface": 1,
         "SOISize": 10,
         "surfaceGravity": 30,
@@ -55,7 +55,7 @@
   {
     "name": "second sun",
     "surface": 5,
-    "spin": 0.1,
+    "spin": 0.02,
     "SOISize": 200,
     "emissive": 0.75,
     "surfaceGravity": 30,
@@ -70,8 +70,8 @@
     "children": [
       {
         "name": "lilOneTwo",
-        "velocity": 0.01,
-        "spin": 0.1,
+        "velocity": 0.001,
+        "spin": 0.02,
         "surface": 1,
         "SOISize": 15,
         "surfaceGravity": 30,
@@ -82,8 +82,8 @@
       },
       {
         "name": "BigOne",
-        "velocity": 0.001,
-        "spin": 0.01,
+        "velocity": 0.002,
+        "spin": 0.002,
         "surface": 2,
         "SOISize": 20,
         "surfaceGravity": 30,
