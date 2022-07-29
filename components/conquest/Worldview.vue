@@ -305,7 +305,8 @@
         players: {},
 
         me: {
-          player: null
+          player: null,
+          config: null
         },
 
         settings: {
