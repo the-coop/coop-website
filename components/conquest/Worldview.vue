@@ -293,6 +293,7 @@
 
         // Deterministic time variable
         timeIncrement: Date.now(),
+        deltaTime: 0,
 
         input: null,
         controls: null,
