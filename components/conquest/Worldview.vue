@@ -295,6 +295,9 @@
         timeIncrement: Date.now(),
         deltaTime: 0,
 
+        // Engine needs to know if controls etc disabled.
+        silent: this.silent,
+
         input: null,
         controls: null,
 
