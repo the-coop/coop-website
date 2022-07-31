@@ -36,3 +36,11 @@ $ yarn generate
 ```
 
 For detailed explanation on how things work, check out [Nuxt.js docs](https://nuxtjs.org).
+
+
+These perhaps should be isolated into a different project/page?
+
+    "@walletconnect/client": "^1.7.8",
+    "@walletconnect/web3-provider": "^1.7.8",
+    "algorand-walletconnect-qrcode-modal": "^1.7.4",
+    "algosdk": "^1.16.0",

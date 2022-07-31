@@ -10,16 +10,15 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
+    "@babel/core": "^7.18.9",
     "@json-rpc-tools/utils": "^1.7.6",
     "@nuxtjs/auth": "^4.9.1",
     "@nuxtjs/auth-next": "^5.0.0-1622918202.e815752",
     "@nuxtjs/axios": "^5.13.6",
     "@tweenjs/tween.js": "^18.6.4",
     "@walletconnect/client": "^1.7.8",
-    "@walletconnect/web3-provider": "^1.7.8",
     "algorand-walletconnect-qrcode-modal": "^1.7.4",
-    "algosdk": "^1.16.0",
-    "anime": "^0.1.2",
+    "algosdk": "^1.19.0",
     "animejs": "^3.2.1",
     "axios": "^0.21.1",
     "babel-runtime": "^6.26.0",
@@ -30,10 +29,11 @@
     "moment": "^2.29.1",
     "nuxt": "^2.15.8",
     "nuxt-webfontloader": "^1.1.0",
-    "phaser": "^3.55.2",
     "socket.io-client": "^4.1.2",
-    "three": "^0.129.0",
-    "vue-markdown": "^2.2.4"
+    "three": "^0.143.0",
+    "vue": "^2.7.8",
+    "vue-markdown": "^2.2.4",
+    "webpack": "^5.74.0"
   },
   "devDependencies": {
     "sass": "^1.44.0",
