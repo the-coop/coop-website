@@ -6,6 +6,7 @@ const metaImage = 'https://thecoop.group/favicon.svg';
 const metaPreviewImage = 'https://thecoop.group/link-preview.png';
 
 export default {
+
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static',
 

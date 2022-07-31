@@ -69,7 +69,7 @@
         <h4>Bases:</h4>
         <div>
           <a target="_blank" 
-            :href="`https://www.thecoop.group/conquest/world?tile=${b.tile}`"
+            :href="`/conquest/world?tile=${b.tile}`"
             v-for="b in user.base_list" :key="`base-list-${b.tile}`">
             {{ b.tile }}
           </a>

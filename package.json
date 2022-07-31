@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nuxt",
+    "dev-prod-api": "DEV_USE_PRODUCTION_API=TRUE nuxt",
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate"
@@ -25,10 +26,9 @@
     "body-parser": "^1.19.0",
     "consola": "^2.15.3",
     "coopshared": "git+https://github.com/the-coop/coopshared.git",
-    "fibers": "^5.0.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
-    "nuxt": "^2.2.0",
+    "nuxt": "^2.15.8",
     "nuxt-webfontloader": "^1.1.0",
     "phaser": "^3.55.2",
     "socket.io-client": "^4.1.2",
