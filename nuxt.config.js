@@ -10,6 +10,10 @@ export default {
   // Target: https://go.nuxtjs.dev/config-target
   target: 'static',
 
+  server: {
+    port: 4500,
+  },
+
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     title: metaName,
