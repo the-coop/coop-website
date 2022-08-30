@@ -96,7 +96,7 @@
           (process.env.NODE_ENV === 'production' ?
             OAUTH_BASE + "&redirect_uri=https%3A%2F%2Fthecoop.group%2Fauth%2Fauthorise&response_type=code&scope=identify"
             :
-            OAUTH_BASE + "&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fauthorise&response_type=code&scope=identify"
+            OAUTH_BASE + "&redirect_uri=http%3A%2F%2Flocalhost%3A4500%2Fauth%2Fauthorise&response_type=code&scope=identify"
           ) + '&state=' + this.intent
       });
 
