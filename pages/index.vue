@@ -15,7 +15,7 @@
 
         <div class="actions">
           <a href="https://fund-the-coop.raisely.com" target="_blank" class="button">Donate</a>
-          <a v-show="!$auth.$state.loggedIn" href="https://discord.gg/gmfajZagTg" target="_blank" class="button">Join</a>
+          <a v-show="!$auth.$state.loggedIn" href="https://discord.gg/594nfRnyuT" target="_blank" class="button">Join</a>
         </div>
       </div>
 
