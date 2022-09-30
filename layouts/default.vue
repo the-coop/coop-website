@@ -44,7 +44,7 @@
             <a 
               @click="closeMenu"
               v-show="!$auth.$state.loggedIn" 
-              href="https://discord.gg/gmfajZagTg" target="_blank" class="nav-link">
+              :href="inviteLink" target="_blank" class="nav-link">
               👋 Join
             </a>
 
@@ -151,6 +151,7 @@
   import Github from '../components/socials/Github.vue';
   import Twitter from '../components/socials/Twitter.vue';
   import Instagram from '../components/socials/Instagram.vue';
+import { inviteLink } from '~/lib/config';
 
   const closedBottom = '-100%';
 
@@ -233,7 +234,10 @@
       }
     },
     data() {
-      return { page: this.$route.name };
+      return { 
+        page: this.$route.name,
+        inviteLink
+      };
     },
     watch: {
       $route(value) {

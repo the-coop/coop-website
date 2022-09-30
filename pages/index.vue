@@ -15,7 +15,7 @@
 
         <div class="actions">
           <a href="https://fund-the-coop.raisely.com" target="_blank" class="button">Donate</a>
-          <a v-show="!$auth.$state.loggedIn" href="https://discord.gg/gmfajZagTg" target="_blank" class="button">Join</a>
+          <a v-show="!$auth.$state.loggedIn" :href="inviteLink" target="_blank" class="button">Join</a>
         </div>
       </div>
 
@@ -24,8 +24,8 @@
         <a :href="advert.target_url">
           <div 
             class="advertisement-image" 
-            :style="{ backgroundImage: `url(${advert.image_url})` }"
-          />
+            :style="{ backgroundImage: `url(${advert.image_url})` }">
+          </div>
         </a>
 
       </div>
@@ -102,6 +102,7 @@
   import ConquestMenu from '~/components/conquest/ConquestMenu.vue';
   import LoginBlock from '~/components/users/LoginBlock.vue';
   import ServicesList from '~/components/users/services/ServicesList.vue';
+import { inviteLink } from '~/lib/config';
 
   export default {
     components: {
@@ -123,7 +124,9 @@
         usersTotal: 0,
         advert: null,
 
-        hasVisited: false
+        hasVisited: false,
+
+        inviteLink
       };
     },
     destroyed() {
