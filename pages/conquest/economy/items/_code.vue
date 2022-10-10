@@ -32,7 +32,7 @@
               {{ i.username }}
             </td>
             <td>
-              {{ i.quantity }}
+              {{ Number(i.quantity) }}
             </td>
           </tr>
         </tbody>

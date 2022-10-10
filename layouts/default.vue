@@ -36,6 +36,10 @@
               🔮 Members
             </NuxtLink>
 
+            <NuxtLink v-show="$auth.$state.loggedIn" to="/members/roles" class="nav-link" @click.native="closeMenu">
+              ⚙️ Roles
+            </NuxtLink>
+
             <!-- Actions for guests/non-users/logged out users -->
             <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" @click.native="closeMenu">
               🔑 Login

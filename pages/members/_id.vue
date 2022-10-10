@@ -62,18 +62,18 @@
 
         <h3>Conquest</h3>
         
-        <div>
+        <!-- <div>
           Location: {{ user.tile }}
-        </div>
+        </div> -->
 
-        <h4>Bases:</h4>
+        <!-- <h4>Bases:</h4>
         <div>
           <a target="_blank" 
             :href="`/conquest/world?tile=${b.tile}`"
             v-for="b in user.base_list" :key="`base-list-${b.tile}`">
             {{ b.tile }}
           </a>
-        </div>
+        </div> -->
 
       </div>
     </div>
@@ -113,6 +113,7 @@
   .items a {
     margin: 0 .75em .35em 0;
     color: rgb(172, 172, 213);
+    text-decoration: none;
   }
 
   .items span {
