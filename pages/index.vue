@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <div class="page home content-container">
+  <div class="home-wrapper">
+    <div class="page home hero-container content-container">
       <div class="hero">
         <h1 class="title">WHAT IS THE COOP?</h1>
 
@@ -91,6 +91,7 @@
 
       <LoginBlock />
     </div>
+
   </div>
 </template>
 
@@ -102,7 +103,7 @@
   import ConquestMenu from '~/components/conquest/ConquestMenu.vue';
   import LoginBlock from '~/components/users/LoginBlock.vue';
   import ServicesList from '~/components/users/services/ServicesList.vue';
-import { inviteLink } from '~/lib/config';
+  import { inviteLink } from '~/lib/config';
 
   export default {
     components: {
@@ -179,6 +180,15 @@ import { inviteLink } from '~/lib/config';
 </script>
 
 <style>
+  .home-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .hero-container {
+    flex: 100%;
+  }
+
   .home {
     display: flex;
     flex-direction: column;
