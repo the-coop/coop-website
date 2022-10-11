@@ -51,7 +51,7 @@
 
               <ItemIcon 
                 :code="i.item_code"
-                :label="`${i.item_code} x ${i.quantity.toFixed(2)}`"
+                :label="`${i.item_code} x ${('' + i.quantity.toFixed(2)).replace('00', '')}`"
               />
             </a>
           </div>
@@ -60,7 +60,7 @@
         <h4>Trades</h4>
         <span>coming soon</span>
 
-        <h3>Conquest</h3>
+        <!-- <h3>Conquest</h3> -->
         
         <!-- <div>
           Location: {{ user.tile }}
