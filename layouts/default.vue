@@ -3,7 +3,7 @@
     <div class="header">
 
       <nav class="navigation additional-navigation">
-        <NuxtLink to="/guide" class="nav-link current" @click.native="closeMenu">
+        <NuxtLink to="/" class="nav-link current" @click.native="closeMenu">
           🏠 Home
         </NuxtLink>
 
@@ -565,6 +565,7 @@
 
     .header-socials {
       text-align: center;
+      display: none;
     }
   }
 </style>

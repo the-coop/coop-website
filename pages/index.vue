@@ -1,7 +1,8 @@
 <template>
   <div class="home-wrapper">
     <div class="page home hero-container content-container">
-      <div class="hero">
+
+      <div class="hero" v-show="!$auth.$state.loggedIn">
         <h1 class="title">WHAT IS THE COOP?</h1>
 
         <p class="subtitle">
@@ -14,9 +15,20 @@
         </p>
 
         <div class="actions">
-          <a href="https://fund-the-coop.raisely.com" target="_blank" class="button">Donate</a>
+          <a href="https://fund-the-coop.raisely.com" target="_blank" class="button secondary">Donate</a>
           <a v-show="!$auth.$state.loggedIn" :href="inviteLink" target="_blank" class="button">Join</a>
         </div>
+      </div>
+
+      <div class="hero" v-show="$auth.$state.loggedIn">
+        <h1 class="title">Welcome back, comrade (username)</h1>
+ 
+        <!-- Actions related to user -->
+        <!-- Create notifications/inbox -->
+        <!-- <div class="actions">
+          <a href="https://fund-the-coop.raisely.com" target="_blank" class="button">Donate</a>
+          <a v-show="!$auth.$state.loggedIn" :href="inviteLink" target="_blank" class="button">Join</a>
+        </div> -->
       </div>
 
       <div class="prompt" v-if="advert">
@@ -30,7 +42,7 @@
       </div>
 
       <client-only>
-        <Worldview :silent="true" :intro="true" :networking="true" />
+        <Worldview :silent="true" :intro="true" :networking="true" :controls="false" />
       </client-only>
     </div>
 

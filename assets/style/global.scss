@@ -47,9 +47,9 @@ html {
 
   cursor: pointer;
 
-  background-color: color.$red;
+  // background-color: color.$red;
   border: .125em solid color.$red;
-  color: #fefefe;
+  color: color.$red;
 
   font-size: 1.15em;
   text-decoration: none;
@@ -59,8 +59,8 @@ html {
 }
 
 .button:hover {
-  background-color: transparent;
-  color: color.$red;
+  background-color: color.$red;
+  color: #fefefe;
 }
 
 .button.secondary {
