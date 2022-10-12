@@ -18,6 +18,14 @@
           👋 Join
         </a>
 
+        <a 
+          @click="closeMenu"
+          v-show="$auth.$state.loggedIn" 
+          href="https://fund-the-coop.raisely.com" target="_blank" class="nav-link">
+          👋 Donate
+        </a>
+
+        
         <!-- <div class="dropdown">
           <span class="dropdown-label" @click="toggleDropdown">🗡 Conquest</span>
 
