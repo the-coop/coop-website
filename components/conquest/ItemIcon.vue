@@ -31,7 +31,7 @@
 </style>
 
 <script>
-    import EmojiHelper from 'coopshared/helper/ui/EmojiHelper.mjs';
+    import EmojiHelper from 'coop-shared/helper/ui/EmojiHelper.mjs';
 
     // console.log(EmojiHelper);
   
