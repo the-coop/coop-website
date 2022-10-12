@@ -1,21 +1,73 @@
 <template>
   <div :class="['default', page].join(' ')">
     <div class="header">
+
+      <nav class="navigation additional-navigation">
+        <NuxtLink to="/guide" class="nav-link current" @click.native="closeMenu">
+          🏠 Home
+        </NuxtLink>
+
+        <NuxtLink to="/guide" class="nav-link current" @click.native="closeMenu">
+          🏠 Guide
+        </NuxtLink>
+
+        <a 
+          @click="closeMenu"
+          v-show="!$auth.$state.loggedIn" 
+          :href="inviteLink" target="_blank" class="nav-link">
+          👋 Join
+        </a>
+
+        <!-- <div class="dropdown">
+          <span class="dropdown-label" @click="toggleDropdown">🗡 Conquest</span>
+
+          <div class="dropdown-content">
+            <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
+              📡 Dashboard
+            </NuxtLink>
+
+            <NuxtLink to="/conquest/world" class="nav-link" @click.native="closeMenu">
+              🕹️ Play
+            </NuxtLink>
+
+            <NuxtLink to="/conquest/economy/items" class="nav-link" @click.native="closeMenu">
+              🎁 Items
+            </NuxtLink>
+
+            <NuxtLink to="/conquest/economy/trade" class="nav-link" @click.native="closeMenu">
+              💰 Trades
+            </NuxtLink>
+
+            <NuxtLink v-show="$auth.$state.loggedIn" 
+              :to="$auth.$state.loggedIn ? '/members/' + $auth.user.id : '/members'"
+              class="nav-link" @click.native="closeMenu">
+              👤 Profile
+            </NuxtLink>
+
+            <span v-show="$auth.$state.loggedIn" 
+              class="nav-link"
+              @click="() => (logout() && closeMenu())">⏏️ Logout</span>
+          </div>
+        </div> -->
+
+        <!-- <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
+          🗡 Conquest
+        </NuxtLink> -->
+      </nav>
+
       <div class="brand">
         <NuxtLink to="/">
           <Logo />
         </NuxtLink>
       </div>
+
       <svg @click="toggleMenu" class="mobile-nav-trigger" viewBox="0 0 100 80">
         <rect width="100" height="20"></rect>
         <rect y="30" width="100" height="20"></rect>
         <rect y="60" width="100" height="20"></rect>
       </svg>
-      <nav class="navigation">
-        <NuxtLink to="/" class="nav-link current" @click.native="closeMenu">
-          🏠 Home
-        </NuxtLink>
 
+      <nav class="navigation">
         <div class="dropdown">
           <span class="dropdown-label" @click="toggleDropdown">🥚 Community</span>
 
@@ -38,25 +90,6 @@
 
             <NuxtLink v-show="$auth.$state.loggedIn" to="/members/roles" class="nav-link" @click.native="closeMenu">
               ⚙️ Roles
-            </NuxtLink>
-
-            <!-- Actions for guests/non-users/logged out users -->
-            <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" @click.native="closeMenu">
-              🔑 Login
-            </NuxtLink>
-
-            <a 
-              @click="closeMenu"
-              v-show="!$auth.$state.loggedIn" 
-              :href="inviteLink" target="_blank" class="nav-link">
-              👋 Join
-            </a>
-
-            <!-- Actions for logged in users -->
-            <NuxtLink v-show="$auth.$state.loggedIn" 
-              :to="$auth.$state.loggedIn ? '/members/' + $auth.user.id : '/members'"
-              class="nav-link" @click.native="closeMenu">
-              👤 Profile
             </NuxtLink>
 
             <span v-show="$auth.$state.loggedIn" 
@@ -99,35 +132,42 @@
           </div>
         </div>
 
-        <!-- <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
-          🗡 Conquest
-        </NuxtLink> -->
+        <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" @click.native="closeMenu">
+          🔑 Login
+        </NuxtLink>
+        <NuxtLink v-show="$auth.$state.loggedIn" 
+          :to="$auth.$state.loggedIn ? '/members/' + $auth.user.id : '/members'"
+          class="nav-link" @click.native="closeMenu">
+          👤 Profile
+        </NuxtLink>
       </nav>
-
-      <div class="header-socials">
-        <a href="https://www.twitch.tv/thecoop_twich/" target="_blank">
-          <Twitch />
-        </a>
-        <a href="https://www.youtube.com/channel/UCC823jVQUkZtm8bcW-9bEKA" target="_blank">
-          <Youtube />
-        </a>
-        <a href="https://github.com/the-coop/" target="_blank">
-          <Github />
-        </a>
-        <a href="https://www.instagram.com/thecoop_ig/" target="_blank">
-          <Instagram />
-        </a>
-        <a href="https://twitter.com/thecoopg" target="_blank">
-          <Twitter />
-        </a>
-      </div>
     </div>
+
+    <div class="header-socials">
+      <a href="https://www.twitch.tv/thecoop_twitch/" target="_blank">
+        <Twitch />
+      </a>
+      <a href="https://www.youtube.com/channel/UCC823jVQUkZtm8bcW-9bEKA" target="_blank">
+        <Youtube />
+      </a>
+      <a href="https://github.com/the-coop/" target="_blank">
+        <Github />
+      </a>
+      <!-- TODO: Add Reddit -->
+      <!-- <a href="https://www.instagram.com/thecoop_ig/" target="_blank">
+        <Instagram />
+      </a>
+      <a href="https://twitter.com/thecoopg" target="_blank">
+        <Twitter />
+      </a> -->
+    </div>
+
     <Nuxt />
 
     <div class="footer-socials">
       <h4 class="footer-socials-prompt">Follow?</h4>
       <div class="footer-socials-items">
-        <a href="https://www.twitch.tv/thecoop_twich/" target="_blank">
+        <a href="https://www.twitch.tv/thecoop_twitch/" target="_blank">
           <Twitch />
         </a>
         <a href="https://www.youtube.com/channel/UCC823jVQUkZtm8bcW-9bEKA" target="_blank">
@@ -135,12 +175,6 @@
         </a>
         <a href="https://github.com/the-coop/" target="_blank">
           <Github />
-        </a>
-        <a href="https://www.instagram.com/thecoop_ig/" target="_blank">
-          <Instagram />
-        </a>
-        <a href="https://twitter.com/thecoopg" target="_blank">
-          <Twitter />
         </a>
       </div>
     </div>
@@ -155,7 +189,7 @@
   import Github from '../components/socials/Github.vue';
   import Twitter from '../components/socials/Twitter.vue';
   import Instagram from '../components/socials/Instagram.vue';
-import { inviteLink } from '~/lib/config';
+  import { inviteLink } from '~/lib/config';
 
   const closedBottom = '-100%';
 
@@ -313,6 +347,7 @@ import { inviteLink } from '~/lib/config';
     .navigation {
       display: none;
     }
+
 
     .mobile-nav-trigger {
       display: block;
@@ -492,6 +527,44 @@ import { inviteLink } from '~/lib/config';
 
       background: #111111;
       border-radius: 1rem 0;
+    }
+
+
+  }
+
+  .additional-navigation { 
+    display: none; 
+  }
+
+  @media screen and (min-width: 1200px) {
+    .header {
+      display: flex;
+      justify-content: space-evenly;
+      flex-wrap: nowrap;
+    }
+
+    .navigation {
+      flex: calc(50% - 2em) 0;
+      text-align: left;
+    }
+
+    .additional-navigation {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .navigation .dropdown:first-child {
+      margin-left: 0;
+    }
+
+    .brand {
+      flex: 5em 0 0;
+      text-align: center;
+      padding: 1.5em 2.5em .25em;
+    }
+
+    .header-socials {
+      text-align: center;
     }
   }
 </style>

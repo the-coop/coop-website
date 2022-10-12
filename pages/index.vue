@@ -19,15 +19,14 @@
         </div>
       </div>
 
-      <div class="advertisement" v-if="advert">
+      <div class="prompt" v-if="advert">
         <h2>Community Ad</h2>
         <a :href="advert.target_url">
           <div 
-            class="advertisement-image" 
+            class="prompt-image" 
             :style="{ backgroundImage: `url(${advert.image_url})` }">
           </div>
         </a>
-
       </div>
 
       <client-only>
@@ -157,7 +156,7 @@
       let users = (await membersResp.json()) || [];
 
       // Load the latest advert
-      const advertResp = await fetch(API.BASE_URL + 'adverts/latest');
+      const advertResp = await fetch(API.BASE_URL + 'prompts/latest');
       this.advert = await advertResp.json() || null;
       console.log(this.advert);
 
@@ -205,17 +204,17 @@
     width: auto;
   }
 
-  .advertisement {
+  .prompt {
     flex: 100% 0 0;
     margin-top: 5rem;
     color: silver;
   }
 
-  .advertisement h2 {
+  .prompt h2 {
     margin-top: 0;
   }
 
-  .advertisement-image {
+  .prompt-image {
     width: 100%;
     height: 30vh;
 
@@ -255,7 +254,7 @@
       flex-wrap: nowrap;
     }
 
-    .advertisement {
+    .prompt {
       margin-top: 0;
       flex: 39% 0 0;
     }
@@ -266,7 +265,7 @@
       flex-wrap: nowrap;
     }
 
-    .advertisement {
+    .prompt {
       flex: 41% 0 0;
     }
   }
