@@ -229,6 +229,7 @@ import API from '~/lib/api/api';
       // Add user data to layout for rendering header etc.
       const userResp = await fetch(API.BASE_URL + 'members/build-single/' + this.$auth.user.id);
       const user = await userResp.json();
+      console.log('Testing layout', user);
       this.user = user;
     },
     methods: {
