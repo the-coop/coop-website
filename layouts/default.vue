@@ -8,7 +8,7 @@
         </NuxtLink>
 
         <NuxtLink to="/guide" class="nav-link current" @click.native="closeMenu">
-          🏠 Guide
+          📖 Guide
         </NuxtLink>
 
         <a 
@@ -151,6 +151,7 @@
       </nav>
     </div>
 
+    <!-- 
     <div class="header-socials">
       <a href="https://www.twitch.tv/thecoop_twitch/" target="_blank">
         <Twitch />
@@ -161,14 +162,15 @@
       <a href="https://github.com/the-coop/" target="_blank">
         <Github />
       </a>
-      <!-- TODO: Add Reddit -->
-      <!-- <a href="https://www.instagram.com/thecoop_ig/" target="_blank">
+      TODO: Add Reddit 
+      <a href="https://www.instagram.com/thecoop_ig/" target="_blank">
         <Instagram />
       </a>
       <a href="https://twitter.com/thecoopg" target="_blank">
         <Twitter />
-      </a> -->
+      </a> 
     </div>
+    -->
 
     <Nuxt />
 
@@ -406,7 +408,8 @@
         display: flex;
         flex-direction: column;
 
-        padding: 2rem;
+        padding: .6em 0;
+        
         background-color: transparent;
 
         pointer-events: none;

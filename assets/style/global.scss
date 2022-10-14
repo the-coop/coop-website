@@ -56,6 +56,7 @@ html {
 
   font-weight: 500;
   transition: background-color .2s;
+  border-radius: .45em;
 }
 
 .button:hover {
@@ -86,21 +87,17 @@ html {
 }
 
 .center-cta {
-  display: block;
-  margin: auto;
-  margin-top: 2rem;
-  padding: 1.8rem 3rem;
-  background-color: indianred;
+  display: inline-block;
 
+  margin-top: 2rem;
+  padding: 1.25em 1.5em;
+  background-color: indianred;
   font-size: 1.25em;
   font-weight: bold;
   color: #dadada;
-
   border-radius: 1rem;
   border: none;
-
   cursor: pointer;
-
   text-decoration: none;
 }
 

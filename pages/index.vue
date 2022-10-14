@@ -3,15 +3,15 @@
     <div class="page home hero-container content-container">
 
       <div class="hero" v-show="!$auth.$state.loggedIn">
-        <h1 class="title">WHAT IS THE COOP?</h1>
+        <h1 class="title">Join our community!</h1>
 
         <p class="subtitle">
-          The primary purpose of The Coop is <strong>the empowerment</strong> of creatives. We move the Earth and Moon for our <strong>free and democratic</strong> system.
-        </p>
+          Democratic, free chicken themed, multiplayer universe enabled, 
+          gravity simulating, economy having, 
+          advice giving, learning community collaboration server 
+          with {{ usersTotal }} members and growing!
 
-        <p class="subtitle">
-          <br />
-          {{ Math.max(0, 1000 - usersTotal) }} <strong>full</strong> membership slots remaining!
+          <!-- TODO: Latest member -->
         </p>
 
         <div class="actions">
@@ -32,7 +32,7 @@
       </div>
 
       <div class="prompt" v-if="advert">
-        <h2>Community Ad</h2>
+        <h2>Advertisement</h2>
         <a :href="advert.target_url">
           <div 
             class="prompt-image" 
@@ -41,9 +41,9 @@
         </a>
       </div>
 
-      <client-only>
+      <!-- <client-only>
         <Worldview :silent="true" :intro="true" :networking="true" :controls="false" />
-      </client-only>
+      </client-only> -->
     </div>
 
     <div class="content-container">
@@ -60,8 +60,8 @@
         <NuxtLink class="link" to="/blog/subscribe">please subscribe.</NuxtLink>
       </p>
 
-      <NuxtLink to="/blog" class="center-cta">
-        ALL POSTS 🗞️
+      <NuxtLink to="/blog" class="button">
+        View all
       </NuxtLink>
     </div>
 
@@ -69,8 +69,8 @@
       <h1 class="title">👷 Projects ({{ projects.length }}/{{ projectsTotal }})</h1>
       <ProjectsList prefix="home-projects" :projects="projects" />
 
-      <NuxtLink to="/projects" class="center-cta">
-        ALL PROJECTS 👷
+      <NuxtLink to="/projects" class="button">
+        View all
       </NuxtLink>
     </div>
 
@@ -78,7 +78,7 @@
       <h1 class="title">🔮 Top Members ({{ users.length }}/{{ usersTotal }})</h1>
       <UsersList :users="users" />
 
-      <NuxtLink to="/members" class="center-cta">
+      <NuxtLink to="/members" class="button">
         ALL MEMBERS 🔮
       </NuxtLink>
     </div>
@@ -86,7 +86,7 @@
     <!-- <div class="content-container">
       <h1 class="title">🏷️ Services</h1>
       <ServicesList />
-      <NuxtLink to="/services" class="center-cta">
+      <NuxtLink to="/services" class="button">
         ALL SERVICES 🏷️
       </NuxtLink>
     </div> -->
@@ -133,7 +133,7 @@
         projects: [],
         projectsTotal: 0,
         users: [],
-        usersTotal: 0,
+        usersTotal: 'many',
         advert: null,
 
         hasVisited: false,
@@ -194,6 +194,7 @@
   .home-wrapper {
     display: flex;
     flex-wrap: wrap;
+    margin-top: 1.5em;
   }
 
   .hero-container {
@@ -239,7 +240,7 @@
   }
 
   .actions .button {
-    margin-right: 1.5em;
+    margin-right: .35em;
   }
 
   .actions .button:last-child {
