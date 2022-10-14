@@ -139,7 +139,6 @@
     padding: .125em .5em;
     margin: .125em;
   }
-
 </style>
 
 <script>

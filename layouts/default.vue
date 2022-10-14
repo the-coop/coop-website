@@ -96,10 +96,6 @@
               🔮 Members
             </NuxtLink>
 
-            <NuxtLink v-show="$auth.$state.loggedIn" to="/members/roles" class="nav-link" @click.native="closeMenu">
-              ⚙️ Roles
-            </NuxtLink>
-
             <span v-show="$auth.$state.loggedIn" 
               class="nav-link"
               @click="() => { logout(); closeMenu(); }">⏏️ Logout</span>
@@ -200,6 +196,7 @@
   import Twitter from '../components/socials/Twitter.vue';
   import Instagram from '../components/socials/Instagram.vue';
   import { inviteLink } from '~/lib/config';
+import API from '~/lib/api/api';
 
   const closedBottom = '-100%';
 
@@ -211,7 +208,7 @@
       Instagram,
       Twitter
     },
-    mounted() {
+    async mounted() {
       // When the dropdown menu is hovered...
       // Should trigger an event which blocks the now upwards moving box re-triggering CSS hover.
       const dropdowns = Array.from(document.querySelectorAll('.dropdown'));
@@ -228,6 +225,11 @@
           // 3. [Investigate if problems] - Make sure these are accessible for cleanup.
         });
       });
+
+      // Add user data to layout for rendering header etc.
+      const userResp = await fetch(API.BASE_URL + 'members/build-single/' + this.$auth.user.id);
+      const user = await userResp.json();
+      this.user = user;
     },
     methods: {
       async logout() {
@@ -284,7 +286,8 @@
     data() {
       return { 
         page: this.$route.name,
-        inviteLink
+        inviteLink,
+        user: null
       };
     },
     watch: {
