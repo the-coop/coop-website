@@ -3,11 +3,11 @@
     <div class="header">
 
       <nav class="navigation additional-navigation">
-        <NuxtLink to="/" class="nav-link current" @click.native="closeMenu">
-          🏠 Home
+        <NuxtLink to="/conquest/world" class="nav-link" @click.native="closeMenu">
+          🕹️ Play
         </NuxtLink>
 
-        <NuxtLink to="/guide" class="nav-link current" @click.native="closeMenu">
+        <NuxtLink to="/guide" class="nav-link" @click.native="closeMenu">
           📖 Guide
         </NuxtLink>
 
@@ -22,45 +22,8 @@
           @click="closeMenu"
           v-show="$auth.$state.loggedIn" 
           href="https://fund-the-coop.raisely.com" target="_blank" class="nav-link">
-          👋 Donate
+          💸 Donate
         </a>
-
-        
-        <!-- <div class="dropdown">
-          <span class="dropdown-label" @click="toggleDropdown">🗡 Conquest</span>
-
-          <div class="dropdown-content">
-            <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
-              📡 Dashboard
-            </NuxtLink>
-
-            <NuxtLink to="/conquest/world" class="nav-link" @click.native="closeMenu">
-              🕹️ Play
-            </NuxtLink>
-
-            <NuxtLink to="/conquest/economy/items" class="nav-link" @click.native="closeMenu">
-              🎁 Items
-            </NuxtLink>
-
-            <NuxtLink to="/conquest/economy/trade" class="nav-link" @click.native="closeMenu">
-              💰 Trades
-            </NuxtLink>
-
-            <NuxtLink v-show="$auth.$state.loggedIn" 
-              :to="$auth.$state.loggedIn ? '/members/' + $auth.user.id : '/members'"
-              class="nav-link" @click.native="closeMenu">
-              👤 Profile
-            </NuxtLink>
-
-            <span v-show="$auth.$state.loggedIn" 
-              class="nav-link"
-              @click="() => (logout() && closeMenu())">⏏️ Logout</span>
-          </div>
-        </div> -->
-
-        <!-- <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
-          🗡 Conquest
-        </NuxtLink> -->
       </nav>
 
       <div class="brand">
@@ -83,6 +46,14 @@
             <!-- <NuxtLink to="/services" class="nav-link" @click.native="closeMenu">
               🏷️ Services
             </NuxtLink> -->
+
+            <NuxtLink to="/" class="nav-link current" @click.native="closeMenu">
+              🏠 Home
+            </NuxtLink>
+
+            <NuxtLink to="/members" class="nav-link" @click.native="closeMenu">
+              🔮 Members
+            </NuxtLink>
             
             <NuxtLink to="/blog" class="nav-link" @click.native="closeMenu">
               🗞️ Blog
@@ -90,10 +61,6 @@
 
             <NuxtLink to="/projects" class="nav-link" @click.native="closeMenu">
               👷 Projects
-            </NuxtLink>
-
-            <NuxtLink to="/members" class="nav-link" @click.native="closeMenu">
-              🔮 Members
             </NuxtLink>
 
             <span v-show="$auth.$state.loggedIn" 
@@ -121,28 +88,21 @@
             <NuxtLink to="/conquest/economy/trade" class="nav-link" @click.native="closeMenu">
               💰 Trades
             </NuxtLink>
-
-            <!-- Actions for logged in users -->
-            <!-- <NuxtLink v-show="$auth.$state.loggedIn" 
-              :to="$auth.$state.loggedIn ? '/members/' + $auth.user.id : '/members'"
-              class="nav-link" @click.native="closeMenu">
-              👤 Profile
-            </NuxtLink> -->
-
-            <!-- <span v-show="$auth.$state.loggedIn" 
-              class="nav-link"
-              @click="() => (logout() && closeMenu())">⏏️ Logout</span>
-            -->
           </div>
         </div>
 
         <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" @click.native="closeMenu">
           🔑 Login
         </NuxtLink>
-        <NuxtLink v-show="$auth.$state.loggedIn" 
+
+        <NuxtLink v-if="user" 
           :to="$auth.$state.loggedIn ? '/members/' + $auth.user.id : '/members'"
-          class="nav-link" @click.native="closeMenu">
-          👤 Profile
+          class="nav-link" @click.native="closeMenu"> 
+
+          <img 
+            class="profile-image"
+            :src="user.image" />
+            {{ user.username }}
         </NuxtLink>
       </nav>
     </div>
@@ -196,7 +156,7 @@
   import Twitter from '../components/socials/Twitter.vue';
   import Instagram from '../components/socials/Instagram.vue';
   import { inviteLink } from '~/lib/config';
-import API from '~/lib/api/api';
+  import API from '~/lib/api/api';
 
   const closedBottom = '-100%';
 
@@ -232,6 +192,11 @@ import API from '~/lib/api/api';
         const user = await userResp.json();
         console.log('Testing layout', user);
         this.user = user;
+
+        setTimeout(() => {
+          const profileImageElem = document.querySelector('.profile-image');
+          profileImageElem.classList.add('profile-image-loaded');
+        }, 250);
       }
     },
     methods: {
@@ -410,7 +375,7 @@ import API from '~/lib/api/api';
           opacity .125s ease,
           background-color .25s ease-in;
 
-        min-width: 8rem;
+        min-width: 9em;
         display: flex;
         flex-direction: column;
 
@@ -424,7 +389,18 @@ import API from '~/lib/api/api';
       }
 
       .dropdown-content .nav-link {
+        border: .125em solid rgb(117, 117, 117);
+        border-radius: .25em;
+        margin-bottom: .25em;
+        padding: .25em .5em;
         margin-left: 0;
+
+        transition: border-color .2s, border-radius .2s;
+      }
+
+      .dropdown-content .nav-link:hover {
+        border-color: #ff6565;
+        border-radius: 0;
       }
 
       .dropdown.open .dropdown-content {
@@ -438,9 +414,26 @@ import API from '~/lib/api/api';
         margin-left: 3.5em;
         text-decoration: none;
         cursor: pointer;
+
+        display: inline-flex;
+        align-items: center;
       }
       .nav-link:first-child {
         margin-left: 0;
+      }
+
+      .profile-image {
+        width: 2em;
+        border-radius: 100%;
+        border: .1em solid #ff6565;
+        margin-right: .75em;
+
+        opacity: 0;
+        transition: opacity .4s;
+      }
+
+      .profile-image-loaded {
+        opacity: 1;
       }
 
       button.nav-link {
@@ -470,7 +463,9 @@ import API from '~/lib/api/api';
 
   @media screen and (min-width: 850px) {
     .navigation {
-      display: block;
+      /* display: block; */
+      display: flex;
+      align-items: center;
     }
     .mobile-nav-trigger {
       display: none;

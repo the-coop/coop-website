@@ -15,20 +15,37 @@
         </p>
 
         <div class="actions">
-          <a href="https://fund-the-coop.raisely.com" target="_blank" class="button secondary">Donate</a>
-          <a v-show="!$auth.$state.loggedIn" :href="inviteLink" target="_blank" class="button">Join</a>
+          <a href="https://fund-the-coop.raisely.com" target="_blank" class="button secondary">💸 Donate</a>
+          <a v-show="!$auth.$state.loggedIn" :href="inviteLink" target="_blank" class="button">👋 Join</a>
         </div>
       </div>
 
-      <div class="hero" v-show="$auth.$state.loggedIn">
-        <h1 class="title">Welcome back, comrade (username)</h1>
- 
+      <div class="hero" v-if="user && $auth.$state.loggedIn">
+        <img :src="user.image" />
+        
+        <h1 class="title">Welcome back, comrade {{ user.username }}!</h1>
+        <!-- 
+        blog_posts: 
+
+        health: 
+
+        intro_time: 
+        item_list: 
+        join_date: 
+        last_sacrificed_secs: 
+        project_list: 
+        role_list: 
+        -->
+
+        <ItemIcon code="COOP_POINT" :label="user.historical_points" />
+
+        <!-- {{ user?.id }} -->
         <!-- Actions related to user -->
         <!-- Create notifications/inbox -->
-        <!-- <div class="actions">
-          <a href="https://fund-the-coop.raisely.com" target="_blank" class="button">Donate</a>
-          <a v-show="!$auth.$state.loggedIn" :href="inviteLink" target="_blank" class="button">Join</a>
-        </div> -->
+        <div class="actions">
+          <a href="https://fund-the-coop.raisely.com" target="_blank" class="button secondary">💸 Donate</a>
+          <a href="/play" target="_blank" class="button">🕹️ Play</a>
+        </div>
       </div>
 
       <div class="prompt" v-if="advert">
@@ -108,12 +125,15 @@
 
 <script>
   import API from '~/lib/api/api';
+  
   import PostsList from '~/components/blog/PostsList.vue';
   import ProjectsList from '~/components/projects/ProjectsList.vue';
   import UsersList from '~/components/users/UsersList.vue';
   import ConquestMenu from '~/components/conquest/ConquestMenu.vue';
   import LoginBlock from '~/components/users/LoginBlock.vue';
   import ServicesList from '~/components/users/services/ServicesList.vue';
+  import ItemIcon from '~/components/conquest/ItemIcon.vue';
+
   import { inviteLink } from '~/lib/config';
 
   export default {
@@ -124,7 +144,8 @@
       UsersList,
       ConquestMenu,
       LoginBlock,
-      ServicesList
+      ServicesList,
+      ItemIcon
     },
     data() {
       return { 
@@ -138,7 +159,9 @@
 
         hasVisited: false,
 
-        inviteLink
+        inviteLink,
+
+        user: null
       };
     },
     destroyed() {
@@ -186,6 +209,15 @@
     
       // Cap to the first six items.
       this.users = users.slice(0, 6);
+
+
+      // Add user data to layout for rendering header etc.
+      if (this.$auth.user) {
+        const userResp = await fetch(API.BASE_URL + 'members/build-single/' + this.$auth.user.id);
+        const user = await userResp.json();
+        console.log('Testing layout', user);
+        this.user = user;
+      }
     }
   }
 </script>
@@ -211,6 +243,7 @@
   .hero {
     flex: calc(59% - 3em) 0 0;
     z-index: 1;
+    color: silver;
   }
 
   .hero .subtitle {
