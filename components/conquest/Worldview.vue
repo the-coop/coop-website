@@ -239,7 +239,6 @@
         this.settingsOpen = false;
       },
       spawn() {
-        // Move all of this to player recognised event?
         const target = WORLD.planets[0];
         const spawnPos = target.body.position;
 
@@ -248,7 +247,7 @@
           orbit_influence: target.name
         });
 
-        // Update GUI actions related to spawnign.
+        // Update GUI actions related to spawning.
         this.spawned = true;
       }
     },
