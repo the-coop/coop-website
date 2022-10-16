@@ -249,6 +249,26 @@
 
         // Update GUI actions related to spawning.
         this.spawned = true;
+
+
+        // Interaction required*
+        window.WORLD.renderer.domElement.requestPointerLock();
+
+        // https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
+
+        document.addEventListener('pointerlockchange', ev => {
+          // console.log(document.pointerLockElement, WORLD.renderer.domElement);
+          if (document.pointerLockElement === WORLD.renderer.domElement) {
+            console.log('The pointer lock status is now locked');
+          } else {
+            console.log('The pointer lock status is now unlocked');
+          }
+        }, false);
+
+        document.addEventListener('pointerlockerror', ev => {
+          console.log('Error with pointer lock' + ev);
+                console.error(ev);
+        }, false);
       }
     },
 

@@ -58,9 +58,9 @@
         </a>
       </div>
 
-      <!-- <client-only>
+      <client-only>
         <Worldview :silent="true" :intro="true" :networking="true" :controls="false" />
-      </client-only> -->
+      </client-only>
     </div>
 
     <div class="content-container">
