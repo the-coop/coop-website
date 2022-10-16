@@ -51,7 +51,7 @@
 
               <ItemIcon 
                 :code="i.item_code"
-                :label="`${i.item_code} x ${('' + i.quantity.toFixed(2)).replace('00', '')}`"
+                :label="`${i.item_code} x ${('' + i.quantity.toFixed(2)).replace('.00', '')}`"
               />
             </a>
           </div>
