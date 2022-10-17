@@ -33,18 +33,21 @@
     },
     methods: {
       async authenticate() {
-        let successRedirect = null;
-
+        const params = new URLSearchParams(window.location.search);
         console.log('authenticating');
         console.log(this.$auth.$state.loggedIn);
-        
+
+        // Extract code from oauth redirect.
+        const code = params.get('code');
+        const method = params.get('method') || 'discord_oauth';
+        const state = params.get('state');
 
         // If the user is not already logged in.
         if (!this.$auth.$state.loggedIn)
-          successRedirect = await this.login();
+          await this.login(code, method);
 
         // If known state redirect there, otherwise go to home.
-        switch (successRedirect) {
+        switch (state) {
           case 'game':
             this.$router.push('/conquest/world');
             break;
@@ -53,15 +56,9 @@
             this.$router.push('/');
         }
       },
-      async login() {
+      async login(code, method) {
         try {
           console.log('Logging in');
-
-          // Extract code from oauth redirect.
-          const params = new URLSearchParams(window.location.search);
-          const code = params.get('code');
-          const method = params.get('method') || 'discord_oauth';
-          const state = params.get('state');
 
           // Clear the messy codes in URL/router state.
           this.$router.replace({ query: null });
@@ -80,9 +77,6 @@
 
           // Set as loaded.
           this.loaded = true;
-
-          console.log('state', state);
-          return state;
 
         } catch(e) {
           this.error = e.message;
