@@ -30,13 +30,9 @@
         class="primary-action"
         v-show="$auth.$state.loggedIn" 
         @click="spawn" 
-        v-if="!silent && !spawned && introFinished" id="spawn">
+        v-if="!silent && !spawned" id="spawn">
         🧬 Spawn
       </button>
-
-      <!-- Don't show until intro finished -->
-      <!-- WORLD.cameraAnimation -->
-
       <NuxtLink v-show="!$auth.$state.loggedIn" 
         class="primary-action"
         :to="{ path: '/auth/login', query: { intent: 'game' }}">
@@ -171,7 +167,6 @@
   import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
   import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';  
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { TRACKBALL_RESET_MS } from '~/lib/conquest/experience/controls/trackball/trackballControls';
   
 
   const isMobile = () => {
@@ -222,9 +217,7 @@ import { TRACKBALL_RESET_MS } from '~/lib/conquest/experience/controls/trackball
       spawned: false,
       died: false,
 
-      selected: null,
-
-      introFinished: false
+      selected: null
     }),
     
     methods: {
@@ -282,10 +275,6 @@ import { TRACKBALL_RESET_MS } from '~/lib/conquest/experience/controls/trackball
     async mounted() {
       const DETECTED_INPUT_KEY = isMobile() ? "MOBILE" : "COMPUTER";
 
-
-
-      // TODO: Refactor out of here.
-
       // TODO: On detection/disconnection should have a popup for switching.
 
       // Detect console controller.
@@ -297,7 +286,6 @@ import { TRACKBALL_RESET_MS } from '~/lib/conquest/experience/controls/trackball
         );
         WORLD.settings.view.DESIRED_INPUT_KEY = "CONSOLE";
       });
-
       window.addEventListener("gamepaddisconnected", function(e) {
         console.log("Gamepad disconnected from index %d: %s",
         e.gamepad.index, e.gamepad.id);
@@ -410,8 +398,9 @@ import { TRACKBALL_RESET_MS } from '~/lib/conquest/experience/controls/trackball
       // Add stars to scene.
       WORLD.scene.add(starsContainer);
 
-      // Add screen resizing capability and initialise dimensions.
-      window.addEventListener('resize', resizer); resizer();
+      // Add screen resizing capability.
+      window.addEventListener('resize', resizer);
+      resizer();
 
       // Setup and run the game/level networking (socket based).
       if (this.networking && this.$auth.user)
@@ -420,10 +409,7 @@ import { TRACKBALL_RESET_MS } from '~/lib/conquest/experience/controls/trackball
       // DEV: Update mainly for GUI.
       setInterval(() => this.players = this.getPlayers(), 150);
 
-      // Track when intro is finished so camera doesn't get broken.
-      setTimeout(() => this.introFinished = true, TRACKBALL_RESET_MS);
-
-      // Start the engine.
+      // Start the engine, recursively.
       engine(this);
     },
 
