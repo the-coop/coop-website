@@ -24,6 +24,7 @@
         <img :src="user.image" />
         
         <h1 class="title">Welcome back, comrade {{ user.username }}!</h1>
+        WIP: Adding more info to make more useful
         <!-- 
         blog_posts: 
 

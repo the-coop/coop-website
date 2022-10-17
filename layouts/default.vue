@@ -62,10 +62,6 @@
             <NuxtLink to="/projects" class="nav-link" @click.native="closeMenu">
               👷 Projects
             </NuxtLink>
-
-            <span v-show="$auth.$state.loggedIn" 
-              class="nav-link"
-              @click="() => { logout(); closeMenu(); }">⏏️ Logout</span>
           </div>
         </div>
 
@@ -91,19 +87,36 @@
           </div>
         </div>
 
-        <NuxtLink v-show="!$auth.$state.loggedIn" to="/auth/login" class="nav-link" @click.native="closeMenu">
+        <NuxtLink v-show="!user" to="/auth/login" class="nav-link" @click.native="closeMenu">
           🔑 Login
         </NuxtLink>
 
-        <NuxtLink v-if="user" 
-          :to="$auth.$state.loggedIn ? '/members/' + $auth.user.id : '/members'"
-          class="nav-link" @click.native="closeMenu"> 
+        <div class="dropdown" v-if="user">
+          <span class="dropdown-label" @click="toggleDropdown">
+            <NuxtLink 
+              :to="$auth.$state.loggedIn ? '/members/' + $auth.user.id : '/members'"
+              class="nav-link" @click.native="closeMenu"> 
 
-          <img 
-            class="profile-image"
-            :src="user.image" />
-            {{ user.username }}
-        </NuxtLink>
+              <img 
+                v-if="user"
+                class="profile-image"
+                :src="user.image" />
+              {{ user.username }}
+            </NuxtLink>
+          </span>
+          
+          <div class="dropdown-content">
+            <span
+              class="nav-link"
+              @click.native="closeMenu">👤 Profile</span>
+            <span
+              class="nav-link"
+              @click="() => { logout(); closeMenu(); }">⏏️ Logout</span>
+          </div>
+        </div>
+
+
+        
       </nav>
     </div>
 
@@ -201,6 +214,7 @@
     },
     methods: {
       async logout() {
+        this.user = null;
         await this.$auth.logout();
       },
       toggleDropdown(ev) {
@@ -346,7 +360,7 @@
     }
 
       .dropdown {
-        display: inline-block;
+        display: inline-flex;
         position: relative;
         margin-left: 3.5em;
       }
@@ -358,6 +372,7 @@
       }
 
       .dropdown-label {
+        display: inline-flex;
         color: #616060;
         cursor: pointer;
       }

@@ -13,6 +13,7 @@
 <script>
     export default {
         mounted() {
+            // TODO: This needs to be cancelled if the component is dismoutned or it will affect user somewhere else. :'(
             setTimeout(() => this.$router.push({ path: '/' }), 5000);
         }        
     }

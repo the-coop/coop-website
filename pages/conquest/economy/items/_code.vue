@@ -6,6 +6,7 @@
     />
     <div class="title">
       <span>Item Overview</span>
+
       <!-- ({{ this.$route.params.code }}) -->
 
         (<ItemIcon 
@@ -13,6 +14,10 @@
           :label="this.$route.params.code"
         />)
     </div>
+
+    <h2 class="subtitle">
+      WIP: Add Algorand asset URL!!
+    </h2>
 
     <div class="overview-section">
       <h2 class="subtitle">Top Owners</h2>

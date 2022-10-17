@@ -60,6 +60,8 @@
         try {
           console.log('Logging in');
 
+          // TODO: This needs to update the layout header!!!!!!!!!!
+
           // Clear the messy codes in URL/router state.
           this.$router.replace({ query: null });
 
