@@ -35,6 +35,10 @@
       async authenticate() {
         let successRedirect = null;
 
+        console.log('authenticating');
+        console.log(this.$auth.$state.loggedIn);
+        
+
         // If the user is not already logged in.
         if (!this.$auth.$state.loggedIn)
           successRedirect = await this.login();
@@ -51,6 +55,8 @@
       },
       async login() {
         try {
+          console.log('Logging in');
+
           // Extract code from oauth redirect.
           const params = new URLSearchParams(window.location.search);
           const code = params.get('code');
@@ -74,10 +80,15 @@
 
           // Set as loaded.
           this.loaded = true;
+
+          console.log('state', state);
           return state;
 
         } catch(e) {
           this.error = e.message;
+          
+          console.log('Login error');
+          console.error(e);
         }
       }
     }
