@@ -33,6 +33,23 @@
     },
     methods: {
       async authenticate() {
+        let successRedirect = null;
+
+        // If the user is not already logged in.
+        if (!this.$auth.$state.loggedIn)
+          successRedirect = await this.login();
+
+        // If known state redirect there, otherwise go to home.
+        switch (successRedirect) {
+          case 'game':
+            this.$router.push('/conquest/world');
+            break;
+
+          default: 
+            this.$router.push('/');
+        }
+      },
+      async login() {
         try {
           // Extract code from oauth redirect.
           const params = new URLSearchParams(window.location.search);
@@ -57,16 +74,7 @@
 
           // Set as loaded.
           this.loaded = true;
-
-          // If known state redirect there, otherwise go to home.
-          switch (state) {
-            case 'game':
-              this.$router.push('/conquest/world');
-              break;
-
-            default: 
-              this.$router.push('/');
-          }
+          return state;
 
         } catch(e) {
           this.error = e.message;
