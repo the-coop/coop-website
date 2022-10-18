@@ -19,6 +19,7 @@
 </style>
 
 <script>
+import API from '~/lib/api/api';
   export default {
     // middleware: 'guest',
     mounted() {
@@ -74,8 +75,16 @@
           const token = data.token || null;
           if (!token) throw new Error('Could not verify you have an account in The Coop. Try joining via the 🥚 Community menu?');
 
+          // Load additional data from our API, not just Discord (may be able to collapse/optimise later)
+          const userResp = await fetch(API.BASE_URL + 'members/build-single/' + this.$auth.user.id);
+          const user = await userResp.json();
+
           // Set the user to nuxt auth/local memory.
-          this.$auth.setUser(data.user);
+          this.$auth.setUser(user);
+
+          // Update the header immediately on login.
+          console.log('user_updated_sent', user);
+          this.$nuxt.$emit('user_updated', user);
 
           // Set as loaded.
           this.loaded = true;

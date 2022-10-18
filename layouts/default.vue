@@ -1,4 +1,4 @@
-<template>
+<template ref="layout">
   <div :class="['default', page].join(' ')">
     <div class="header">
 
@@ -38,7 +38,7 @@
         <rect y="60" width="100" height="20"></rect>
       </svg>
 
-      <nav class="navigation">
+      <nav class="navigation"> 
         <div class="dropdown">
           <span class="dropdown-label" @click="toggleDropdown">🥚 Community</span>
 
@@ -91,7 +91,7 @@
           🔑 Login
         </NuxtLink>
 
-        <div class="dropdown" v-if="user">
+        <div class="dropdown" v-show="user">
           <span class="dropdown-label" @click="toggleDropdown">
             <NuxtLink 
               :to="$auth.$state.loggedIn ? '/members/' + $auth.user.id : '/members'"
@@ -99,24 +99,24 @@
 
               <img 
                 v-if="user"
-                class="profile-image"
-                :src="user.image" />
-              {{ user.username }}
+                :class="[
+                  'profile-image', 
+                  user ? 'profile-image-loaded' : ''
+                ].join(' ')"
+                :src="user?.image" />
+              {{ user?.username }}
             </NuxtLink>
           </span>
           
           <div class="dropdown-content">
             <span
               class="nav-link"
-              @click.native="closeMenu">👤 Profile</span>
+              @click="closeMenu">👤 Profile</span>
             <span
               class="nav-link"
               @click="() => { logout(); closeMenu(); }">⏏️ Logout</span>
           </div>
         </div>
-
-
-        
       </nav>
     </div>
 
@@ -141,7 +141,7 @@
     </div>
     -->
 
-    <Nuxt />
+    <Nuxt user="user" />
 
     <div class="footer-socials">
       <h4 class="footer-socials-prompt">Follow?</h4>
@@ -181,7 +181,28 @@
       Instagram,
       Twitter
     },
+    created() {
+      // TODO: 
+      // Remember to remove this listener?
+      this.$nuxt.$on('user_updated', user => {
+        this.user = user;
+
+        console.log('user_updated_received', user);
+      });
+    },
     async mounted() {
+      console.log('layout context');
+
+      console.log(this.$auth);
+
+      // Add user data to layout for rendering header etc.
+      if (this.$auth.user) {
+        const userResp = await fetch(API.BASE_URL + 'members/build-single/' + this.$auth.user.id);
+        const user = await userResp.json();
+        console.log('Testing layout', user);
+        this.user = user;
+      }
+      
       // When the dropdown menu is hovered...
       // Should trigger an event which blocks the now upwards moving box re-triggering CSS hover.
       const dropdowns = Array.from(document.querySelectorAll('.dropdown'));
@@ -206,10 +227,13 @@
         console.log('Testing layout', user);
         this.user = user;
 
-        setTimeout(() => {
-          const profileImageElem = document.querySelector('.profile-image');
-          profileImageElem.classList.add('profile-image-loaded');
-        }, 250);
+        // setTimeout(() => {
+        //   const profileImageElem = document.querySelector('.profile-image');
+        //   profileImageElem.classList.add('profile-image-loaded');
+
+        //   // TODO: 
+        //   // ADD DELAY VIA CSS TRANSITION-DELAY
+        // }, 250);
       }
     },
     methods: {
@@ -438,6 +462,7 @@
       }
 
       .profile-image {
+        height: 2em;
         width: 2em;
         border-radius: 100%;
         border: .1em solid #ff6565;
@@ -445,9 +470,11 @@
 
         opacity: 0;
         transition: opacity .4s;
+        transition-delay: 250ms;
       }
 
       .profile-image-loaded {
+        transition-delay: 250ms;
         opacity: 1;
       }
 
