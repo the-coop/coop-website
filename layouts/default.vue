@@ -169,8 +169,9 @@
   import Twitter from '../components/socials/Twitter.vue';
   import Instagram from '../components/socials/Instagram.vue';
   import { inviteLink } from '~/lib/config';
-  import API from '~/lib/api/api';
+  import UserAPI from '~/lib/api/userAPI';
 
+  
   const closedBottom = '-100%';
 
   export default {
@@ -184,25 +185,9 @@
     created() {
       // TODO: 
       // Remember to remove this listener?
-      this.$nuxt.$on('user_updated', user => {
-        this.user = user;
-
-        console.log('user_updated_received', user);
-      });
+      this.$nuxt.$on('user_updated', user => this.user = user);
     },
-    async mounted() {
-      console.log('layout context');
-
-      console.log(this.$auth);
-
-      // Add user data to layout for rendering header etc.
-      if (this.$auth.user) {
-        const userResp = await fetch(API.BASE_URL + 'members/build-single/' + this.$auth.user.id);
-        const user = await userResp.json();
-        console.log('Testing layout', user);
-        this.user = user;
-      }
-      
+    async mounted() {      
       // When the dropdown menu is hovered...
       // Should trigger an event which blocks the now upwards moving box re-triggering CSS hover.
       const dropdowns = Array.from(document.querySelectorAll('.dropdown'));
@@ -222,18 +207,7 @@
 
       // Add user data to layout for rendering header etc.
       if (this.$auth.user) {
-        const userResp = await fetch(API.BASE_URL + 'members/build-single/' + this.$auth.user.id);
-        const user = await userResp.json();
-        console.log('Testing layout', user);
-        this.user = user;
-
-        // setTimeout(() => {
-        //   const profileImageElem = document.querySelector('.profile-image');
-        //   profileImageElem.classList.add('profile-image-loaded');
-
-        //   // TODO: 
-        //   // ADD DELAY VIA CSS TRANSITION-DELAY
-        // }, 250);
+        this.user = await UserAPI.me(this.$auth);
       }
     },
     methods: {

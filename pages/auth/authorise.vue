@@ -19,7 +19,9 @@
 </style>
 
 <script>
-import API from '~/lib/api/api';
+  import API from '~/lib/api/api';
+  import UserAPI from '~/lib/api/userAPI';
+
   export default {
     // middleware: 'guest',
     mounted() {
@@ -35,8 +37,6 @@ import API from '~/lib/api/api';
     methods: {
       async authenticate() {
         const params = new URLSearchParams(window.location.search);
-        console.log('authenticating');
-        console.log(this.$auth.$state.loggedIn);
 
         // Extract code from oauth redirect.
         const code = params.get('code');
@@ -59,10 +59,6 @@ import API from '~/lib/api/api';
       },
       async login(code, method) {
         try {
-          console.log('Logging in');
-
-          // TODO: This needs to update the layout header!!!!!!!!!!
-
           // Clear the messy codes in URL/router state.
           this.$router.replace({ query: null });
 
@@ -76,14 +72,12 @@ import API from '~/lib/api/api';
           if (!token) throw new Error('Could not verify you have an account in The Coop. Try joining via the 🥚 Community menu?');
 
           // Load additional data from our API, not just Discord (may be able to collapse/optimise later)
-          const userResp = await fetch(API.BASE_URL + 'members/build-single/' + this.$auth.user.id);
-          const user = await userResp.json();
+          const user = await UserAPI.me(this.$auth);
 
           // Set the user to nuxt auth/local memory.
           this.$auth.setUser(user);
 
           // Update the header immediately on login.
-          console.log('user_updated_sent', user);
           this.$nuxt.$emit('user_updated', user);
 
           // Set as loaded.

@@ -145,6 +145,7 @@
   import API from '~/lib/api/api';
   import MembersUIHelper from '~/lib/members/membersUIHelper';
   import ItemIcon from '~/components/conquest/ItemIcon';
+import UserAPI from '~/lib/api/userAPI';
 
   export default {
     components: {
@@ -158,8 +159,7 @@
     async mounted() {
       const id = this.$route.params.id;
 
-      const userResp = await fetch(API.BASE_URL + 'members/build-single/' + id);
-      const user = await userResp.json();
+      const user = await UserAPI.get(id);
 
       if (user && user.role_list)
         user.role_list = MembersUIHelper

@@ -19,26 +19,26 @@
           <a v-show="!$auth.$state.loggedIn" :href="inviteLink" target="_blank" class="button">👋 Join</a>
         </div>
       </div>
-
-      <div class="hero" v-if="user && $auth.$state.loggedIn">
-        <img :src="user.image" />
+      
+      <div class="hero" v-show="this.$auth.user">
+        <img :src="this.$auth.user.image" />
         
-        <h1 class="title">Welcome back, comrade {{ user.username }}!</h1>
+        <h1 class="title">Welcome back, comrade {{ this.$auth.user.username }}!</h1>
         WIP: Adding more info to make more useful
         <!-- 
-        blog_posts: 
+          blog_posts: 
 
-        health: 
+          health: 
 
-        intro_time: 
-        item_list: 
-        join_date: 
-        last_sacrificed_secs: 
-        project_list: 
-        role_list: 
+          intro_time: 
+          item_list: 
+          join_date: 
+          last_sacrificed_secs: 
+          project_list: 
+          role_list: 
         -->
 
-        <ItemIcon code="COOP_POINT" :label="user.historical_points" />
+        <ItemIcon code="COOP_POINT" :label="this.$auth.user?.historical_points" />
 
         <!-- {{ user?.id }} -->
         <!-- Actions related to user -->
@@ -160,9 +160,7 @@
 
         hasVisited: false,
 
-        inviteLink,
-
-        user: null
+        inviteLink
       };
     },
     destroyed() {
@@ -194,7 +192,6 @@
       // Load the latest advert
       const advertResp = await fetch(API.BASE_URL + 'prompts/latest');
       this.advert = await advertResp.json() || null;
-      console.log(this.advert);
 
       // TODO: Replace this with chunked server side pagination, more performant.
       // Needs sorting on the server side or it won't work
@@ -210,15 +207,6 @@
     
       // Cap to the first six items.
       this.users = users.slice(0, 6);
-
-
-      // Add user data to layout for rendering header etc.
-      if (this.$auth.user) {
-        const userResp = await fetch(API.BASE_URL + 'members/build-single/' + this.$auth.user.id);
-        const user = await userResp.json();
-        console.log('Testing layout', user);
-        this.user = user;
-      }
     }
   }
 </script>
