@@ -20,7 +20,7 @@
         </div>
       </div>
       
-      <div class="hero" v-show="this.$auth.user">
+      <div class="hero" v-if="this.$auth.user">
         <img :src="this.$auth.user.image" />
         
         <h1 class="title">Welcome back, comrade {{ this.$auth.user.username }}!</h1>
@@ -167,46 +167,51 @@
       // TODO: Reset the dynamic WorldView component to prevent sync errors/dev mostly.
     },
     async mounted() {
-      // Load the necessary posts.
-      const blogResp = await fetch(API.BASE_URL + 'blog');
-      let posts = await blogResp.json();
+      try {
+        // Load the necessary posts.
+        const blogResp = await fetch(API.BASE_URL + 'blog');
+        let posts = await blogResp.json();
 
-      this.postsTotal = posts.length;
+        this.postsTotal = posts.length;
 
-      // Cap to the first two items.
-      this.posts = posts.slice(0, 2);
+        // Cap to the first two items.
+        this.posts = posts.slice(0, 2);
 
-      // Load the necessary projects.
-      const projectsResp = await fetch(API.BASE_URL + 'projects');
-      let projects = await projectsResp.json();
+        // Load the necessary projects.
+        const projectsResp = await fetch(API.BASE_URL + 'projects');
+        let projects = await projectsResp.json();
 
-      // Cap to the first six items.
-      this.projects = projects.slice(0, 4);
+        // Cap to the first six items.
+        this.projects = projects.slice(0, 4);
 
-      this.projectsTotal = projects.length;
+        this.projectsTotal = projects.length;
 
-      // Load the necessary users.
-      const membersResp = await fetch(API.BASE_URL + 'members/build');
-      let users = (await membersResp.json()) || [];
+        // Load the necessary users.
+        const membersResp = await fetch(API.BASE_URL + 'members/build');
+        let users = (await membersResp.json()) || [];
 
-      // Load the latest advert
-      const advertResp = await fetch(API.BASE_URL + 'prompts/latest');
-      this.advert = await advertResp.json() || null;
+        // Load the latest advert
+        const advertResp = await fetch(API.BASE_URL + 'prompts/latest');
+        this.advert = await advertResp.json() || null;
 
-      // TODO: Replace this with chunked server side pagination, more performant.
-      // Needs sorting on the server side or it won't work
-      users.sort((a, b) => {
-        return (
-          (a.item_list || []).find(i => i.item_code === 'COOP_POINT') || 0
-          <
-          (b.item_list || []).find(i => i.item_code === 'COOP_POINT') || 0
-        );
-      });
+        // TODO: Replace this with chunked server side pagination, more performant.
+        // Needs sorting on the server side or it won't work
+        users.sort((a, b) => {
+          return (
+            (a.item_list || []).find(i => i.item_code === 'COOP_POINT') || 0
+            <
+            (b.item_list || []).find(i => i.item_code === 'COOP_POINT') || 0
+          );
+        });
 
-      this.usersTotal = users.length;
-    
-      // Cap to the first six items.
-      this.users = users.slice(0, 6);
+        this.usersTotal = users.length;
+      
+        // Cap to the first six items.
+        this.users = users.slice(0, 6);
+      } catch (e) {
+        console.log('Home loading error')
+        console.error(e);
+      }
     }
   }
 </script>

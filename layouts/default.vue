@@ -84,6 +84,10 @@
             <NuxtLink to="/conquest/economy/trade" class="nav-link" @click.native="closeMenu">
               💰 Trades
             </NuxtLink>
+
+            <NuxtLink to="/shop" class="nav-link" @click.native="closeMenu">
+              🛍️ Shop
+            </NuxtLink>
           </div>
         </div>
 
@@ -170,7 +174,6 @@
   import Instagram from '../components/socials/Instagram.vue';
   import { inviteLink } from '~/lib/config';
   import UserAPI from '~/lib/api/userAPI';
-
   
   const closedBottom = '-100%';
 
@@ -183,8 +186,6 @@
       Twitter
     },
     created() {
-      // TODO: 
-      // Remember to remove this listener?
       this.$nuxt.$on('user_updated', user => this.user = user);
     },
     async mounted() {      
@@ -216,7 +217,13 @@
         await this.$auth.logout();
       },
       toggleDropdown(ev) {
-        if (this.isMobileSize()) ev.target.parentElement.classList.toggle('open');
+        // Hide all other dropdowns.
+        Array.from(document.querySelectorAll('.dropdown.open'))
+          .map(d => d.classList.remove('open'));
+
+        // Toggle the visibility for mobile.
+        if (this.isMobileSize()) 
+          ev.target.parentElement.classList.toggle('open');
       },
       isMobileSize() {
         return window.matchMedia("(max-width: 850px)")?.matches;
@@ -252,7 +259,14 @@
           function blurHandler(ev) {
             ev.preventDefault();
 
-            if (ev.composedPath().includes(menu) !== true) {
+            ev.composedPath().map(elem => {
+              console.log(elem);
+              console.log(elem.classList);
+              console.log(elem.classList.contains('navigation'));
+            });
+
+            let clickOnMenu = false;
+            if (!clickOnMenu) {
               document.removeEventListener('click', this);
               menuCloser();
             }
@@ -360,7 +374,8 @@
       .dropdown {
         display: inline-flex;
         position: relative;
-        margin-left: 3.5em;
+        /* margin-left: 3.5em; */
+        flex-direction: column;
       }
 
       .dropdown:hover .dropdown-content {
@@ -391,8 +406,6 @@
         min-width: 9em;
         display: flex;
         flex-direction: column;
-
-        padding: .6em 0;
         
         background-color: transparent;
 
@@ -424,13 +437,14 @@
 
       .nav-link {
         color: #616060;
-        margin-left: 3.5em;
+        
         text-decoration: none;
         cursor: pointer;
 
         display: inline-flex;
         align-items: center;
       }
+
       .nav-link:first-child {
         margin-left: 0;
       }
@@ -476,10 +490,8 @@
     fill: white;
   }
 
-
   @media screen and (min-width: 850px) {
     .navigation {
-      /* display: block; */
       display: flex;
       align-items: center;
     }
@@ -509,6 +521,33 @@
         .header-socials {
           text-align: left;
         }
+
+        .dropdown {
+          margin-left: 3.5em;
+          flex-direction: row;
+        }
+
+        .nav-link {
+          margin-left: 3.5em;
+        }
+
+        .dropdown .nav-link {
+          transition: transform .2s, opacity .2s;
+          opacity: 0;
+          transform: translateY(2em);
+        }
+
+        .dropdown .nav-link:nth-child(1) { transition-delay: .1s }
+        .dropdown .nav-link:nth-child(2) { transition-delay: .2s }
+        .dropdown .nav-link:nth-child(3) { transition-delay: .3s }
+        .dropdown .nav-link:nth-child(4) { transition-delay: .4s }
+        .dropdown .nav-link:nth-child(5) { transition-delay: .5s }
+        .dropdown .nav-link:nth-child(6) { transition-delay: .6s }
+
+        .dropdown:hover .nav-link {
+          opacity: 1;
+          transform: translateY(0);
+        }
   }
 
   @media screen and (max-width: 850px) {
@@ -529,10 +568,7 @@
 
       margin-top: 1rem;
       
-      background: #ffffff;
       border-radius: 1rem;
-
-      padding: 1rem 2rem 0;
     }
     .dropdown-content .nav-link:hover {
       color: #f76465;
