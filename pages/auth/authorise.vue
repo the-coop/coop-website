@@ -71,15 +71,6 @@
           const token = data.token || null;
           if (!token) throw new Error('Could not verify you have an account in The Coop. Try joining via the 🥚 Community menu?');
 
-          // Load additional data from our API, not just Discord (may be able to collapse/optimise later)
-          const user = await UserAPI.me(this.$auth);
-
-          // Set the user to nuxt auth/local memory.
-          this.$auth.setUser(user);
-
-          // Update the header immediately on login.
-          this.$nuxt.$emit('user_updated', user);
-
           // Set as loaded.
           this.loaded = true;
 

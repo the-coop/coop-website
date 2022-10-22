@@ -167,6 +167,7 @@
   import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
   import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';  
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+  import { playIntro } from '~/lib/conquest/experience/controls/trackball/trackballControls';
   
 
   const isMobile = () => {
@@ -405,6 +406,10 @@
       // Setup and run the game/level networking (socket based).
       if (this.networking && this.$auth.user)
         setupNetworking(this.$auth.strategy.token.get(), this.$auth.user);
+
+      // Play the intro if specified.
+      if (this.intro)
+        playIntro();
 
       // DEV: Update mainly for GUI.
       setInterval(() => this.players = this.getPlayers(), 150);

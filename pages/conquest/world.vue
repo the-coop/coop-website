@@ -22,7 +22,7 @@
     <Worldview 
       :tile="tile" 
       :networking="true"
-      :intro="true"
+      :intro="false"
     />
   </client-only>
 </template>

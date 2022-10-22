@@ -58,11 +58,11 @@
           </div>
         </a>
       </div>
-
-      <client-only>
-        <Worldview :silent="true" :intro="true" :networking="true" :controls="false" />
-      </client-only>
     </div>
+
+    <client-only>
+      <Worldview :silent="true" :intro="true" :networking="true" :controls="false" />
+    </client-only>
 
     <div class="content-container">
       <h1 class="title">🗞️ Posts ({{ posts.length }}/{{ postsTotal }})</h1>

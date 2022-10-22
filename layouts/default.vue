@@ -13,14 +13,14 @@
 
         <a 
           @click="closeMenu"
-          v-show="!$auth.$state.loggedIn" 
+          v-show="!this.$auth.$state.user" 
           :href="inviteLink" target="_blank" class="nav-link">
           👋 Join
         </a>
 
         <a 
           @click="closeMenu"
-          v-show="$auth.$state.loggedIn" 
+          v-show="this.$auth.$state.user" 
           href="https://fund-the-coop.raisely.com" target="_blank" class="nav-link">
           💸 Donate
         </a>
@@ -91,34 +91,36 @@
           </div>
         </div>
 
-        <NuxtLink v-show="!user" to="/auth/login" class="nav-link" @click.native="closeMenu">
+        <NuxtLink v-show="!this.$auth.$state.user" to="/auth/login" class="nav-link" @click.native="closeMenu">
           🔑 Login
         </NuxtLink>
 
-        <div class="dropdown" v-show="user">
+        <div class="dropdown" v-show="this.$auth.$state.user">
           <span class="dropdown-label" @click="toggleDropdown">
-            <NuxtLink 
-              :to="$auth.$state.loggedIn ? '/members/' + $auth.user.id : '/members'"
-              class="nav-link" @click.native="closeMenu"> 
-
-              <img 
-                v-if="user"
-                :class="[
-                  'profile-image', 
-                  user ? 'profile-image-loaded' : ''
-                ].join(' ')"
-                :src="user?.image" />
-              {{ user?.username }}
-            </NuxtLink>
+            <img 
+              v-show="this.$auth.$state.user"
+              :class="[
+                'profile-image', 
+                this.$auth.$state.user ? 'profile-image-loaded' : ''
+              ].join(' ')"
+              :src="this.$auth.$state.user?.image" />
+            {{ this.$auth.$state.user?.username }}
           </span>
           
           <div class="dropdown-content">
+            <NuxtLink to="/conquest/economy/items" 
+              class="nav-link" @click.native="closeMenu">
+              🎁 Items
+            </NuxtLink>
+            <NuxtLink
+              :to="this.$auth.$state.user ? '/members/' + this.$auth.$state.user.discord_id : '/members'"
+              class="nav-link"
+              @click="closeMenu">👤 Profile
+            </NuxtLink>
             <span
               class="nav-link"
-              @click="closeMenu">👤 Profile</span>
-            <span
-              class="nav-link"
-              @click="() => { logout(); closeMenu(); }">⏏️ Logout</span>
+              @click="() => { logout(); closeMenu(); }">⏏️ Logout
+            </span>
           </div>
         </div>
       </nav>
@@ -145,7 +147,7 @@
     </div>
     -->
 
-    <Nuxt user="user" />
+    <Nuxt user="this.$auth.$state.user" />
 
     <div class="footer-socials">
       <h4 class="footer-socials-prompt">Follow?</h4>
@@ -173,7 +175,6 @@
   import Twitter from '../components/socials/Twitter.vue';
   import Instagram from '../components/socials/Instagram.vue';
   import { inviteLink } from '~/lib/config';
-  import UserAPI from '~/lib/api/userAPI';
   
   const closedBottom = '-100%';
 
@@ -185,10 +186,7 @@
       Instagram,
       Twitter
     },
-    created() {
-      this.$nuxt.$on('user_updated', user => this.user = user);
-    },
-    async mounted() {      
+    async mounted() {
       // When the dropdown menu is hovered...
       // Should trigger an event which blocks the now upwards moving box re-triggering CSS hover.
       const dropdowns = Array.from(document.querySelectorAll('.dropdown'));
@@ -205,11 +203,6 @@
           // 3. [Investigate if problems] - Make sure these are accessible for cleanup.
         });
       });
-
-      // Add user data to layout for rendering header etc.
-      if (this.$auth.user) {
-        this.user = await UserAPI.me(this.$auth);
-      }
     },
     methods: {
       async logout() {
@@ -280,8 +273,7 @@
     data() {
       return { 
         page: this.$route.name,
-        inviteLink,
-        user: null
+        inviteLink
       };
     },
     watch: {
@@ -388,6 +380,7 @@
         display: inline-flex;
         color: #616060;
         cursor: pointer;
+        align-items: center;
       }
 
       .dropdown-label:hover {
@@ -589,7 +582,7 @@
 
       z-index: 3;
 
-      background: #111111;
+      background: rgba(17, 17, 17, 0.9);
       border-radius: 1rem 0;
     }
 
