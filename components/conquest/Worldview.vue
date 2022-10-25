@@ -10,7 +10,7 @@
     </div>
 
     <div v-if="settingsOpen && !silent" class="settings">
-      <h1>SETTINGS</h1>
+      <h1>SETTINGS MENU</h1>
 
       <span v-show="$auth.$state.loggedIn" 
         class="primary-action"
@@ -20,12 +20,16 @@
         🐛 GUI
       </span>
 
+      <span class="primary-action" @click="toggleControllers">
+        🎮 CONTROLLERS
+      </span>
+
       <span class="primary-action" @click="closeSettings">
         x Close
       </span>
     </div>
 
-    <div class="primary" v-if="!silent">
+    <div class="primary" v-if="!silent && !uiBlocked">
       <button 
         class="primary-action"
         v-show="$auth.$state.loggedIn" 
@@ -218,7 +222,9 @@
       spawned: false,
       died: false,
 
-      selected: null
+      selected: null,
+
+      uiBlocked: true
     }),
     
     methods: {
@@ -275,6 +281,9 @@
 
     async mounted() {
       const DETECTED_INPUT_KEY = isMobile() ? "MOBILE" : "COMPUTER";
+
+      // Reveal UI that camera animation won't break.
+      setTimeout(() => this.uiBlocked = false, 1500);
 
       // TODO: On detection/disconnection should have a popup for switching.
 
