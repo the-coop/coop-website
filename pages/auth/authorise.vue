@@ -53,6 +53,14 @@
             this.$router.push('/conquest/world');
             break;
 
+          case 'roles':
+            this.$router.push('/roles');
+            break;
+
+          case 'trade':
+            this.$router.push('/conquest/economy/trade');
+            break;
+
           default: 
             this.$router.push('/');
         }

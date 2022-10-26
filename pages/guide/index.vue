@@ -1,6 +1,6 @@
 <template>
   <div class="content-container">
-    <h1 class="title">👷 Guide</h1>
+    <h1 class="title">📖 Guide</h1>
   </div>
 </template>
 
