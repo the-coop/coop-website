@@ -59,6 +59,10 @@
               🗞️ Blog
             </NuxtLink>
 
+            <NuxtLink to="/roles" class="nav-link" @click.native="closeMenu">
+              ⚙️ Roles
+            </NuxtLink>
+
             <NuxtLink to="/projects" class="nav-link" @click.native="closeMenu">
               👷 Projects
             </NuxtLink>
