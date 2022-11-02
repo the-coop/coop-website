@@ -51,6 +51,10 @@
               🏠 Home
             </NuxtLink>
 
+            <NuxtLink to="/vision" class="nav-link current" @click.native="closeMenu">
+              📄 Vision
+            </NuxtLink>
+
             <NuxtLink to="/members" class="nav-link" @click.native="closeMenu">
               🔮 Members
             </NuxtLink>
