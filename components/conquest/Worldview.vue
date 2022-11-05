@@ -249,6 +249,7 @@
   import { playIntro } from '~/lib/conquest/experience/controls/trackball/trackballControls';
   
   import Logo from "~/components/Logo.vue";
+  import items from '~/../coop-shared/config/items.mjs';
 
   const isMobile = () => {
     let check = false;
@@ -502,6 +503,36 @@
 
       // Start the engine, recursively.
       engine(this);
+
+      console.log('Loading image');
+
+      // const objectLoader = new THREE.ObjectLoader;
+      // console.log(objectLoader);
+
+      // instantiate a loader const loader = new OBJLoader(); 
+      // load a resource loader.load( 
+      // resource URL 'models/monster.obj', 
+      // called when resource is loaded function ( object ) { scene.add( object ); }, 
+
+      // WORLD.scene.add(object);
+
+      // TODO: Add COOP_POINT item image to test.
+      const textureLoader = new THREE.TextureLoader;
+
+      ['AVERAGE_EGG', 'RARE_EGG', 'LEGENDARY_EGG', 'COOP_POINT'].map(async (itemKey, itemIndex) => {
+        const texture = await textureLoader.loadAsync(items[itemKey].image);
+        console.log(texture);
+  
+        const geometry = new THREE.PlaneGeometry(3, 3, 3);
+        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+  
+        const mesh = new THREE.Mesh(geometry, material);
+  
+        const offset = 4 * itemIndex;
+        mesh.position.set(offset, offset, offset);
+  
+        WORLD.scene.add(mesh);
+      });
     },
 
     async beforeUnmount() {
