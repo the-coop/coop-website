@@ -2,21 +2,38 @@
   <div>
     <h1 class="title">⚙️ Roles</h1>
 
-    <div v-show="$auth.$state.loggedIn">
+    <div v-show="!$auth.$state.loggedIn">
       <h2 class="subtitle">
         Not authenticated, login to modify roles.
       </h2>
       <LoginBlock />
     </div>
 
-    <div class="subtitle" v-show="!$auth.$state.loggedIn">
-      <p>---- USER TYPE / MAIN ----</p>
-      <p>---- REWARD ----</p>
-      <p>---- SKILL LEVELS ----</p>
-      <p>---- NOTIFICATIONS ----</p>
-      <p>---- SPECIALIZATIONS ----</p>
+    <div class="roles-interface">
+      <div class="category">
+        <h2>Interest</h2>
+        <div class="options">
+          <div v-for="role in roles.filter(r => r.category === 'INTEREST')" :key="role.id">
+            {{ role.id }}
+          </div>
+        </div>
+      </div>
+
+      <div class="category">
+        <h2>Notirifcations</h2>
+        <div class="options">
+          <div v-for="role in roles.filter(r => r.category === 'INTEREST')" :key="role.id">
+            {{ role.id }}
+          </div>
+        </div>
+      </div>
+
+      <!-- <p>---- SPECIALIZATIONS ----</p>
       <p>---- OTHER ----</p>
-      
+      <p>---- SKILL LEVELS ----</p> -->
+
+      <p>---- REWARD ----</p>
+
       <!-- 
       Leader 723676356818239773
       Supporter 904477558928715776
@@ -69,14 +86,26 @@
 
 <script>
   import LoginBlock from '~/components/users/LoginBlock.vue';
-
   // import { inviteLink } from '~/lib/config';
+  import ROLES from "coop-shared/config/roles.mjs";
+
   export default {
-    components: { LoginBlock }
+    components: { LoginBlock },
+    mounted() {
+      this.roles = Object.keys(ROLES).map(r => ROLES[r]);
+      // console.log(ROLES);
+    },
+    data() {
+      return {
+        roles: []
+      };
+    }
 };
 </script>
 
-<sty
-LoginBlockle>
 
+<style scoped>
+  .roles-interface {
+    color: white;
+  }
 </style>

@@ -2,6 +2,11 @@
   <div class="worldview">
     <h1 class="error-text" v-if="!WEBGL_SUPPORT && !silent">Loading error...</h1>
 
+    <div class="intro" v-show="uiBlocked && !silent">
+      <Logo class="intro-logo" />
+      <h1 class="intro-title">CONQUEST</h1>
+    </div>
+
     <div 
       class="settings-toggle"
       @click="ev => { ev.preventDefault(); this.settingsOpen = !this.settingsOpen}"
@@ -79,7 +84,7 @@
   </div>
 </template>
 
-<style scoped>
+<style>
   * {
     user-select: none;
   }
@@ -152,6 +157,76 @@
     left: 0;
     z-index: -1;
   }
+
+  .intro {
+    position: absolute;
+    z-index: 3;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    animation: hide .5s;
+    animation-delay: 4s;
+    animation-fill-mode: both;
+  }
+
+  .intro-logo {
+    animation: intro 2s;
+    animation-fill-mode: both;
+  }
+  .intro-logo * {
+    fill: #fffaee;
+  }
+
+  .intro-title {
+    margin: 0;
+    animation: grow 1.2s;
+    animation-delay: 2.25s;
+    animation-fill-mode: both;
+
+    color: #fffaee;
+
+    font-size: 7em;
+  }
+
+  @keyframes intro {
+    0% {
+      width: 12em;
+      opacity: 0;
+    }
+
+    70% {
+      width: 3em;
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes grow {
+    from {
+      font-size: 3em;
+      opacity: 0;
+    }
+    to {
+      font-size: 7em;
+      opacity: 1;
+    }
+  }
+  @keyframes hide {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
 </style>
 
 <script>
@@ -173,6 +248,7 @@
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
   import { playIntro } from '~/lib/conquest/experience/controls/trackball/trackballControls';
   
+  import Logo from "~/components/Logo.vue";
 
   const isMobile = () => {
     let check = false;
@@ -208,6 +284,7 @@
       }
     },
     components: {
+      Logo,
       Gear
     },
     data: () => ({
@@ -283,7 +360,7 @@
       const DETECTED_INPUT_KEY = isMobile() ? "MOBILE" : "COMPUTER";
 
       // Reveal UI that camera animation won't break.
-      setTimeout(() => this.uiBlocked = false, 1500);
+      setTimeout(() => this.uiBlocked = false, 5000);
 
       // TODO: On detection/disconnection should have a popup for switching.
 
