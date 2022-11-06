@@ -253,7 +253,7 @@
   import { playIntro } from '~/lib/conquest/experience/controls/trackball/trackballControls';
   
   import Logo from "~/components/Logo.vue";
-  import items from '~/../coop-shared/config/items.mjs';
+  import items from 'coop-shared/config/items.mjs';
 
   const isMobile = () => {
     let check = false;
