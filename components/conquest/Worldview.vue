@@ -80,6 +80,10 @@
       </div>
     </div>
 
+    <div class="info" v-if="controllersOpen">
+      CONTROLLERS
+    </div>
+
     <canvas id="canvas" />
   </div>
 </template>
@@ -296,6 +300,7 @@
 
       settingsOpen: false,
       guiOpen: false,
+      controllersOpen: false,
 
       spawned: false,
       died: false,
@@ -320,6 +325,10 @@
         this.guiOpen = !this.guiOpen;
         this.closeSettings();
       },
+      toggleControllers() {
+        this.closeSettings();
+        this.controllersOpen = !this.controllersOpen;
+      },
       closeSettings() {
         this.settingsOpen = false;
       },
@@ -334,7 +343,6 @@
 
         // Update GUI actions related to spawning.
         this.spawned = true;
-
 
         // Interaction required*
         window.WORLD.renderer.domElement.requestPointerLock();
@@ -352,7 +360,7 @@
 
         document.addEventListener('pointerlockerror', ev => {
           console.log('Error with pointer lock' + ev);
-                console.error(ev);
+          console.error(ev);
         }, false);
       }
     },
@@ -364,6 +372,8 @@
       setTimeout(() => this.uiBlocked = false, 5000);
 
       // TODO: On detection/disconnection should have a popup for switching.
+
+
 
       // Detect console controller.
       window.addEventListener("gamepadconnected", function(e) {
@@ -515,6 +525,12 @@
       // called when resource is loaded function ( object ) { scene.add( object ); }, 
 
       // WORLD.scene.add(object);
+
+
+      // Force console controls for testing.
+      // WORLD.settings.view.DESIRED_INPUT_KEY = "CONSOLE";
+
+
 
       // TODO: Add COOP_POINT item image to test.
       const textureLoader = new THREE.TextureLoader;

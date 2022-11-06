@@ -9,6 +9,12 @@
       <h2 class="title">Error authenticating.</h2>
       <p class="text">{{ error }}</p>
     </div>
+
+    <p class="text">
+      Note: Most authentication issues can be solved by joining the server 
+      <a href="https://discord.gg/thecoop" target="_blank" rel="noopener noforwarder noreferer nofollow">(here)</a>
+      or checking you are logged into correct Discord account (on the browser too?).
+    </p>
   </div>
 </template>
 
