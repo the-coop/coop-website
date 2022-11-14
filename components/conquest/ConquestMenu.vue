@@ -11,7 +11,7 @@
     </NuxtLink>
 
     <NuxtLink 
-      to="/conquest/leaderboard"
+      to="/conquest/economy/items/COOP_POINT"
       class="conquest-menu-item">
       <span class="conquest-menu-item-link-label">
         Leaderboard
@@ -34,11 +34,11 @@
       </span>
     </NuxtLink>
 
-    <div class="conquest-menu-item disabled">
+    <!-- <div class="conquest-menu-item disabled">
       <span 
         class="conquest-menu-item-link-label"
         to="/conquest/leaderboard">Conflict</span>
-    </div>
+    </div> -->
   </div>
 </template>
 

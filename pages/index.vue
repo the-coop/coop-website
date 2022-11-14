@@ -109,7 +109,7 @@
       </NuxtLink>
     </div> -->
 
-    <div class="content-container">
+    <div class="content-container conquest-menu-container">
       <h1 class="title">🗡 Conquest</h1>
 
       <ConquestMenu />
@@ -224,7 +224,8 @@
   }
 
   .hero-container {
-    flex: 100%;
+    flex-wrap: wrap;
+    flex-direction: column;
   }
 
   .home {
@@ -235,7 +236,6 @@
   }
 
   .hero {
-    flex: calc(59% - 3em) 0 0;
     z-index: 1;
     color: silver;
   }
@@ -245,7 +245,6 @@
   }
 
   .prompt {
-    flex: 100% 0 0;
     margin-top: 5rem;
     color: silver;
   }
@@ -259,7 +258,8 @@
     height: 30vh;
 
     background-position: center;
-    background-size: cover;
+    background-size: contain;
+    background-repeat: no-repeat;
   }
 
   .actions {
@@ -284,20 +284,27 @@
     opacity: .125;
   }
 
+  .conquest-menu-container {
+    flex: 100%;
+  }
+
   @media screen and (min-width: 850px) {
     .home {
       flex-direction: row;
       justify-content: space-between;
-    }
-
-    .home {
       flex-wrap: nowrap;
     }
 
+    .hero {
+      flex: calc(59% - 3em) 0 0;
+    }
+
     .prompt {
+      flex: 100% 0 0;
       margin-top: 0;
       flex: 39% 0 0;
     }
+
   }
 
   @media screen and (min-width: 1200px) {
