@@ -273,11 +273,15 @@
   }
 
   .actions {
+    display: flex;
     margin-top: 3rem;
+    justify-content: space-between;
   }
 
   .actions .button {
-    margin-right: .35em;
+    display: inline-flex;
+    flex: calc(50% - .5em) 0 0;
+    box-sizing: border-box;
   }
 
   .actions .button:last-child {
@@ -313,6 +317,14 @@
       flex: 100% 0 0;
       margin-top: 0;
       flex: 39% 0 0;
+    }
+
+    .actions {
+      display: block;
+    }
+
+    .actions .button {
+      margin-right: .35em;
     }
 
   }
