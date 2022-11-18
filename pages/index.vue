@@ -115,7 +115,7 @@
       <ConquestMenu />
     </div>
 
-    <div class="content-container" v-show="!$auth.$state.loggedIn">
+    <div class="content-container login-prompt-container" v-show="!$auth.$state.loggedIn">
       <h1 class="title">🔑 Login</h1>
 
       <LoginBlock />
@@ -221,11 +221,7 @@
     display: flex;
     flex-wrap: wrap;
     margin-top: 1.5em;
-  }
-
-  .hero-container {
-    flex-wrap: wrap;
-    flex-direction: column;
+    justify-content: center;
   }
 
   .home {
@@ -234,6 +230,20 @@
     justify-content: space-between;
     flex-wrap: wrap;
   }
+
+  .hero-container {
+    flex-wrap: wrap;
+    flex-direction: column;
+  }
+
+  .login-prompt-container {
+    background-color: rgb(23, 23, 23);
+    justify-content: center;
+    align-items: center;
+    border-radius: 4em;
+    padding: 3em;
+  }
+
 
   .hero {
     z-index: 1;

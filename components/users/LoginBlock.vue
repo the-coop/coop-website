@@ -40,7 +40,7 @@
 </style>
 
 <template>
-  <div>
+  <div :class="extraClass">
     <div class="login-text">
       <p>Gain access by proving you have an account inside The Coop Community. 🐔</p>
 
@@ -80,6 +80,10 @@
   export default {
     props: {
       intent: {
+        type: String,
+        default: ''
+      },
+      extraClass: {
         type: String,
         default: ''
       }

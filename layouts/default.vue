@@ -51,7 +51,7 @@
               🏠 Home
             </NuxtLink>
 
-            <NuxtLink to="/vision" class="nav-link current" @click.native="closeMenu">
+            <NuxtLink to="/vision" class="nav-link" @click.native="closeMenu">
               📄 Vision
             </NuxtLink>
 
@@ -412,7 +412,7 @@
 
         pointer-events: none;
 
-        z-index: 1;
+        z-index: 2;
       }
 
       .dropdown-content .nav-link {

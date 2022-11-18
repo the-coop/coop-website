@@ -6,7 +6,7 @@
       <h2 class="subtitle">
         Not authenticated, login to modify roles.
       </h2>
-      <LoginBlock />
+      <LoginBlock intent="roles" extraClass="roles-login" />
     </div>
 
     <div class="roles-interface">
@@ -104,8 +104,21 @@
 </script>
 
 
-<style scoped>
+<style>
   .roles-interface {
     color: white;
+  }
+  .roles-login {
+    position: fixed;
+    z-index: 1;
+
+
+    background-color: rgba(22, 22, 22, 0.75);
+    border-radius: .25em;
+    flex: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 2em;
+    border-radius: 2em;
   }
 </style>
