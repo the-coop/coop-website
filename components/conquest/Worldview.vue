@@ -88,7 +88,7 @@
   </div>
 </template>
 
-<style>
+<style scoped>
   * {
     user-select: none;
   }
