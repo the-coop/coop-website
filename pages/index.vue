@@ -189,6 +189,7 @@
         // Load the necessary users.
         const membersResp = await fetch(API.BASE_URL + 'members/build');
         let users = (await membersResp.json()) || [];
+        console.log(users);
 
         // Load the latest advert
         const advertResp = await fetch(API.BASE_URL + 'prompts/latest');

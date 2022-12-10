@@ -8,16 +8,16 @@
           <div class="user-tags">
             <!-- TODO: Add hover tooltip to this? -->
             <!-- <span>MOTW</span> -->
-            <span 
+            <!-- <span 
               class="user-tags-role" 
               v-for="
                 role in sortRoles(user.role_list)
                   .filter(filterRole)
                   .slice(0, 3)
               "
-              :key="'users' + role">
+              :key="`users-${user.discord_id}-${role}`">
               {{ role }}
-            </span>
+            </span> -->
           </div>
         </div>
 
@@ -115,7 +115,8 @@
 </style>
 
 <script>
-import ItemIcon from '../conquest/ItemIcon.vue';
+  import ItemIcon from '../conquest/ItemIcon.vue';
+
   const filteredRoles = ['MEMBER', 'SUBSCRIBER', 'SOCIAL'];
   const skillLevelRoles = ['BEGINNER', 'INTERMEDIATE', 'MASTER'];
   export default {

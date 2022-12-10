@@ -11,12 +11,18 @@
 
     <div class="roles-interface">
 
-
-      <div class="category" v-for="category in categories" :key="category">
+      <div :v-if="roles" class="category" v-for="category in categories" :key="category">
         <h2>{{ category }}</h2>
         <div class="options">
-          <div class="option" v-for="role in roles.filter(r => r.category === category)" :key="role.id">
-            <Toggle :label="role.name" />
+          <div class="option" v-for="role in options.filter(r => r.category === category)" :key="role.id">
+            <Toggle 
+              :label="role.name" 
+              :roleID="role.id" 
+              :owned="roles.some(r => r.role_id === role.id)"
+              :locked="role.locked"
+            />
+
+            {{ role.description }}
           </div>
         </div>
       </div>
@@ -26,17 +32,26 @@
 </template>
 
 <script>
+  import ROLES from "coop-shared/config/roles.mjs";
+  import API from "~/lib/api/api";
   import LoginBlock from '~/components/users/LoginBlock.vue';
   import Toggle from '~/components/Toggle.vue';
-  import ROLES from "coop-shared/config/roles.mjs";
 
   export default {
     components: { LoginBlock, Toggle },
-    mounted() {
-      this.roles = Object.keys(ROLES).map(r => ROLES[r]);
+    async mounted() {
+      this.options = Object.keys(ROLES).map(r => ROLES[r]);
+
+      // TODO:
+      // alert('ADD CATEGORY EMOJIS');
+      // alert('ADD DISABLED OPTIONS / LOCKED (REWARDS)');
+
+      if (this.$auth.loggedIn)
+        this.roles = (await API.getAuthed('members/roles', this.$auth)).data;
     },
     data() {
       return {
+        options: [],
         roles: [],
         categories: [
           'INTEREST',
@@ -50,13 +65,16 @@
 };
 </script>
 
-
 <style>
   .roles-interface {
     display: flex;
-    justify-content: space-between;
     color: white;
+    flex-direction: column;
+
+    align-items: center;
+    text-align: center;
   }
+
   .roles-login {
     position: fixed;
     flex: 100%;
@@ -75,4 +93,14 @@
   .option svg {
     width: 5em;
   }
+
+  @media (min-width: 800px) {
+    .roles-interface {
+      justify-content: space-evenly;
+      flex-wrap: wrap;
+      flex-direction: row;
+    }
+  }
+
+
 </style>
