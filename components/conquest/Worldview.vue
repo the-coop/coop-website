@@ -2,7 +2,7 @@
   <div class="worldview">
     <h1 class="error-text" v-if="!WEBGL_SUPPORT && !silent">Loading error...</h1>
 
-    <div class="intro" v-show="uiBlocked && !silent">
+    <div class="intro" v-show="uiBlocked && !silent && intro">
       <Logo class="intro-logo" />
       <h1 class="intro-title">CONQUEST</h1>
     </div>
@@ -369,7 +369,10 @@
       const DETECTED_INPUT_KEY = isMobile() ? "MOBILE" : "COMPUTER";
 
       // Reveal UI that camera animation won't break.
-      setTimeout(() => this.uiBlocked = false, 5000);
+      if (this.intro)
+        setTimeout(() => this.uiBlocked = false, 5000);
+      else 
+        this.uiBlocked = false
 
       // TODO: On detection/disconnection should have a popup for switching.
 
@@ -395,7 +398,7 @@
       this.WEBGL_SUPPORT = !!(
         window.WebGLRenderingContext && 
         (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
-      );;
+      );
 
       // Used for shared state.
       window.WORLD = {

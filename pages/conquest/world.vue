@@ -10,8 +10,14 @@
       };
     },
     data() {
+      const newUser = !localStorage.getItem('previous-visit');
+
+      // Persist visit data to prevent showing intro again.
+      localStorage.setItem('previous-visit', true);
+
       return {
-        tile: this.$nuxt.$route.query.tile
+        tile: this.$nuxt.$route.query.tile,
+        newUser
       }
     }
   }
@@ -22,7 +28,7 @@
     <Worldview 
       :tile="tile" 
       :networking="true"
-      :intro="false"
+      :intro="newUser"
     />
   </client-only>
 </template>
