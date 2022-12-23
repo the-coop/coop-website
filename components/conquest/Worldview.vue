@@ -368,31 +368,6 @@
     async mounted() {
       const DETECTED_INPUT_KEY = isMobile() ? "MOBILE" : "COMPUTER";
 
-      // Reveal UI that camera animation won't break.
-      if (this.intro)
-        setTimeout(() => this.uiBlocked = false, 5000);
-      else 
-        this.uiBlocked = false
-
-      // TODO: On detection/disconnection should have a popup for switching.
-
-
-
-      // Detect console controller.
-      window.addEventListener("gamepadconnected", function(e) {
-        console.log(
-          "Gamepad connected at index %d: %s. %d buttons, %d axes.",
-          e.gamepad.index, e.gamepad.id,
-          e.gamepad.buttons.length, e.gamepad.axes.length
-        );
-        WORLD.settings.view.DESIRED_INPUT_KEY = "CONSOLE";
-      });
-      window.addEventListener("gamepaddisconnected", function(e) {
-        console.log("Gamepad disconnected from index %d: %s",
-        e.gamepad.index, e.gamepad.id);
-        WORLD.settings.view.DESIRED_INPUT_KEY = "COMPUTER";
-      });
-
       // Check if WebGL is supported.
       const canvas = document.getElementById('canvas');
       this.WEBGL_SUPPORT = !!(
@@ -432,6 +407,8 @@
           player: null,
           config: null
         },
+
+        focussed: true,
 
         settings: {
           view: {
@@ -517,6 +494,32 @@
       // Start the engine, recursively.
       engine(this);
 
+
+     // Reveal UI that camera animation won't break.
+      setTimeout(() => this.uiBlocked = false, this.intro ? 5000 : 0);
+
+      // Track window focus state to prevent spinning off universe. Lul.
+      document.addEventListener("visibilitychange", () => {
+        WORLD.focussed = document.hidden;
+      });
+
+      // TODO: On detection/disconnection should have a popup for switching.
+
+      // Detect console controller.
+      window.addEventListener("gamepadconnected", function(e) {
+        console.log(
+          "Gamepad connected at index %d: %s. %d buttons, %d axes.",
+          e.gamepad.index, e.gamepad.id,
+          e.gamepad.buttons.length, e.gamepad.axes.length
+        );
+        WORLD.settings.view.DESIRED_INPUT_KEY = "CONSOLE";
+      });
+      window.addEventListener("gamepaddisconnected", function(e) {
+        console.log("Gamepad disconnected from index %d: %s",
+        e.gamepad.index, e.gamepad.id);
+        WORLD.settings.view.DESIRED_INPUT_KEY = "COMPUTER";
+      });
+
       console.log('Loading image');
 
       // const objectLoader = new THREE.ObjectLoader;
@@ -534,24 +537,23 @@
       // WORLD.settings.view.DESIRED_INPUT_KEY = "CONSOLE";
 
 
-
       // TODO: Add COOP_POINT item image to test.
-      const textureLoader = new THREE.TextureLoader;
+      // const textureLoader = new THREE.TextureLoader;
 
-      ['AVERAGE_EGG', 'RARE_EGG', 'LEGENDARY_EGG', 'COOP_POINT'].map(async (itemKey, itemIndex) => {
-        const texture = await textureLoader.loadAsync(items[itemKey].image);
-        console.log(texture);
+      // ['AVERAGE_EGG', 'RARE_EGG', 'LEGENDARY_EGG', 'COOP_POINT'].map(async (itemKey, itemIndex) => {
+      //   const texture = await textureLoader.loadAsync(items[itemKey].image);
+      //   console.log(texture);
   
-        const geometry = new THREE.PlaneGeometry(3, 3, 3);
-        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+      //   const geometry = new THREE.PlaneGeometry(3, 3, 3);
+      //   const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
   
-        const mesh = new THREE.Mesh(geometry, material);
+      //   const mesh = new THREE.Mesh(geometry, material);
   
-        const offset = 4 * itemIndex;
-        mesh.position.set(offset, offset, offset);
+      //   const offset = 4 * itemIndex;
+      //   mesh.position.set(offset, offset, offset);
   
-        WORLD.scene.add(mesh);
-      });
+      //   WORLD.scene.add(mesh);
+      // });
     },
 
     async beforeUnmount() {
