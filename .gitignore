@@ -104,3 +104,4 @@ yarn.lock
 *.vsidx
 *.lock
 yarn.lock
+.vs/coopwebsite/v17/.suo
