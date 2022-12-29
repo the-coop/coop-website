@@ -60,7 +60,10 @@
       <p>
         <button 
           @click="changeCamera"
-          id="toggle_controls">SWITCH POV</button>
+          id="toggle_controls">SWITCH POV</button> </br>
+          <button 
+          @click="conquestDebug"
+          id="conquest_debug">DEBUG Spawn</button>
       </p>
 
       <!-- Temporary debug GUI. -->
@@ -242,6 +245,7 @@
   import engine from '~/lib/conquest/engine';
   import buildSolarSystem from '~/lib/conquest/generation/buildSolarSystem';
   import setupNetworking from '~/lib/conquest/network/setupNetworking';
+  import PlayerManager from '~/lib/conquest/entities/playerManager';
 
   import UNIVERSE_SPECIFICATION from '~/lib/conquest/generation/universe-specification.json';
 
@@ -331,6 +335,34 @@
       },
       closeSettings() {
         this.settingsOpen = false;
+      },
+      conquestDebug() {
+        console.log("Debug Mode");
+        console.log(this.networking);
+        console.log(this.$auth.user);
+        if (!window.WORLD.debug && !(this.$auth.user)) {
+          window.WORLD.socket = {};
+          window.WORLD.socket.emit = () => { };
+          console.log("Developer sandbox mode Networking disabled");
+          window.WORLD.debug = true;
+          console.log("Spawning");
+
+          this.spawn();
+
+          // Remove existing player so this can be used to update.
+          const config = {
+            player_id: "test", color: 0xe06666, connected_at: 0, last_activity: 0,
+            socket_id: null, username: "test"
+          };
+          const player = PlayerManager.add(config);
+          window.WORLD.me = { config, player };
+          window.WORLD.component.spawned = true;
+          window.WORLD.settings.view.DESIRED_CAMERA_KEY = ControlsManager.CAMERA_KEYS.FIRST_PERSON;
+         
+
+        } else {
+          console.log("Unable to Debug Spawn");
+        }
       },
       spawn() {
         const target = WORLD.planets[0];
