@@ -531,7 +531,7 @@
 
 
      // Reveal UI that camera animation won't break.
-      setTimeout(() => this.uiBlocked = false, this.intro ? 5000 : 0);
+      setTimeout(() => this.uiBlocked = false, this.intro ? 5000 : 1250);
 
       // Track window focus state to prevent spinning off universe. Lul.
       document.addEventListener("visibilitychange", () => {
