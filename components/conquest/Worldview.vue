@@ -60,7 +60,8 @@
       <p>
         <button 
           @click="changeCamera"
-          id="toggle_controls">SWITCH POV</button> </br>
+          id="toggle_controls">SWITCH POV</button> 
+          <br />
           <button 
           @click="conquestDebug"
           id="conquest_debug">DEBUG Spawn</button>
@@ -340,6 +341,7 @@
         console.log("Debug Mode");
         console.log(this.networking);
         console.log(this.$auth.user);
+
         if (!window.WORLD.debug && !(this.$auth.user)) {
           window.WORLD.socket = {};
           window.WORLD.socket.emit = () => { };
@@ -355,6 +357,7 @@
             socket_id: null, username: "test"
           };
           const player = PlayerManager.add(config);
+          
           window.WORLD.me = { config, player };
           window.WORLD.component.spawned = true;
           window.WORLD.settings.view.DESIRED_CAMERA_KEY = ControlsManager.CAMERA_KEYS.FIRST_PERSON;
