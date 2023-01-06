@@ -58,13 +58,9 @@
       Target: {{ selected }}
 
       <p>
-        <button 
-          @click="changeCamera"
-          id="toggle_controls">SWITCH POV</button> 
-          <br />
-          <button 
-          @click="conquestDebug"
-          id="conquest_debug">DEBUG Spawn</button>
+        <button @click="changeCamera" id="toggle_controls">SWITCH POV</button> 
+        <button @click="conquestDebug" id="conquest_debug">DEBUG Spawn</button>
+        <button @click="resetIntro" id="reset_intro">Reset intro</button>
       </p>
 
       <!-- Temporary debug GUI. -->
@@ -255,8 +251,8 @@
   import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
   import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';  
   import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-  import { playIntro } from '~/lib/conquest/experience/controls/trackball/trackballControls';
-  
+  import { Tween, Easing } from '@tweenjs/tween.js';
+
   import Logo from "~/components/Logo.vue";
   import items from 'coop-shared/config/items.mjs';
 
@@ -320,7 +316,7 @@
         return Object.values(WORLD.players);
       },
       changeCamera() {
-        ControlsManager.toggleCameraTemp();
+        ControlsManager.toggleCamera();
       },
       logout() {
         this.$auth.logout();
@@ -336,6 +332,9 @@
       },
       closeSettings() {
         this.settingsOpen = false;
+      },
+      resetIntro() {
+        localStorage.removeItem('previous-visit');
       },
       conquestDebug() {
         console.log("Debug Mode");
@@ -430,6 +429,7 @@
 
         input: null,
         controls: null,
+        controllable: false,
 
         socket: null,
 
@@ -519,19 +519,29 @@
       if (this.networking && this.$auth.user)
         setupNetworking(this.$auth.strategy.token.get(), this.$auth.user);
 
-      // Play the intro if specified.
-      if (this.intro)
-        playIntro();
-
       // DEV: Update mainly for GUI.
       setInterval(() => this.players = this.getPlayers(), 150);
 
       // Start the engine, recursively.
       engine(this);
 
+      // Play the intro if specified, but don't cause re-render?
+      if (this.intro) {
+        WORLD.camera.position.set(0, 25, 50);
+        
+        WORLD.cameraAnimation = new Tween(WORLD.camera.position)
+          .to({ x: 0, y: 15, z: 40 }, 550)
+          .easing(Easing.Quadratic.InOut)
+          .start()
+          .onUpdate(() => WORLD.camera.lookAt(WORLD.planets[0].body.position))
+          .onComplete(() => WORLD.cameraAnimation = null);
+      }
 
      // Reveal UI that camera animation won't break.
-      setTimeout(() => this.uiBlocked = false, this.intro ? 5000 : 1250);
+      setTimeout(() => {
+        this.uiBlocked = false;
+        WORLD.controllable = true;
+      }, this.intro ? 5000 : 1250);
 
       // Track window focus state to prevent spinning off universe. Lul.
       document.addEventListener("visibilitychange", () => {
