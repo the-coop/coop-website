@@ -41,6 +41,22 @@ html {
   margin-bottom: 1.5em;
 }
 
+.text {
+  color: #ffffff;
+}
+
+.quote-text{
+  color: rgb(231, 231, 231);
+  font-family: monospace;
+  padding: 2px 2px 2px 8px;
+  background-color: #71717125;
+  border-radius: 8px;
+  border: 0.5px solid #7171715a;
+}
+
+.var{
+  color: #ff6565;
+}
 
 .button {
   padding: .75em 2.5rem;
@@ -132,6 +148,8 @@ html {
   color: #b2b2b2;
 }
 
+
+
 .note {
   color: #bcbcbc;
 }
@@ -158,4 +176,8 @@ form .only-action {
   padding: .85rem;
   color: #fefefe;
   font-size: 1.125rem;
+}
+
+.inner-container{
+  padding-left: 1rem;
 }
