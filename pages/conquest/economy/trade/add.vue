@@ -5,7 +5,7 @@
       <h1 v-if="processing" class="title">Submitting your trade</h1>
       <h1 v-if="success" class="title">Trade submitted</h1>
     </div>
- 
+
     <div v-if="$auth.$state.loggedIn">
       <form v-if="!success" :class="`form ${processing ? 'disabled' : ''}`">
         <div class="fieldset">
@@ -13,12 +13,12 @@
 
           <div class="input">
             <span class="input-label">Offering Item</span>
-            <ItemCodeInputSuggestions 
+            <ItemCodeInputSuggestions
               :onSelect="ev => selectSuggestion('offer')(ev)"
-              :suggestions="offer_suggestions" 
+              :suggestions="offer_suggestions"
             />
 
-            <input required v-model="offer_item" :disabled="processing" 
+            <input required v-model="offer_item" :disabled="processing"
               @input="itemCodeChange"
               @focus="itemCodeChange"
               :class="`item-code input-target ${errors.invalid_offer_item ? 'errored' : ''}`"
@@ -27,8 +27,8 @@
 
           <div class="input">
             <span class="input-label">Offering Amount</span>
-            <input v-model="offer_qty" :disabled="processing" 
-              :class="`input-target ${errors.invalid_offer_qty ? 'errored' : ''}`" 
+            <input v-model="offer_qty" :disabled="processing"
+              :class="`input-target ${errors.invalid_offer_qty ? 'errored' : ''}`"
               placeholder="1" type="number" name="offer_qty" />
           </div>
         </div>
@@ -38,20 +38,20 @@
 
           <div class="input">
             <span class="input-label">Attaining Item</span>
-            <ItemCodeInputSuggestions 
+            <ItemCodeInputSuggestions
               :onSelect="ev => selectSuggestion('receive')(ev)"
-              :suggestions="receive_suggestions" 
+              :suggestions="receive_suggestions"
             />
-            <input required v-model="receive_item" :disabled="processing" 
+            <input required v-model="receive_item" :disabled="processing"
               @input="itemCodeChange"
               @focus="itemCodeChange"
-              :class="`item-code input-target ${errors.invalid_receive_item ? 'errored' : ''}`" 
+              :class="`item-code input-target ${errors.invalid_receive_item ? 'errored' : ''}`"
               type="text" name="receive_item" placeholder="[ITEM_CODE]" />
           </div>
 
           <div class="input">
             <span class="input-label">Attaining Amount</span>
-            <input v-model="receive_qty" :disabled="processing" 
+            <input v-model="receive_qty" :disabled="processing"
               :class="`input-target ${errors.invalid_receive_qty ? 'errored' : ''}`"
               placeholder="1" type="number" name="receive_qty" />
           </div>
@@ -59,10 +59,10 @@
       </form>
 
       <div class="subtitle" v-if="success">
-        <strong>-></strong> {{ trade.offer_qty }} x 
+        <strong>-></strong> {{ trade.offer_qty }} x
         <ItemIcon :code="trade.offer_item" :label="trade.offer_item" />
         <br />
-        <strong>&lt;-</strong> {{ trade.receive_qty }} x 
+        <strong>&lt;-</strong> {{ trade.receive_qty }} x
         <ItemIcon :code="trade.receive_item" :label="trade.receive_item" />
         <br />
         <!-- Add link to view trade specifically. -->
@@ -93,11 +93,7 @@
   }
 
   .errored {
-  // .errored:after {
-    // display: block;
     background-color: #5b0000;
-    // position: absolute;
-    // content: 'Invalid';
     color: red;
     z-index: 2;
   }
@@ -124,7 +120,7 @@
 
   export default {
     data() {
-      return { 
+      return {
         trade: null,
         processing: false,
 
@@ -148,7 +144,7 @@
       selectSuggestion(key) {
         return (ev) => {
           const itemCode = ev.target.dataset.code || '';
-          this[key + '_item'] = itemCode;          
+          this[key + '_item'] = itemCode;
           this[key + '_suggestions'] = [];
         };
       },
