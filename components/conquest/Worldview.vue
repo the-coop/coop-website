@@ -236,12 +236,11 @@
 <script>
   import * as THREE from 'three';
 
-  import ControlsManager from '~/lib/conquest/experience/controlsManager';
-
   import engine from '~/lib/conquest/engine';
-  import buildSolarSystem from '~/lib/conquest/generation/buildSolarSystem';
+  import network from '~/lib/conquest/network';
 
-  import PlayerManager from '~/lib/conquest/entities/playerManager';
+  import PlayerManager from '~/lib/conquest/players/playerManager';
+  import ControlsManager from '~/lib/conquest/gameplay/controlsManager';
 
   import UNIVERSE_SPECIFICATION from '~/lib/conquest/universe-specification.json';
 
@@ -253,7 +252,8 @@
   import { Tween, Easing } from '@tweenjs/tween.js';
 
   import Logo from "~/components/Logo.vue";
-  import network from '~/lib/conquest/network';
+  import { buildSolarSystem } from '~/lib/conquest/world/universeManager';
+
   
 
   const isMobile = () => {
