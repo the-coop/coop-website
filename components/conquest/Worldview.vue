@@ -25,8 +25,8 @@
         🐛 GUI
       </span>
 
-      <span class="primary-action" @click="toggleControllers">
-        🎮 CONTROLLERS
+      <span class="primary-action" @click="toggleControls">
+        🎮 CONTROLS
       </span>
 
       <span class="primary-action" @click="closeSettings">
@@ -55,13 +55,21 @@
     </div>
 
     <div class="info" v-if="!silent && guiOpen">
-      Target: {{ selected }}
+      
 
       <p>
-        <button @click="changeCamera" id="toggle_controls">SWITCH POV</button> 
+        
         <button @click="conquestDebug" id="conquest_debug">DEBUG Spawn</button>
         <button @click="resetIntro" id="reset_intro">Reset intro</button>
+
+        <button @click="changeCamera" id="toggle_controls">SWITCH POV</button> 
+        
       </p>
+
+      <!-- Selection/focus information -->
+      <div v-if="selected">
+        Target: {{ selected }}
+      </div>
 
       <!-- Temporary debug GUI. -->
       <div>
@@ -80,11 +88,15 @@
       </div>
     </div>
 
-    <div class="info" v-if="controllersOpen">
-      CONTROLLERS
+    <div class="info" v-if="controlsOpen">
+      CONTROLS
+
+      <button @click="invertY" id="invert_y">Invert Y</button>
+
+      Gamepads
     </div>
 
-    <canvas id="canvas" />
+    <canvas id="canvas"></canvas>
   </div>
 </template>
 
@@ -236,12 +248,11 @@
 <script>
   import * as THREE from 'three';
 
-  import ControlsManager from '~/lib/conquest/experience/controlsManager';
-
   import engine from '~/lib/conquest/engine';
-  import buildSolarSystem from '~/lib/conquest/generation/buildSolarSystem';
+  import network from '~/lib/conquest/network';
 
-  import PlayerManager from '~/lib/conquest/entities/playerManager';
+  import PlayerManager from '~/lib/conquest/players/playerManager';
+  import ControlsManager from '~/lib/conquest/gameplay/controlsManager';
 
   import UNIVERSE_SPECIFICATION from '~/lib/conquest/universe-specification.json';
 
@@ -253,7 +264,8 @@
   import { Tween, Easing } from '@tweenjs/tween.js';
 
   import Logo from "~/components/Logo.vue";
-  import network from '~/lib/conquest/network';
+  import { buildSolarSystem } from '~/lib/conquest/world/universeManager';
+
   
 
   const isMobile = () => {
@@ -315,7 +327,7 @@
 
       settingsOpen: false,
       guiOpen: false,
-      controllersOpen: false,
+      controlsOpen: false,
 
       spawned: false,
       died: false,
@@ -340,15 +352,22 @@
         this.guiOpen = !this.guiOpen;
         this.closeSettings();
       },
-      toggleControllers() {
+      toggleGUI() {
+        this.guiOpen = !this.guiOpen;
         this.closeSettings();
-        this.controllersOpen = !this.controllersOpen;
+      },
+      toggleControls() {
+        this.closeSettings();
+        this.controlsOpen = !this.controlsOpen;
       },
       closeSettings() {
         this.settingsOpen = false;
       },
       resetIntro() {
         localStorage.removeItem('previous-visit');
+      },
+      invertY() {
+        window.WORLD.settings.controls.INVERTED_Y = !window.WORLD.settings.controls.INVERTED_Y;
       },
       async conquestDebug() {
         console.log("Debug Mode");
@@ -460,6 +479,9 @@
         focussed: true,
 
         settings: {
+          controls: {
+            INVERTED_Y: false
+          },
           view: {
             DESIRED_CAMERA_KEY: "TRACKBALL",
             DESIRED_INPUT_KEY: DETECTED_INPUT_KEY,
