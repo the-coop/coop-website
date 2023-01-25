@@ -33,7 +33,7 @@
   </div>
 </template>
 
-<style scoped>
+<style>
   @import "../../assets/style/documentation.scss";
 
   hr {
