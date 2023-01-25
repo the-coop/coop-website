@@ -9,53 +9,39 @@
 
     <hr/>
 
-    <ul style="color: white;">
-      <div class="topic" @click="viewPage(1)">
+    <ul>
+      <div class="topic">
         <li><h2 class="subtitle"><strong>Minigames</strong></h2></li>
       </div>
-      <div class="topic" @click="viewPage(2)">
-        <li><h2 class="subtitle"><strong>WoodCutting</strong></h2></li>
+      <div class="topic">
+        <li><h2 class="subtitle"><strong>Community</strong></h2></li>
       </div>
-      <div class="topic" @click="viewPage(3)">
-        <li><h2 class="subtitle"><strong>Mining</strong></h2></li>
+      <div class="topic">
+        <li><h2 class="subtitle"><strong>Conquest</strong></h2></li>
       </div>
     </ul>
+
+    <NuxtLink class="topic" to="/guide/minigames">
+      Minigames
+    </NuxtLink>
+    <NuxtLink class="topic" to="/guide/conquest">
+      Conquest
+    </NuxtLink>
+    <NuxtLink class="topic" to="/guide/community">
+      Community
+    </NuxtLink>
   </div>
 </template>
 
-<style>
+<style scoped>
   @import "../../assets/style/documentation.scss";
 
-  hr{
+  hr {
     margin: 3rem 0;
   }
-</style>
 
-<style scoped>
-  li{
+  li {
     text-decoration: underline;
     cursor: pointer;
   }
 </style>
-
-<script>
-  export default{
-    methods: {
-      viewPage(num){
-        let page
-        switch(num){
-          case 1:
-            page="minigames"
-            break;
-          case 2:
-            page=""
-            break;
-          case 3:
-            page=""
-            break;
-        }
-        this.$router.push('/guide/' + page)
-      },
-    }
-  }
-</script>

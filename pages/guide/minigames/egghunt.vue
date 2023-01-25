@@ -1,7 +1,7 @@
 <template>
   <div class="content-container">
     <h1 class="title">Egg Hunt</h1>
-    <hr/>
+    <hr />
 
     <div class="inner-container">
       <p class="text">
