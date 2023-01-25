@@ -9,27 +9,23 @@
 
     <hr/>
 
-    <ul>
-      <div class="topic">
-        <li><h2 class="subtitle"><strong>Minigames</strong></h2></li>
-      </div>
-      <div class="topic">
-        <li><h2 class="subtitle"><strong>Community</strong></h2></li>
-      </div>
-      <div class="topic">
-        <li><h2 class="subtitle"><strong>Conquest</strong></h2></li>
-      </div>
-    </ul>
+    <div class="flexbox">
+      <NuxtLink class="topic" to="/guide/minigames">
+        Minigames
+      </NuxtLink>
 
-    <NuxtLink class="topic" to="/guide/minigames">
-      Minigames
-    </NuxtLink>
-    <NuxtLink class="topic" to="/guide/conquest">
-      Conquest
-    </NuxtLink>
-    <NuxtLink class="topic" to="/guide/community">
-      Community
-    </NuxtLink>
+      <NuxtLink class="topic" to="/guide/conquest">
+        Conquest
+      </NuxtLink>
+
+      <NuxtLink class="topic" to="/guide/community">
+        Community
+      </NuxtLink>
+
+      <NuxtLink class="topic" to="/guide/sacrifice">
+        Sacrifice
+      </NuxtLink>
+    </div>
   </div>
 </template>
 

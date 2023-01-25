@@ -1,3 +1,4 @@
+$coop-color-primary: #ff6565;
 
 .text {
   color: #ffffff;
@@ -54,4 +55,23 @@
   width: 100%;
   height: 90%;
   background-size: cover;
+}
+
+.topic {
+  font-size: 1.5em;
+  color: white;
+  text-decoration: none;
+  transition: 0.35s;
+}
+
+.topic:hover {
+  /* ? SASS VARIABLES NOT WORKING */
+  color: #ff6565;
+}
+
+div.flexbox {
+  display: flex;
+  flex-direction: column;
+  font-weight: 550;
+  gap: 2em;
 }
