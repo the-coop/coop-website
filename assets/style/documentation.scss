@@ -7,7 +7,7 @@ $coop-color-primary: #ff6565;
 .quote-text {
   color: rgb(231, 231, 231);
   font-family: monospace;
-  padding: .125em .125em .125em .75em;
+  padding: .125em .75em;
   background-color: #71717125;
   border-radius: .8em;
   border: .125em solid #7171715a;
@@ -74,4 +74,14 @@ div.flexbox {
   flex-direction: column;
   font-weight: 550;
   gap: 2em;
+}
+
+p.text {
+  color: white
+}
+
+.mention {
+  color: rgba(255, 255, 255, 0.874);
+  background-color: #0d5da3d2;
+  padding: 0 .25em
 }
