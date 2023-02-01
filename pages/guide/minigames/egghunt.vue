@@ -1,6 +1,6 @@
 <template>
   <div class="content-container">
-    <h1 class="title">Egg Hunt</h1>
+    <h1 class="title">🥚🧺Egg Hunt</h1>
     <hr />
 
     <div class="inner-container">
@@ -8,7 +8,9 @@
         The egg hunt minigame is a fun and fairly simple one. At random times, <em>Cooper</em>
         sends a message in a random channel in the Coop server. The message is as follows:
       </p>
-      <p class="quote-text">Cooper message</p>
+      <p class="quote-text">
+        <span class="mention">@Minigame Ping 📦</span> bonus eggs rolling! Search the channels for the eggs!
+      </p>
       <p class="text">
         Cooper also reacts to the message with a basket(🧺) and hammer(🔨). Clicking on the
         basket will catch the egg, which adds the egg to your inventory and gives you points
