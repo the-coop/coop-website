@@ -1,6 +1,6 @@
 <template>
   <div class="worldview">
-    <h1 class="error-text" v-if="!WEBGL_SUPPORT && !silent">Loading error...</h1>
+    <h1 :style="{ color: 'white' }" class="error-text" v-if="!WEBGL_SUPPORT && !silent">Loading error...</h1>
 
     <div class="intro" v-show="uiBlocked && !silent && intro">
       <Logo class="intro-logo" />
@@ -56,15 +56,18 @@
 
     <div class="info" v-if="!silent && guiOpen">
       
+      Cameras
+      <div>
+        <button @click="() => changeCamera('FIRST_PERSON')">1st person</button> 
+        <button @click="() => changeCamera('THIRD_PERSON')">3rd person</button> 
+        <button @click="() => changeCamera('TRACKBALL')">orbittal</button> 
+      </div>
 
-      <p>
-        
-        <button @click="conquestDebug" id="conquest_debug">DEBUG Spawn</button>
-        <button @click="resetIntro" id="reset_intro">Reset intro</button>
-
-        <button @click="changeCamera" id="toggle_controls">SWITCH POV</button> 
-        
-      </p>
+      Debug
+      <div>
+        <button @click="conquestDebug">DEBUG Spawn</button>
+        <button @click="resetIntro">Reset intro</button>
+      </div>
 
       <!-- Selection/focus information -->
       <div v-if="selected">
@@ -341,8 +344,8 @@
       getPlayers() {
         return Object.values(WORLD.players);
       },
-      changeCamera() {
-        ControlsManager.toggleCamera();
+      changeCamera(key) {
+        WORLD.settings.view.DESIRED_CAMERA_KEY = ControlsManager.CAMERA_KEYS[key];
       },
       logout() {
         this.$auth.logout();
@@ -437,6 +440,8 @@
 
       // Check if WebGL is supported.
       const canvas = document.getElementById('canvas');
+
+      // Is this working properly?
       this.WEBGL_SUPPORT = !!(
         window.WebGLRenderingContext && 
         (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
