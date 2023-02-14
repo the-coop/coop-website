@@ -7,7 +7,7 @@
       <p class="text">
         TheCoop sacrifice ritual is an event that occurs when a condition is fulfilled. The condition
         being that at least <span class="var">5%</span> of the entire server reacts to a user's message with the
-        dagger emoji <span class="quote-text">🗡</span>
+        dagger emoji(🗡)
       </p>
       <p class="text">
         When this happens, cooper sends a message in chat which begins the sacrifice of the player
@@ -39,13 +39,29 @@
           </li>
         </ul>
       </p>
+      <p class="text">
+        When a member is sacrificed, the person is banned from <span class="var">THECOOP™</span>, this is especially
+        useful because spammers can be banned without admin intervention and instead
+        via sweet, sweet democracy ... ☕🧐
+      </p>
     </div>
   </div>
 </template>
 
 <script>
   import API from '~/lib/api/api';
+  import twemoji from 'twemoji'
   export default {
+    components: {
+      twemoji
+    },
+
+    async mounted(){
+      const paragraphs = document.querySelectorAll('p')
+      for(let paragraph of paragraphs){
+        twemoji.parse(paragraph)
+      }
+    }
   }
 </script>
 
