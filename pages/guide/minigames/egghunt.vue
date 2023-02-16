@@ -14,13 +14,9 @@
       <p class="text">
         Cooper also reacts to the message with a basket(🧺) and hammer(🔨). Clicking on the
         basket will catch the egg, which adds the egg to your inventory and gives you points
-        <span class="note">
           (... <span class="quote-text">/items</span> )
-        </span>
         that positively affects your ranking on the leaderboard
-        <span class="note">
           (... <span class="quote-text">/shares COOP_POINT </span> )
-        </span>
         . Upon catching an egg, Cooper
         edits the previous message into the following
       </p>
@@ -54,7 +50,7 @@
 </script>
 
 <style>
-  .content-container > hr{
+  .content-container > hr {
     margin: 3rem 0;
   }
 </style>

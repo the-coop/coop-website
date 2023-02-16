@@ -9,9 +9,9 @@
         </div>
         <div class="game-img" :style="{ backgroundImage: `url('/mountain-sil.png')` }"></div>
       </div>
-      <div class="game" @click="() => this.$router.push('/guide/minigames/egghunt')">
+      <div class="game" @click="() => this.$router.push('/guide/minigames/morality')">
         <div class="game-title">
-          Game 2
+          Morality
         </div>
         <div class="game-img" :style="{ backgroundImage: `url('/mountain-sil.png')` }"></div>
       </div>
