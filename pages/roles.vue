@@ -66,16 +66,15 @@
 </script>
 
 <style>
-  .roles-interface{
+  .roles-interface {
     display: flex;
-    color: white;
+    color: #e7dfdf;
     flex-direction: column;
     text-align: left;
   }
 
-  .roles-login{
+  .roles-login {
     position: fixed;
-    flex: 100%;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -85,16 +84,16 @@
     border-radius: 2em;
   }
 
-  .category{
+  .category {
     border-right: 0.1em solid #ff656559;
     padding: 0.2em;
   }
 
-  .option{
+  .option {
     margin: 0.5em 0 0.5em;
   }
 
-  .option-description{
+  .option-description {
     font-weight: 200;
     color: rgb(147, 147, 147)
   }
@@ -114,7 +113,7 @@
     gap: 1em;
   }
 
-  .category{
+  .category {
     border: 0.1em solid #ff656559;
     border-radius: 1em;
     padding: 0 0.5em 0.5em;
@@ -135,14 +134,14 @@
     border-radius: 2em;
   }
 
-  .options{
+  .options {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     gap:1.5em;
   }
 
-  .option{
+  .option {
     flex: 1 0 23%;
     text-align: center;
     max-width: 23%;

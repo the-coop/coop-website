@@ -50,7 +50,7 @@
 </script>
 
 <style>
-  .content-container > hr{
+  .content-container > hr {
     margin: 3rem 0;
   }
 </style>
