@@ -66,14 +66,14 @@
 </script>
 
 <style>
-  .roles-interface {
+  .roles-interface{
     display: flex;
     color: white;
     flex-direction: column;
     text-align: left;
   }
 
-  .roles-login {
+  .roles-login{
     position: fixed;
     flex: 100%;
     top: 50%;
