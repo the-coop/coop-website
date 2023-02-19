@@ -2,7 +2,7 @@
   <div>
     <h1 class="title">⚙️ Roles</h1>
 
-    <div v-show="$auth.$state.loggedIn">
+    <div v-show="!$auth.$state.loggedIn">
       <h2 class="subtitle">
         Not authenticated, login to modify roles.
       </h2>
