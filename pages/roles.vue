@@ -12,21 +12,23 @@
     <div class="roles-interface">
 
       <div :v-if="roles" class="category" v-for="category in categories" :key="category">
-        <h2>{{ category }}</h2>
-        <div class="options">
-          <div class="option" v-for="role in options.filter(r => r.category === category)" :key="role.id">
-            <Toggle
+        <div>
+          <h2>{{ category }}</h2>
+          <div class="options">
+            <div class="option" v-for="role in options.filter(r => r.category === category)" :key="role.id">
+              <Toggle
               :label="role.name"
               :roleID="role.id"
               :owned="roles.some(r => r.role_id === role.id)"
               :locked="role.locked"
-            />
+              />
 
-          <div class="option-description">{{ role.description }}</div>
+              <div class="option-description">{{ role.description }}</div>
+            </div>
           </div>
         </div>
+        <div class="divider"></div>
       </div>
-
     </div>
   </div>
 </template>
@@ -71,6 +73,14 @@
     color: #e7dfdf;
     flex-direction: column;
     text-align: left;
+    justify-content: space-evenly;
+  }
+
+  .divider {
+    background-color: #ff656559;
+    height: auto;
+    width:0.05em;
+    /* border: 1px solid orange */
   }
 
   .roles-login {
@@ -85,8 +95,11 @@
   }
 
   .category {
-    border-right: 0.1em solid #ff656559;
     padding: 0.2em;
+    flex:auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
   }
 
   .option {
