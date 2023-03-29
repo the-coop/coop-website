@@ -12,22 +12,18 @@
     <div class="roles-interface">
 
       <div :v-if="roles" class="category" v-for="category in categories" :key="category">
-        <div>
+        <div class="options">
           <h2>{{ category }}</h2>
-          <div class="options">
-            <div class="option" v-for="role in options.filter(r => r.category === category)" :key="role.id">
-              <Toggle
-              :label="role.name"
-              :roleID="role.id"
-              :owned="roles.some(r => r.role_id === role.id)"
-              :locked="role.locked"
-              />
-
-              <div class="option-description">{{ role.description }}</div>
-            </div>
+          <div class="option" v-for="role in options.filter(r => r.category === category)" :key="role.id">
+            <Toggle
+            :label="role.name"
+            :roleID="role.id"
+            :owned="roles.some(r => r.role_id === role.id)"
+            :locked="role.locked"
+            />
+            <div class="option-description">{{ role.description }}</div>
           </div>
         </div>
-        <div class="divider"></div>
       </div>
     </div>
   </div>
@@ -76,13 +72,6 @@
     justify-content: space-evenly;
   }
 
-  .divider {
-    background-color: #ff656559;
-    height: auto;
-    width:0.05em;
-    /* border: 1px solid orange */
-  }
-
   .roles-login {
     position: fixed;
     top: 50%;
@@ -105,7 +94,6 @@
   .option {
     margin: 0.5em 0 0.5em;
   }
-
   .option-description {
     font-weight: 200;
     color: rgb(147, 147, 147)
@@ -115,7 +103,18 @@
     width: 5em;
   }
 
-
+  .options {
+    position: relative
+  }
+  .options::after {
+    position: absolute;
+    content: "";
+    right: -0.4em;
+    top: 0;
+    background-color: #ff656559;
+    height: 100%;
+    width:0.05em;
+  }
 /* The below designs are planned to be used for 'Tablet' devices */
 /*
   .roles-interface {
