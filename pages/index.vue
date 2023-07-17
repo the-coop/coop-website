@@ -92,7 +92,7 @@
       </NuxtLink>
     </div>
 
-    <div class="content-container">
+    <div class="content-container members-content-container">
       <h1 class="title">🔮 Top Members ({{ users.length }}/{{ usersTotal }})</h1>
       <UsersList :users="users" />
 
@@ -303,12 +303,24 @@
     flex: 100%;
   }
 
+  .members-content-container {
+    flex: 100% 0 0;
+  }
+
   @media screen and (min-width: 850px) {
+
+    .home-wrapper {
+      justify-content: flex-start;
+    }
+
+
     .home {
       flex-direction: row;
       justify-content: space-between;
       flex-wrap: nowrap;
     }
+
+
 
     .hero {
       /* flex: calc(59% - 3em) 0 0; */
