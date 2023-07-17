@@ -13,6 +13,9 @@ html {
   padding: 1rem;
   border-radius: 0 .5rem;
   margin-bottom: 2rem;
+
+  flex: 50% 0 0;
+  box-sizing: border-box;
 }
 
 .content-container + .content-container {
