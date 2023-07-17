@@ -311,7 +311,8 @@
     }
 
     .hero {
-      flex: calc(59% - 3em) 0 0;
+      /* flex: calc(59% - 3em) 0 0; */
+      
     }
 
     .prompt {
