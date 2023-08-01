@@ -243,6 +243,7 @@
     align-items: center;
     border-radius: 4em;
     padding: 3em;
+    flex: 100%;
   }
 
 

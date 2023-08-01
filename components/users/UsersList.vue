@@ -54,6 +54,10 @@
     align-items: flex-start;
   }
 
+  .user-info {
+    flex: calc(75% - 1.5em) 0 0;
+  }
+
   .user:hover .pfp {
     border-color: indianred;
   }

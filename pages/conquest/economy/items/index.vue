@@ -22,7 +22,7 @@
             {{ i.total_qty }}
           </td>
           <td>
-            {{ i.share }}
+            {{ i.share.toFixed(2) }}
           </td>
         </tr>
       </tbody>
@@ -75,7 +75,7 @@
     },
     data() {
       return { 
-        items: [] 
+        items: []
       };
     },
     async mounted() {
