@@ -245,18 +245,18 @@
     padding: 3em;
     flex: 100%;
 
-    -webkit-backdrop-filter: blur(8px);  /* Safari 9+ */
-    backdrop-filter: blur(8px); /* Chrome and Opera */
-    box-shadow: inset 0 0 0 200px rgba(255,255,255,0.08);
+    -webkit-backdrop-filter: blur(1vh);  /* Safari 9+ */
+    backdrop-filter: blur(1vh); /* Chrome and Opera */
+    box-shadow: inset 0 0 0 100vh rgba(255,255,255,0.08);
   }
 
 
   .hero {
     z-index: 1;
     color: silver;
-    -webkit-backdrop-filter: blur(8px);  /* Safari 9+ */
-    backdrop-filter: blur(8px); /* Chrome and Opera */
-    box-shadow: inset 0 0 0 200px rgba(255,255,255,0.08);
+    -webkit-backdrop-filter: blur(1vh);  /* Safari 9+ */
+    backdrop-filter: blur(1vh); /* Chrome and Opera */
+    box-shadow: inset 0 0 0 100vh rgba(255,255,255,0.08);
   }
 
   .hero .subtitle {

@@ -500,8 +500,12 @@
       display: none;
     }
 
-    .dropdown.open .dropdown-content, .dropdown:hover .dropdown-content {
-      background-color: #111111;
+    .dropdown.open .dropdown-content .nav-link, .dropdown:hover .dropdown-content .nav-link {
+      /* background-color: #111111; */
+
+      -webkit-backdrop-filter: blur(1vh);
+      backdrop-filter: blur(1vh);
+      box-shadow: inset 0 0 0 100vh rgba(255, 255, 255, 0.08);
     }
   }
 
