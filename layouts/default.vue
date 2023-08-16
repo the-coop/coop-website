@@ -416,13 +416,16 @@
       }
 
       .dropdown-content .nav-link {
-        border: .125em solid rgb(117, 117, 117);
+        /* border: .125em solid rgb(117, 117, 117); */
         border-radius: .25em;
         margin-bottom: .25em;
         padding: .25em .5em;
         margin-left: 0;
 
         transition: border-color .2s, border-radius .2s;
+
+        color: #e7e7e7;
+        font-weight: bold;
       }
 
       .dropdown-content .nav-link:hover {
@@ -530,6 +533,10 @@
         .dropdown {
           margin-left: 3.5em;
           flex-direction: row;
+        }
+
+        .dropdown-content {
+          padding-top: .5em;
         }
 
         .nav-link {
