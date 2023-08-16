@@ -238,18 +238,25 @@
   }
 
   .login-prompt-container {
-    background-color: rgb(23, 23, 23);
+    /* background-color: rgb(23, 23, 23); */
     justify-content: center;
     align-items: center;
     border-radius: 4em;
     padding: 3em;
     flex: 100%;
+
+    -webkit-backdrop-filter: blur(8px);  /* Safari 9+ */
+    backdrop-filter: blur(8px); /* Chrome and Opera */
+    box-shadow: inset 0 0 0 200px rgba(255,255,255,0.08);
   }
 
 
   .hero {
     z-index: 1;
     color: silver;
+    -webkit-backdrop-filter: blur(8px);  /* Safari 9+ */
+    backdrop-filter: blur(8px); /* Chrome and Opera */
+    box-shadow: inset 0 0 0 200px rgba(255,255,255,0.08);
   }
 
   .hero .subtitle {

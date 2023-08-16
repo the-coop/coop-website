@@ -19,7 +19,7 @@
             <ItemIcon :code="i.item_code" :label="i.item_code" />
           </td>
           <td>
-            {{ i.total_qty }}
+            {{ i.total_qty.toFixed(2) }}
           </td>
           <td>
             {{ i.share.toFixed(2) }}

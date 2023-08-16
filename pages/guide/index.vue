@@ -16,7 +16,7 @@
 
       <NuxtLink class="topic" to="/guide/community">Community</NuxtLink>
 
-      <NuxtLink class="topic" to="/guide/sacrifice">Sacrifice</NuxtLink>
+      <!-- <NuxtLink class="topic" to="/guide/sacrifice">Sacrifice</NuxtLink> -->
     </div>
   </div>
 </template>
