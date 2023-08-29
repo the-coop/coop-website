@@ -1,28 +1,28 @@
 <template ref="layout">
   <div :class="['default', page].join(' ')">
-    <div class="header">
+    <div class="header slide-down">
 
       <nav class="navigation additional-navigation">
         <NuxtLink to="/conquest/world" class="nav-link" @click.native="closeMenu">
-          🕹️ Play
+          <span class="nav-link-icon">🕹️</span> Play
         </NuxtLink>
 
         <NuxtLink to="/guide" class="nav-link" @click.native="closeMenu">
-          📖 Guide
+          <span class="nav-link-icon">📖</span> Guide
         </NuxtLink>
 
         <a 
           @click="closeMenu"
           v-show="!this.$auth.$state.user" 
           :href="inviteLink" target="_blank" class="nav-link">
-          👋 Join
+          <span class="nav-link-icon">👋</span> Join
         </a>
 
         <a 
           @click="closeMenu"
           v-show="this.$auth.$state.user" 
           href="https://fund-the-coop.raisely.com" target="_blank" class="nav-link">
-          💸 Donate
+          <span class="nav-link-icon">💸</span> Donate
         </a>
       </nav>
 
@@ -40,7 +40,9 @@
 
       <nav class="navigation"> 
         <div class="dropdown">
-          <span class="dropdown-label" @click="toggleDropdown">🥚 Community</span>
+          <span class="dropdown-label" @click="toggleDropdown">
+            <span class="nav-link-icon">🥚</span> Community
+          </span>
 
           <div class="dropdown-content">
             <!-- <NuxtLink to="/services" class="nav-link" @click.native="closeMenu">
@@ -48,59 +50,61 @@
             </NuxtLink> -->
 
             <NuxtLink to="/" class="nav-link current" @click.native="closeMenu">
-              🏠 Home
+              <span class="nav-link-icon">🏠</span> Home
             </NuxtLink>
 
             <NuxtLink to="/vision" class="nav-link" @click.native="closeMenu">
-              📄 Vision
+              <span class="nav-link-icon">📄</span> Vision
             </NuxtLink>
 
             <NuxtLink to="/members" class="nav-link" @click.native="closeMenu">
-              🔮 Members
+              <span class="nav-link-icon">🔮</span> Members
             </NuxtLink>
             
             <NuxtLink to="/blog" class="nav-link" @click.native="closeMenu">
-              🗞️ Blog
+              <span class="nav-link-icon">🗞️</span> Blog
             </NuxtLink>
 
             <NuxtLink to="/roles" class="nav-link" @click.native="closeMenu">
-              ⚙️ Roles
+              <span class="nav-link-icon">⚙️</span> Roles
             </NuxtLink>
 
             <NuxtLink to="/projects" class="nav-link" @click.native="closeMenu">
-              👷 Projects
+              <span class="nav-link-icon">👷</span> Projects
             </NuxtLink>
           </div>
         </div>
 
         <div class="dropdown">
-          <span class="dropdown-label" @click="toggleDropdown">🗡 Conquest</span>
+          <span class="dropdown-label" @click="toggleDropdown">
+            <span class="nav-link-icon">🗡</span> Conquest
+          </span>
 
           <div class="dropdown-content">
             <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
-              📡 Dashboard
+              <span class="nav-link-icon">📡</span> Dashboard
             </NuxtLink>
 
             <NuxtLink to="/conquest/world" class="nav-link" @click.native="closeMenu">
-              🕹️ Play
+              <span class="nav-link-icon">🕹️</span> Play
             </NuxtLink>
 
             <NuxtLink to="/conquest/economy/items" class="nav-link" @click.native="closeMenu">
-              🎁 Items
+              <span class="nav-link-icon">🎁</span> Items
             </NuxtLink>
 
             <NuxtLink to="/conquest/economy/trade" class="nav-link" @click.native="closeMenu">
-              💰 Trades
+              <span class="nav-link-icon">💰</span> Trades
             </NuxtLink>
 
             <NuxtLink to="/shop" class="nav-link" @click.native="closeMenu">
-              🛍️ Shop
+              <span class="nav-link-icon">🛍️</span> Shop
             </NuxtLink>
           </div>
         </div>
 
         <NuxtLink v-show="!this.$auth.$state.user" to="/auth/login" class="nav-link" @click.native="closeMenu">
-          🔑 Login
+          <span class="nav-link-icon">🔑</span> Login
         </NuxtLink>
 
         <div class="dropdown" v-show="this.$auth.$state.user">
@@ -118,16 +122,18 @@
           <div class="dropdown-content">
             <NuxtLink to="/conquest/economy/items" 
               class="nav-link" @click.native="closeMenu">
-              🎁 Items
+              <span class="nav-link-icon">🎁</span> Items
             </NuxtLink>
             <NuxtLink
               :to="this.$auth.$state.user ? '/members/' + this.$auth.$state.user.discord_id : '/members'"
               class="nav-link"
-              @click="closeMenu">👤 Profile
+              @click="closeMenu">
+              <span class="nav-link-icon">👤</span> Profile
             </NuxtLink>
             <span
               class="nav-link"
-              @click="() => { logout(); closeMenu(); }">⏏️ Logout
+              @click="() => { logout(); closeMenu(); }">
+              <span class="nav-link-icon">⏏️</span> Logout
             </span>
           </div>
         </div>
@@ -355,6 +361,17 @@
       display: none;
     }
 
+    .navigation > * {
+      padding: .3em .6em;
+      -webkit-backdrop-filter: blur(1vh);
+      backdrop-filter: blur(1vh);
+      background-color: color(srgb 0 0 0 / 0.34);
+    }
+
+    .navigation > *:hover {
+      background-color: color(srgb 1 0.395 0.395 / 0.25);
+      color: blue;
+    }
 
     .mobile-nav-trigger {
       display: block;
@@ -416,7 +433,6 @@
       }
 
       .dropdown-content .nav-link {
-        /* border: .125em solid rgb(117, 117, 117); */
         border-radius: .25em;
         margin-bottom: .25em;
         padding: .25em .5em;
@@ -425,7 +441,13 @@
         transition: border-color .2s, border-radius .2s;
 
         color: #e7e7e7;
-        font-weight: bold;
+
+        /* border: .125em solid rgb(117, 117, 117); */
+        /* font-weight: bold; */
+      }
+
+      .nav-link-icon {
+        margin-right: 1em;
       }
 
       .dropdown-content .nav-link:hover {
@@ -440,7 +462,7 @@
       }
 
       .nav-link {
-        color: #616060;
+        color: #ababab;
         
         text-decoration: none;
         cursor: pointer;
@@ -504,11 +526,9 @@
     }
 
     .dropdown.open .dropdown-content .nav-link, .dropdown:hover .dropdown-content .nav-link {
-      /* background-color: #111111; */
-
       -webkit-backdrop-filter: blur(1vh);
       backdrop-filter: blur(1vh);
-      box-shadow: inset 0 0 0 100vh rgba(255, 255, 255, 0.08);
+      background-color: color(srgb 0 0 0 / 0.34);
     }
   }
 
@@ -522,8 +542,8 @@
     }
 
         .brand svg {
-          height: 4em;
-          width: 4em;
+          height: 6em;
+          width: 6em;
         }
 
         .header-socials {
@@ -617,6 +637,12 @@
       display: flex;
       justify-content: space-evenly;
       flex-wrap: nowrap;
+
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
     }
 
     .navigation {

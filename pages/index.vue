@@ -1,7 +1,7 @@
 <template>
   <div class="home-wrapper">
-    <div class="page home hero-container content-container">
 
+    <div class="page home hero-container content-container slide-up">
       <div class="hero" v-show="!$auth.$state.loggedIn">
         <h1 class="title">Join our community!</h1>
 
@@ -64,7 +64,7 @@
       <Worldview :silent="true" :intro="true" :networking="true" :controls="false" />
     </client-only>
 
-    <div class="content-container">
+    <div class="content-container slide-up">
       <h1 class="title">🗞️ Posts ({{ posts.length }}/{{ postsTotal }})</h1>
 
       <p class="note">
@@ -83,7 +83,7 @@
       </NuxtLink>
     </div>
 
-    <div class="content-container">
+    <div class="content-container slide-up">
       <h1 class="title">👷 Projects ({{ projects.length }}/{{ projectsTotal }})</h1>
       <ProjectsList prefix="home-projects" :projects="projects" />
 
@@ -92,7 +92,7 @@
       </NuxtLink>
     </div>
 
-    <div class="content-container members-content-container">
+    <div class="content-container members-content-container slide-up">
       <h1 class="title">🔮 Top Members ({{ users.length }}/{{ usersTotal }})</h1>
       <UsersList :users="users" />
 
@@ -253,10 +253,6 @@
 
   .hero {
     z-index: 1;
-    color: silver;
-    -webkit-backdrop-filter: blur(1vh);  /* Safari 9+ */
-    backdrop-filter: blur(1vh); /* Chrome and Opera */
-    box-shadow: inset 0 0 0 100vh rgba(255,255,255,0.08);
   }
 
   .hero .subtitle {
@@ -315,10 +311,14 @@
     flex: 100% 0 0;
   }
 
+  
+
   @media screen and (min-width: 850px) {
 
     .home-wrapper {
-      justify-content: flex-start;
+      /* justify-content: flex-start; */
+      justify-content: space-between;
+      margin-top: 12.5em;
     }
 
 
