@@ -58,29 +58,25 @@
           </div>
         </a>
       </div>
-    </div>
 
-    <client-only>
-      <Worldview :silent="true" :intro="true" :networking="true" :controls="false" />
-    </client-only>
+      <div class="content-container slide-up">
+        <h1 class="title">🗞️ Posts ({{ posts.length }}/{{ postsTotal }})</h1>
 
-    <div class="content-container slide-up">
-      <h1 class="title">🗞️ Posts ({{ posts.length }}/{{ postsTotal }})</h1>
+        <p class="note">
+          Thanks for checking out our blog, you'll find out <NuxtLink class="link" to="/blog/subscribe">subscribe-worthy</NuxtLink> latest headlines below! 🤓
+        </p>
 
-      <p class="note">
-        Thanks for checking out our blog, you'll find out <NuxtLink class="link" to="/blog/subscribe">subscribe-worthy</NuxtLink> latest headlines below! 🤓
-      </p>
+        <PostsList :posts="posts" />
 
-      <PostsList :posts="posts" />
+        <p class="note">
+          If you would like an email when a post is added, 
+          <NuxtLink class="link" to="/blog/subscribe">please subscribe.</NuxtLink>
+        </p>
 
-      <p class="note">
-        If you would like an email when a post is added, 
-        <NuxtLink class="link" to="/blog/subscribe">please subscribe.</NuxtLink>
-      </p>
-
-      <NuxtLink to="/blog" class="button">
-        View all
-      </NuxtLink>
+        <NuxtLink to="/blog" class="button">
+          View all
+        </NuxtLink>
+      </div>
     </div>
 
     <div class="content-container slide-up">
@@ -120,8 +116,12 @@
 
       <LoginBlock />
     </div>
-
+    
+    <client-only>
+      <Worldview :silent="true" :intro="true" :networking="true" :controls="false" />
+    </client-only>
   </div>
+
 </template>
 
 <script>
@@ -325,10 +325,7 @@
     .home {
       flex-direction: row;
       justify-content: space-between;
-      flex-wrap: nowrap;
     }
-
-
 
     .hero {
       /* flex: calc(59% - 3em) 0 0; */
