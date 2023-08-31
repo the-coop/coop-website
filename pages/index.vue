@@ -48,10 +48,11 @@
       </div>
     </div>
 
-    <ConquestMenu />
-    <!-- <div class="content-container conquest-menu-container">
-      <h1 class="title">🗡 Conquest</h1>
-    </div> -->
+    <div class="content-container conquest-menu-container">
+      <!-- <h1 class="title">🗡 Conquest</h1> -->
+
+      <ConquestMenu />
+    </div>
 
     <div class="prompt slide-up" v-if="advert">
       <h2>Advertisement</h2>
