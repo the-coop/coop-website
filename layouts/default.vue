@@ -592,10 +592,11 @@
 
         .nav-link-icon {
           position: absolute;
-          left: -.8em;
+          right: 100%;
           top: 50%;
 
-          margin-right: 1em;
+          /* margin-right: 1em; */
+          margin-right: 0;
 
           transform: translateY(-50%) scale(0);
 
