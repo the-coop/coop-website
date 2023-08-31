@@ -219,7 +219,6 @@
   .home-wrapper {
     display: flex;
     flex-wrap: wrap;
-    margin-top: 1.5em;
     justify-content: center;
   }
 
