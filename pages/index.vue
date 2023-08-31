@@ -48,6 +48,11 @@
       </div>
     </div>
 
+    <ConquestMenu />
+    <!-- <div class="content-container conquest-menu-container">
+      <h1 class="title">🗡 Conquest</h1>
+    </div> -->
+
     <div class="prompt slide-up" v-if="advert">
       <h2>Advertisement</h2>
       <a :href="advert.target_url">
@@ -103,17 +108,11 @@
       </NuxtLink>
     </div> -->
 
-    <div class="content-container conquest-menu-container">
-      <h1 class="title">🗡 Conquest</h1>
-
-      <ConquestMenu />
-    </div>
-
-    <div class="content-container login-prompt-container" v-show="!$auth.$state.loggedIn">
+    <!-- <div class="content-container login-prompt-container" v-show="!$auth.$state.loggedIn">
       <h1 class="title">🔑 Login</h1>
 
       <LoginBlock />
-    </div>
+    </div> -->
 
     <client-only>
       <Worldview class="home-worldview" :silent="true" :intro="true" :networking="true" :controls="false" />
