@@ -1,5 +1,5 @@
 <template>
-    <div class="content-container">
+    <div class="content-container page-wrapper">
         <h1 class="title">🔑 Login</h1>
 
         <LoginBlock :intent="intent" />

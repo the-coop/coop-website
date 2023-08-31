@@ -48,7 +48,7 @@
       </div>
     </div>
 
-    <div class="content-container conquest-menu-container">
+    <div class="content-container conquest-menu-container slide-up">
       <!-- <h1 class="title">🗡 Conquest</h1> -->
 
       <ConquestMenu />

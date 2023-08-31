@@ -1,5 +1,5 @@
 <template>
-  <div class="content-container">
+  <div class="content-container page-wrapper">
     <h1 class="title">🗞️ Blog</h1>
 
     <p class="note">Thanks for checking out our blog, you'll find out <NuxtLink class="link" to="/blog/subscribe">subscribe-worthy</NuxtLink> latest headlines below! 🤓</p>

@@ -1,5 +1,5 @@
 <template>
-  <div class="content-container">
+  <div class="content-container page-wrapper">
     <h1 class="title">Latest Trades</h1>
 
     <h2 v-if="trades.length === 0" class="no-trades subtitle">

@@ -1,5 +1,5 @@
 <template>
-  <div class="content-container">
+  <div class="content-container page-wrapper">
     <h1 class="title">📖 Guide</h1>
     <p class="text">Welcome to the guide with all the information you need
       ...<em class="note">
