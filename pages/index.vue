@@ -1,82 +1,80 @@
 <template>
   <div class="home-wrapper">
 
-    <div class="page home hero-container content-container slide-up">
-      <div class="hero" v-show="!$auth.$state.loggedIn">
-        <h1 class="title">Join our community!</h1>
+    <div class="hero slide-up" v-show="!$auth.$state.loggedIn">
+      <h1 class="title">Join our community!</h1>
 
-        <p class="subtitle">
-          Democratic, free chicken themed, multiplayer universe enabled, 
-          gravity simulating, economy having, 
-          advice giving, learning community collaboration server 
-          with {{ usersTotal }} members and growing!
+      <p class="subtitle">
+        Democratic, free chicken themed, multiplayer universe enabled, 
+        gravity simulating, economy having, 
+        advice giving, learning community collaboration server 
+        with {{ usersTotal }} members and growing!
 
-          <!-- TODO: Latest member -->
-        </p>
+        <!-- TODO: Latest member -->
+      </p>
 
-        <div class="actions">
-          <a href="https://fund-the-coop.raisely.com" target="_blank" class="button secondary">💸 Donate</a>
-          <a v-show="!$auth.$state.loggedIn" :href="inviteLink" target="_blank" class="button">👋 Join</a>
-        </div>
+      <div class="actions">
+        <a href="https://fund-the-coop.raisely.com" target="_blank" class="button secondary">💸 Donate</a>
+        <a v-show="!$auth.$state.loggedIn" :href="inviteLink" target="_blank" class="button">👋 Join</a>
       </div>
+    </div>
+    
+    <div class="hero slide-up" v-if="this.$auth.user">
+      <img :src="this.$auth.user.image" />
       
-      <div class="hero" v-if="this.$auth.user">
-        <img :src="this.$auth.user.image" />
-        
-        <h1 class="title">Welcome back, comrade {{ this.$auth.user.username }}!</h1>
-        WIP: Adding more info to make more useful
-        <!-- 
-          blog_posts: 
+      <h1 class="title">Welcome back, comrade {{ this.$auth.user.username }}!</h1>
+      WIP: Adding more info to make more useful
+      <!-- 
+        blog_posts: 
 
-          health: 
+        health: 
 
-          intro_time: 
-          item_list: 
-          join_date: 
-          last_sacrificed_secs: 
-          project_list: 
-          role_list: 
-        -->
+        intro_time: 
+        item_list: 
+        join_date: 
+        last_sacrificed_secs: 
+        project_list: 
+        role_list: 
+      -->
 
-        <ItemIcon code="COOP_POINT" :label="this.$auth.user?.historical_points" />
+      <ItemIcon code="COOP_POINT" :label="this.$auth.user?.historical_points" />
 
-        <!-- {{ user?.id }} -->
-        <!-- Actions related to user -->
-        <!-- Create notifications/inbox -->
-        <div class="actions">
-          <a href="https://fund-the-coop.raisely.com" target="_blank" class="button secondary">💸 Donate</a>
-          <NuxtLink class="button" to="/conquest/world">🕹️ Play</NuxtLink>
+      <!-- {{ user?.id }} -->
+      <!-- Actions related to user -->
+      <!-- Create notifications/inbox -->
+      <div class="actions">
+        <a href="https://fund-the-coop.raisely.com" target="_blank" class="button secondary">💸 Donate</a>
+        <NuxtLink class="button" to="/conquest/world">🕹️ Play</NuxtLink>
+      </div>
+    </div>
+
+    <div class="prompt slide-up" v-if="advert">
+      <h2>Advertisement</h2>
+      <a :href="advert.target_url">
+        <div 
+          class="prompt-image" 
+          :style="{ backgroundImage: `url(${advert.image_url})` }">
         </div>
-      </div>
+      </a>
+    </div>
 
-      <div class="prompt" v-if="advert">
-        <h2>Advertisement</h2>
-        <a :href="advert.target_url">
-          <div 
-            class="prompt-image" 
-            :style="{ backgroundImage: `url(${advert.image_url})` }">
-          </div>
-        </a>
-      </div>
+    <div class="content-container slide-up">
+      <h1 class="title">🗞️ Posts ({{ posts.length }}/{{ postsTotal }})</h1>
 
-      <div class="content-container slide-up">
-        <h1 class="title">🗞️ Posts ({{ posts.length }}/{{ postsTotal }})</h1>
+      <p class="note">
+        Thanks for checking out our blog, you'll find out <NuxtLink class="link" to="/blog/subscribe">subscribe-worthy</NuxtLink> latest headlines below! 🤓
+      </p>
 
-        <p class="note">
-          Thanks for checking out our blog, you'll find out <NuxtLink class="link" to="/blog/subscribe">subscribe-worthy</NuxtLink> latest headlines below! 🤓
-        </p>
+      <PostsList :posts="posts" />
 
-        <PostsList :posts="posts" />
+      <p class="note">
+        If you would like an email when a post is added, 
+        <NuxtLink class="link" to="/blog/subscribe">please subscribe.</NuxtLink>
+      </p>
 
-        <p class="note">
-          If you would like an email when a post is added, 
-          <NuxtLink class="link" to="/blog/subscribe">please subscribe.</NuxtLink>
-        </p>
-
-        <NuxtLink to="/blog" class="button">
-          View all
-        </NuxtLink>
-      </div>
+      <NuxtLink to="/blog" class="button">
+        View all
+      </NuxtLink>
     </div>
 
     <div class="content-container slide-up">
@@ -116,9 +114,9 @@
 
       <LoginBlock />
     </div>
-    
+
     <client-only>
-      <Worldview :silent="true" :intro="true" :networking="true" :controls="false" />
+      <Worldview class="home-worldview" :silent="true" :intro="true" :networking="true" :controls="false" />
     </client-only>
   </div>
 
@@ -238,7 +236,6 @@
   }
 
   .login-prompt-container {
-    /* background-color: rgb(23, 23, 23); */
     justify-content: center;
     align-items: center;
     border-radius: 4em;
@@ -249,7 +246,6 @@
     backdrop-filter: blur(1vh); /* Chrome and Opera */
     box-shadow: inset 0 0 0 100vh rgba(255,255,255,0.08);
   }
-
 
   .hero {
     z-index: 1;
@@ -293,14 +289,18 @@
     margin-right: 0;
   }
 
-  .page.home .worldview {
-    position: fixed;
-    top: 0;
-    left: 0;
-
-    z-index: -1;
-
+  .home-worldview {
     opacity: .125;
+    animation: fade-out .8s ease-out forwards;
+  }
+
+  @keyframes fade-out {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: .125;
+    }
   }
 
   .conquest-menu-container {
@@ -329,7 +329,7 @@
 
     .hero {
       /* flex: calc(59% - 3em) 0 0; */
-      
+      margin-bottom: 3em;
     }
 
     .prompt {

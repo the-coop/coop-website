@@ -38,7 +38,7 @@
         <rect y="60" width="100" height="20"></rect>
       </svg>
 
-      <nav class="navigation"> 
+      <nav class="navigation primary-navigation"> 
         <div class="dropdown">
           <span class="dropdown-label" @click="toggleDropdown">
             <span class="nav-link-icon">🥚</span> Community
@@ -103,7 +103,7 @@
           </div>
         </div>
 
-        <NuxtLink v-show="!this.$auth.$state.user" to="/auth/login" class="nav-link" @click.native="closeMenu">
+        <NuxtLink v-show="!this.$auth.$state.user" to="/auth/login" class="nav-link nav-link-login" @click.native="closeMenu">
           <span class="nav-link-icon">🔑</span> Login
         </NuxtLink>
 
@@ -326,6 +326,9 @@
     width: 2em;
   }
 
+
+  
+
   /* Temporary until someone can do better. */
   .footer {
     padding: 2.5rem 0rem;
@@ -361,18 +364,6 @@
       display: none;
     }
 
-    .navigation > * {
-      padding: .3em .6em;
-      -webkit-backdrop-filter: blur(1vh);
-      backdrop-filter: blur(1vh);
-      background-color: color(srgb 0 0 0 / 0.34);
-    }
-
-    .navigation > *:hover {
-      background-color: color(srgb 1 0.395 0.395 / 0.25);
-      color: blue;
-    }
-
     .mobile-nav-trigger {
       display: block;
 
@@ -391,7 +382,6 @@
       .dropdown {
         display: inline-flex;
         position: relative;
-        /* margin-left: 3.5em; */
         flex-direction: column;
       }
 
@@ -413,6 +403,7 @@
       }
 
       .dropdown-content {
+        display: flex;
         position: absolute;
         top: 50%;
         opacity: 0;
@@ -422,8 +413,9 @@
           background-color .25s ease-in;
 
         min-width: 9em;
-        display: flex;
         flex-direction: column;
+
+        align-items: flex-start;
         
         background-color: transparent;
 
@@ -449,6 +441,8 @@
       .nav-link-icon {
         margin-right: 1em;
       }
+
+  
 
       .dropdown-content .nav-link:hover {
         border-color: #ff6565;
@@ -511,6 +505,7 @@
 
   .brand .logo * {
     fill: #ff6565;
+    width: 3em;
   }
   .brand:hover .logo * {
     fill: white;
@@ -525,11 +520,11 @@
       display: none;
     }
 
-    .dropdown.open .dropdown-content .nav-link, .dropdown:hover .dropdown-content .nav-link {
+    /* .dropdown.open .dropdown-content .nav-link, .dropdown:hover .dropdown-content .nav-link {
       -webkit-backdrop-filter: blur(1vh);
       backdrop-filter: blur(1vh);
       background-color: color(srgb 0 0 0 / 0.34);
-    }
+    } */
   }
 
   @media screen and (min-width: 850px) {
@@ -563,23 +558,139 @@
           margin-left: 3.5em;
         }
 
+        .nav-link, .dropdown-label {
+          background: #ff6565;
+          color: #ffffff;
+          font-weight: bold;
+          padding: .3em .5em;
+          border-radius: .3em;
+          position: relative;
+          text-shadow: .1em .1em .1em rgb(125, 25, 25);
+        }
+
+        .nav-link-login {
+          background-color: rgb(43, 120, 168);
+        }
+
+        .nav-link:hover, .dropdown-label:hover {
+          background: #29292b;
+        }
+
+        .navigation > .nav-link:hover, .navigation .dropdown:hover .dropdown-label {
+          background: #29292b;
+          opacity: 1;
+          animation: none;  
+        }
+
+        .navigation .nav-link-login:hover {
+          background-color: white;
+          color: black;
+          text-shadow: none;
+          animation: none;
+          opacity: 1;
+        }
+
+        .nav-link-icon {
+          position: absolute;
+          left: -.8em;
+          top: 50%;
+
+          margin-right: 1em;
+
+          transform: translateY(-50%) scale(0);
+
+          font-size: 2em;
+
+          animation: iconPopAnimation 0.5s cubic-bezier(0.42, 0, 0.58, 1) .5s forwards;
+        }
+
+        @keyframes iconPopAnimation {
+          0% {
+            transform: translateY(-50%) scale(0);
+          }
+          70% {
+            transform: translateY(-50%) scale(1);
+          }
+          100% {
+            transform: translateY(-50%) scale(1);
+          }
+        }
+
+          /* font-size: 2em;
+        transform: translateY(-50%);
+        transition: font-size .3s ease-in;
+        font-size: 0; */
+
         .dropdown .nav-link {
           transition: transform .2s, opacity .2s;
           opacity: 0;
           transform: translateY(2em);
         }
 
+        .dropdown .nav-link .nav-link-icon {
+          animation: none;
+        }
+        .dropdown:hover .nav-link .nav-link-icon {
+          animation: iconPopAnimation 0.5s cubic-bezier(0.42, 0, 0.58, 1) forwards;
+        }
+
         .dropdown .nav-link:nth-child(1) { transition-delay: .1s }
+        .dropdown .nav-link:nth-child(1) .nav-link-icon { animation-delay: .1s }
         .dropdown .nav-link:nth-child(2) { transition-delay: .2s }
+        .dropdown .nav-link:nth-child(2) .nav-link-icon { animation-delay: .2s }
         .dropdown .nav-link:nth-child(3) { transition-delay: .3s }
+        .dropdown .nav-link:nth-child(3) .nav-link-icon { animation-delay: .3s }
         .dropdown .nav-link:nth-child(4) { transition-delay: .4s }
+        .dropdown .nav-link:nth-child(4) .nav-link-icon { animation-delay: .4s }
         .dropdown .nav-link:nth-child(5) { transition-delay: .5s }
+        .dropdown .nav-link:nth-child(5) .nav-link-icon { animation-delay: .5s }
         .dropdown .nav-link:nth-child(6) { transition-delay: .6s }
+        .dropdown .nav-link:nth-child(6) .nav-link-icon { animation-delay: .6s }
 
         .dropdown:hover .nav-link {
           opacity: 1;
           transform: translateY(0);
         }
+
+        .navigation > .nav-link, .navigation .dropdown-label {
+          background: transparent;
+          opacity: 0;
+          animation: navReveal .6s linear forwards;
+        }
+        @keyframes navReveal {
+          0% {
+            opacity: 0;
+            background: transparent;
+          }
+          100% {
+            opacity: 1;
+            background: #ff6565;
+          }
+        }
+        /* .navigation > *:nth-child(1).nav-link, .navigation .dropdown-label { */
+        .primary-navigation > *:nth-child(1) .dropdown-label {
+          animation-delay: 0;
+        }
+        .primary-navigation > *:nth-child(2) .dropdown-label {
+          animation-delay: .3s;
+          transform: rotate(3deg);
+        }
+        .primary-navigation > *:nth-child(3) {
+          animation-delay: .5s;
+        }
+        .additional-navigation > *:nth-child(3) {
+          transform: rotate(-3deg);
+          animation-delay: 0;
+        }
+        .additional-navigation > *:nth-child(2) {
+          transform: rotate(5=3deg);
+          animation-delay: .3s;
+        }
+        .additional-navigation > *:nth-child(1) {
+          transform: rotate(1deg);
+          animation-delay: .5s;
+        }
+        /* .additional-navigation {} */
   }
 
   @media screen and (max-width: 850px) {
@@ -624,7 +735,6 @@
       background: rgba(17, 17, 17, 0.9);
       border-radius: 1rem 0;
     }
-
 
   }
 
