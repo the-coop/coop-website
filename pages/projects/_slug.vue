@@ -1,7 +1,5 @@
 <template>
-  <div v-if="project" class="content-container">
-
-
+  <div v-if="project" class="content-container page-wrapper">
     <div class="project">
       <h2>{{ project.title }}</h2>
       <!-- <span>{{ project.deadline }}</span> -->
@@ -12,8 +10,6 @@
 
       <!-- <a target="_blank" :href="project.channel_id">Link to channel</a> -->
     </div>
-
-
   </div>
 </template>
 

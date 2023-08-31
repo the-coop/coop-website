@@ -1,5 +1,5 @@
 <template>
-  <div class="content-container">
+  <div class="page-wrapper">
     <h1 class="title">🏷️ Services</h1>
 
     <ServicesList />

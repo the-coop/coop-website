@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="page-wrapper">
     <h1 class="title">⚙️ Roles</h1>
 
     <div v-show="!$auth.$state.loggedIn">

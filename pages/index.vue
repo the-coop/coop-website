@@ -1,5 +1,5 @@
 <template>
-  <div class="home-wrapper">
+  <div class="page-wrapper home-wrapper">
 
     <div class="hero slide-up" v-show="!$auth.$state.loggedIn">
       <h1 class="title">Join our community!</h1>
@@ -310,17 +310,13 @@
   .members-content-container {
     flex: 100% 0 0;
   }
-
   
 
   @media screen and (min-width: 850px) {
 
     .home-wrapper {
-      /* justify-content: flex-start; */
       justify-content: space-between;
-      margin-top: 12.5em;
     }
-
 
     .home {
       flex-direction: row;
@@ -328,8 +324,8 @@
     }
 
     .hero {
-      /* flex: calc(59% - 3em) 0 0; */
       margin-bottom: 3em;
+      text-align: center;
     }
 
     .prompt {

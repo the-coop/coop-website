@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="page-wrapper">
     <div class="members-header">
       <h1 class="title">🔮 Members ({{ users.length }} / {{ total }})</h1>
       <input class="search" ref="searchquery" 

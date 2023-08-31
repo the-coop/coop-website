@@ -1,5 +1,5 @@
 <template>
-  <div class="content-container">
+  <div class="page-wrapper">
     <h1 class="title">👷 Projects</h1>
     <ProjectsList prefix="projects" :projects="projects" />
   </div>

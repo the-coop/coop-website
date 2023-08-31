@@ -1,5 +1,5 @@
 <template>
-  <div class="content-container">
+  <div class="page-wrapper">
     <div v-if="!user">Loading!</div>
     <div class="user-profile" v-if="user">
       <img :src="user.image ? user.image : '/favicon.svg'" class="pfp" />
