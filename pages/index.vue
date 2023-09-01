@@ -14,8 +14,14 @@
       </p>
 
       <div class="actions">
-        <a href="https://fund-the-coop.raisely.com" target="_blank" class="button secondary">💸 Donate</a>
-        <a v-show="!$auth.$state.loggedIn" :href="inviteLink" target="_blank" class="button">👋 Join</a>
+        <a href="https://fund-the-coop.raisely.com" target="_blank" class="button secondary">
+          <span class="button-icon">💸</span>
+          Donate
+        </a>
+        <a v-show="!$auth.$state.loggedIn" :href="inviteLink" target="_blank" class="button">
+          <span class="button-icon">👋</span>
+          Join
+        </a>
       </div>
     </div>
     
@@ -77,8 +83,9 @@
         If you would like an email when a post is added, 
         <NuxtLink class="link" to="/blog/subscribe">please subscribe.</NuxtLink>
       </p>
-
+ 
       <NuxtLink to="/blog" class="button">
+        <span class="button-icon">🗞️</span>
         View all
       </NuxtLink>
     </div>
@@ -88,6 +95,7 @@
       <ProjectsList prefix="home-projects" :projects="projects" />
 
       <NuxtLink to="/projects" class="button">
+        <span class="button-icon">👷</span>
         View all
       </NuxtLink>
     </div>
@@ -97,7 +105,8 @@
       <UsersList :users="users" />
 
       <NuxtLink to="/members" class="button">
-        ALL MEMBERS 🔮
+        <span class="button-icon">🔮</span>
+        ALL MEMBERS
       </NuxtLink>
     </div>
 
@@ -335,10 +344,11 @@
 
     .actions {
       display: block;
+      font-size: 1.35em;
     }
 
     .actions .button {
-      margin-right: .35em;
+      margin-right: 2.35em;
     }
 
   }

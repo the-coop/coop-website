@@ -595,7 +595,6 @@
           right: 100%;
           top: 50%;
 
-          /* margin-right: 1em; */
           margin-right: 0;
 
           transform: translateY(-50%) scale(0);
@@ -603,18 +602,6 @@
           font-size: 2em;
 
           animation: iconPopAnimation 0.5s cubic-bezier(0.42, 0, 0.58, 1) .5s forwards;
-        }
-
-        @keyframes iconPopAnimation {
-          0% {
-            transform: translateY(-50%) scale(0);
-          }
-          70% {
-            transform: translateY(-50%) scale(1);
-          }
-          100% {
-            transform: translateY(-50%) scale(1);
-          }
         }
 
           /* font-size: 2em;

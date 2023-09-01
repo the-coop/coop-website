@@ -43,42 +43,47 @@ html {
 
 
 .button {
-  padding: .75em 2.5rem;
+  position: relative;
+  padding: .3em 1em;
 
   cursor: pointer;
-
-  border: .125em solid color.$red;
-  color: color.$red;
 
   font-size: 1.15em;
   text-decoration: none;
 
-  font-weight: 500;
+  background-color: color.$red;
+
+  font-weight: bold;
+  color: white;
   transition: background-color .2s;
   border-radius: .45em;
 }
 
+.button-icon {
+  position: absolute;
+  top: 50%;
+  right: calc(100% - .2em);
+  transform: translateY(-50%) scale(0);
+  font-size: 2em;
+  animation: iconPopAnimation 0.5s cubic-bezier(0.42, 0, 0.58, 1) .5s forwards;
+}
+
 .button:hover {
-  background-color: color.$red;
-  color: #fefefe;
+  background-color: white;
+  color: black;
 }
 
 .button.secondary {
-  background-color: transparent;
-
-  color: #717171;
-  border-color: #717171;
+  background-color: black;
 }
 
 .button.secondary:hover {
   background-color: rgb(38, 38, 38);
-  border-color: rgb(38, 38, 38);
   color: white;
 }
 
 .button.confirm {
   background-color: #0a984b;
-  border-color: #0a740d;
 }
 .button.confirm:hover {
   background-color: transparent;
@@ -95,7 +100,6 @@ html {
   font-weight: bold;
   color: #dadada;
   border-radius: 1rem;
-  border: none;
   cursor: pointer;
   text-decoration: none;
 }
@@ -188,6 +192,18 @@ img.emoji {
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+@keyframes iconPopAnimation {
+  0% {
+    transform: translateY(-50%) scale(0);
+  }
+  70% {
+    transform: translateY(-50%) scale(1);
+  }
+  100% {
+    transform: translateY(-50%) scale(1);
   }
 }
 
