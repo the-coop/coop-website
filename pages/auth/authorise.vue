@@ -83,7 +83,7 @@
 
           // Access/check for token within response.
           const token = data.token || null;
-          if (!token) throw new Error('Could not verify you have an account in The Coop. Try joining via the 🥚 Community menu?');
+          if (!token) throw new Error('Are you on the correct account? Could not verify you have an account in The Coop. Try joining via the 🥚 Community menu?');
 
           // Set as loaded.
           this.loaded = true;

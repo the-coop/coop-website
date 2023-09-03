@@ -45,7 +45,7 @@
       <NuxtLink v-show="!$auth.$state.loggedIn" 
         class="primary-action"
         :to="{ path: '/auth/login', query: { intent: 'game' }}">
-        🔑 Login
+        🔑 Login to play
       </NuxtLink>
     </div>
 
