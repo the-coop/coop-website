@@ -200,7 +200,8 @@
     width: 5em;
     height: 5em;
   }
-  .intro-logo * {
+  
+  .intro-logo path {
     fill: #fffaee;
   }
 
