@@ -200,7 +200,7 @@
     width: 5em;
     height: 5em;
   }
-  
+
   .intro-logo path {
     fill: #fffaee;
   }
@@ -271,8 +271,6 @@
 
   import Logo from "~/components/Logo.vue";
   import { buildSolarSystem } from '~/lib/conquest/world/universeManager';
-
-  
 
   const isMobile = () => {
     let check = false;
