@@ -195,8 +195,10 @@
   }
 
   .intro-logo {
-    animation: intro 2s;
-    animation-fill-mode: both;
+    /* animation: intro 2s; */
+    /* animation-fill-mode: both; */
+    width: 5em;
+    height: 5em;
   }
   .intro-logo * {
     fill: #fffaee;
