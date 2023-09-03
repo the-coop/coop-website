@@ -400,7 +400,12 @@
          
 
         } else {
-          console.log("Unable to Debug Spawn");
+          if (!window.WORLD.debug) {
+            console.log("Unable to Debug Spawn (already debugging)");
+          } else {
+            console.log("Unable to Debug Spawn");
+          }
+         
         }
       },
       spawn() {
