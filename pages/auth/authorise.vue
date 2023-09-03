@@ -1,5 +1,5 @@
 <template>
-  <div class="challenge-wrapper content-container">
+  <div class="challenge-wrapper content-container page-wrapper">
     <div v-if="!loaded && !error">
       <h1 class="title">Authenticating</h1>
       <p class="text">Attemping to verify your Discord account in exchange for greater access.</p>
