@@ -18,6 +18,7 @@
 
 <script>
   import * as THREE from 'three';
+  import { generateCharacter } from '~/lib/conquest/players/playerManager';
 
   // May need moving down if it doesn't work here?
   function resizer() {
@@ -54,7 +55,7 @@
 
         // Deterministic time variable
         timeIncrement: Date.now(),
-        deltaTime: 0,
+        deltaTime: 0
       };
 
       // Set background colour
@@ -73,18 +74,25 @@
 
       // SETUP / TESTING
 
-      const geometry = new THREE.BoxGeometry(1, 1, 1); 
-      const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); 
-      const cube = new THREE.Mesh(geometry, material); 
+      // const geometry = new THREE.BoxGeometry(1, 1, 1); 
+      // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 }); 
+      // const cube = new THREE.Mesh(geometry, material); 
       
-      SANDBOX.scene.add(cube); 
+      // SANDBOX.scene.add(cube); 
       
-      SANDBOX.camera.position.z = 5;
+      SANDBOX.camera.position.z = 0.3;
+      SANDBOX.camera.position.y = 0.1;
+
+      const character = generateCharacter()
+
+      SANDBOX.scene.add(character);
 
       function animate() { 
         requestAnimationFrame(animate); 
-        cube.rotation.x += 0.01; 
-        cube.rotation.y += 0.01; 
+
+        // character.rotation.x += 0.01;
+        // character.rotation.y += 0.01;
+
         SANDBOX.renderer.render(SANDBOX.scene, SANDBOX.camera); 
       } 
       animate();
