@@ -3,9 +3,9 @@
     "name": "sun",
     "surface": 5,
     "spin": 0.002,
-    "SOISize": 100,
+    "SOISize": 500,
     "emissive": 1,
-    "surfaceGravity": 30,
+    "surfaceGravity": 100,
     "color": "#ffff00",
     "position": [ 0, 0, 0 ],
     "decorations": [
@@ -20,8 +20,8 @@
         "spin": 0.02,
         "velocity": 0.002,
         "surface": 1,
-        "SOISize": 10,
-        "surfaceGravity": 30,
+        "SOISize": 20,
+        "surfaceGravity": 9,
         "children": [],
         "color": "#00ff00",
         "position": [ 15, 0, 5 ]
