@@ -584,7 +584,8 @@
       engine(this);
 
       // Play the intro if specified, but don't cause re-render?
-      if (this.intro) {
+      // Remove the conditional, can always play this part.
+      // if (this.intro) {
         WORLD.camera.position.set(0, 25, 50);
         
         WORLD.cameraAnimation = new Tween(WORLD.camera.position)
@@ -593,7 +594,7 @@
           .start()
           .onUpdate(() => WORLD.camera.lookAt(WORLD.planets[0].body.position))
           .onComplete(() => WORLD.cameraAnimation = null);
-      }
+      // }
 
      // Reveal UI that camera animation won't break.
       setTimeout(() => {
