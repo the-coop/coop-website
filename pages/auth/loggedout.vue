@@ -1,5 +1,5 @@
 <template>
-    <div class="content-container">
+    <div class="content-container page-wrapper">
         <h1 class="title">Successful logout</h1>
         <p>
             You have been logged out, please don't stay this way for long! <br />

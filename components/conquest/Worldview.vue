@@ -299,8 +299,6 @@
     bloomRadius: 0.1
   };
 
-  const listeners = [];
-
   export default {
     name: 'Worldview',
     props: {
@@ -443,11 +441,14 @@
         }, false);
 
         // Add to listeners for cleanup.
-        listeners.push(pointLockListener, pointLockErrorListener);
+        WORLD.listeners.push(pointLockListener, pointLockErrorListener);
       }
     },
 
     async mounted() {
+      // Only allow once instance.
+      if (window.WORLD) return;
+
       console.log('Mounted, testing');
       const DETECTED_INPUT_KEY = isMobile() ? "MOBILE" : "COMPUTER";
 
@@ -464,6 +465,8 @@
       window.WORLD = {
         canvas,
         component: this,
+
+        listeners: [],
 
         renderer: new THREE.WebGLRenderer({ canvas, antialias: true }),
         scene: new THREE.Scene,
@@ -567,7 +570,7 @@
 
       // Add screen resizing capability.
       const resizeListener = window.addEventListener('resize', resizer);
-      listeners.push(resizeListener);
+      WORLD.listeners.push(resizeListener);
       resizer();
 
       // Setup and run the game/level networking (socket based).
