@@ -55,7 +55,8 @@
     </div>
 
     <div class="info" v-if="!silent && guiOpen">
-      
+      <p>{{ fps }}</p>
+
       Cameras
       <div>
         <button @click="() => changeCamera('FIRST_PERSON')">1st person</button> 
@@ -278,7 +279,6 @@
     return check;
   }
 
-  // May need moving down if it doesn't work here?
   function resizer() {
     // Update camera
     WORLD.camera.aspect = window.innerWidth / window.innerHeight;
@@ -298,6 +298,8 @@
     bloomThreshold: 0.7,
     bloomRadius: 0.1
   };
+
+  const listeners = [];
 
   export default {
     name: 'Worldview',
@@ -323,6 +325,7 @@
       Logo,
       Gear
     },
+
     data: () => ({
       // Just for testing and GUI
       players: [],
@@ -338,7 +341,9 @@
 
       selected: null,
 
-      uiBlocked: true
+      uiBlocked: true,
+
+      fps: 0
     }),
     
     methods: {
@@ -418,9 +423,7 @@
         // Interaction required*
         window.WORLD.renderer.domElement.requestPointerLock();
 
-        // https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
-
-        document.addEventListener('pointerlockchange', ev => {
+        const pointLockListener = document.addEventListener('pointerlockchange', ev => {
           // console.log(document.pointerLockElement, WORLD.renderer.domElement);
           if (document.pointerLockElement === WORLD.renderer.domElement) {
             console.log('The pointer lock status is now locked');
@@ -429,14 +432,18 @@
           }
         }, false);
 
-        document.addEventListener('pointerlockerror', ev => {
+        const pointLockErrorListener = document.addEventListener('pointerlockerror', ev => {
           console.log('Error with pointer lock' + ev);
           console.error(ev);
         }, false);
+
+        // Add to listeners for cleanup.
+        listeners.push(pointLockListener, pointLockErrorListener);
       }
     },
 
     async mounted() {
+      console.log('Mounted, testing');
       const DETECTED_INPUT_KEY = isMobile() ? "MOBILE" : "COMPUTER";
 
       // Check if WebGL is supported.
@@ -554,7 +561,8 @@
       WORLD.scene.add(starsContainer);
 
       // Add screen resizing capability.
-      window.addEventListener('resize', resizer);
+      const resizeListener = window.addEventListener('resize', resizer);
+      listeners.push(resizeListener);
       resizer();
 
       // Setup and run the game/level networking (socket based).
@@ -619,11 +627,8 @@
 
       // WORLD.scene.add(object);
 
-
       // Force console controls for testing.
       // WORLD.settings.view.DESIRED_INPUT_KEY = "CONSOLE";
-
-
 
       // If logged in, add a point sprite to the player.
       // setTimeout(() => {
@@ -658,4 +663,6 @@
       console.log('Testing Worldview beforeUnmount');
     }
   }
+
+  // https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
 </script>
