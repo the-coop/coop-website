@@ -9,6 +9,9 @@
     "start": "nuxt start",
     "generate": "nuxt generate"
   },
+  "engines": {
+    "node": "14.x"
+  },
   "dependencies": {
     "@babel/core": "^7.18.9",
     "@json-rpc-tools/utils": "^1.7.6",
