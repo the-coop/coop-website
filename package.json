@@ -10,7 +10,7 @@
     "generate": "nuxt generate"
   },
   "engines": {
-    "node": "14.x"
+    "node": "16.x"
   },
   "dependencies": {
     "@babel/core": "^7.18.9",
