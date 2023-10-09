@@ -108,12 +108,7 @@ export default {
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
-  build: {
-    // babel: {
-    //   "plugins": ["@babel/plugin-syntax-import-assertions"],
-    //   "presets": ['@nuxt/babel-preset-app']
-    // }
-  },
+  build: {},
 
   // Avoid 404 page on non-static pages and turn off static pre-rendering.
   ssr: false,
