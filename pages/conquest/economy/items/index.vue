@@ -4,7 +4,7 @@
       <thead>
         <tr>
           <td>
-            <h1 class="title">Items</h1>
+            <h1 class="title">🎁 Items</h1>
           </td>
           <td>Total Qty</td>
           <td>Per Beak</td>
