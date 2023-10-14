@@ -1,7 +1,7 @@
 <template>
-  <div class="content-container">
+  <div class="page-wrapper content-container">
     <h1 class="title">🥚🧺Egg Hunt</h1>
-    <hr />
+    <hr/>
 
     <div class="inner-container">
       <p class="text">
@@ -49,8 +49,4 @@
   }
 </script>
 
-<style>
-  .content-container > hr {
-    margin: 3rem 0;
-  }
-</style>
+

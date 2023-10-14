@@ -1,5 +1,5 @@
 <template>
-  <div class="content-container page-wrapper">
+  <div class="page-wrapper content-container">
     <h1 class="title">📖 Guide</h1>
     <p class="text">Welcome to the guide with all the information you need
       ...<em class="note">
@@ -25,7 +25,7 @@
   @import "../../assets/style/documentation.scss";
 
   hr {
-    margin: 3rem 0;
+    margin: 3em 0;
   }
 
   li {

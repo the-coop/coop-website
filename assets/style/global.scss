@@ -14,9 +14,9 @@ html {
 }
 
 .content-container {
-  padding: 1rem;
-  border-radius: 0 .5rem;
-  margin-bottom: 2rem;
+  padding: 1em;
+  border-radius: 0 .5em;
+  margin-bottom: 2em;
 
   box-sizing: border-box;
 
@@ -208,12 +208,12 @@ img.emoji {
 }
 
 
-@media screen and (min-width: 850px) {
+@media screen and (max-width: 1199.98px) {
 
     .page-wrapper {
-      margin-top: 12.5em;
+      margin-top: 3em;
     }
-    
+
     .subtitle {
         width: 50vw;
     }
