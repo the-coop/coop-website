@@ -1,8 +1,8 @@
 <template>
-  <div class="content-container">
-    <h1 class="title">Minigames</h1>
+  <div class="page-wrapper content-container">
+    <h1 class="title">🎮 Minigames</h1>
     <hr/>
-    <div class="inner-container games">
+    <div class="games">
       <div class="game" @click="() => this.$router.push('/guide/minigames/egghunt')">
         <div class="game-title">
           Egg hunt
@@ -46,9 +46,6 @@
 <style>
   @import "../../../assets/style/documentation.scss";
 
-  hr {
-    margin: 3em 0;
-  }
 
   .games {
     display: flex;
