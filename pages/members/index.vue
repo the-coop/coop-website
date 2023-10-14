@@ -98,6 +98,7 @@
 <style scoped>
   .members-header {
     display: flex;
+    align-items:center;
   }
   .search {
     display: none;
@@ -114,10 +115,12 @@
     background-color: transparent;
     font-size: 1.25em;
     cursor: pointer;
+    margin-left: .25em;
+    padding: .5em;
   }
   .title {
     text-align: center;
-    margin: auto;
+    margin: 0;
   }
 
   @media (min-width: 800px) {
