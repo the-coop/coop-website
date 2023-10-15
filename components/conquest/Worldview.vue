@@ -328,7 +328,7 @@
       // Just for testing and GUI
       players: [],
 
-      WEBGL_SUPPORT: false,
+      WEBGL_SUPPORT: true,
 
       settingsOpen: false,
       guiOpen: false,
