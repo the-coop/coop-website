@@ -1,8 +1,7 @@
 <template>
-  <div class="content-container">
-    <h1 class="title">👨‍⚖️ Morality </h1>
-    <hr />
-
+  <div class="page-wrapper content-container">
+    <h1 class="title">👨‍⚖️ Morality</h1>
+    <hr/>
     <div class="inner-container">
       <p class="text">
         The morality minigame is one that has a chance to give you buffs or de-buffs depending
@@ -59,8 +58,3 @@
   }
 </script>
 
-<style>
-  .content-container > hr {
-    margin: 3rem 0;
-  }
-</style>

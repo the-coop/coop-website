@@ -1,5 +1,5 @@
 <template>
-  <div class="content-container">
+  <div class="page-wrapper content-container">
     <ItemIcon 
       width="7.5em"
       :code="this.$route.params.code"
