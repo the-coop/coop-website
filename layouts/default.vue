@@ -517,11 +517,11 @@ color: white;
 }
 
 .brand .logo * {
-fill: #ff6565;
-width: 3em;
+  width: 3em;
+  fill: white;
 }
 .brand:hover .logo * {
-fill: white;
+  fill: #ff6565;
 }
 
 @media screen and (min-width: 850px) {
