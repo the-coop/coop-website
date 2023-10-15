@@ -1,6 +1,6 @@
 <template>
   <div class="conquest-menu">
-    <NuxtLink to="/conquest/world" class="conquest-menu-item">
+    <a href="/conquest/world" class="conquest-menu-item">
       <img 
         class="conquest-menu-image"
         src="/conquest/world.png" alt="Conquest world level thumbnail" />
@@ -8,7 +8,7 @@
       <span class="conquest-menu-item-link-label">
         Coopverse
       </span>
-    </NuxtLink>
+    </a>
 
     <NuxtLink 
       to="/conquest/economy/items/COOP_POINT"

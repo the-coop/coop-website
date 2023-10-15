@@ -50,7 +50,7 @@
       <!-- Create notifications/inbox -->
       <div class="actions">
         <a href="https://fund-the-coop.raisely.com" target="_blank" class="button secondary">💸 Donate</a>
-        <NuxtLink class="button" to="/conquest/world">🕹️ Play</NuxtLink>
+        <a class="button" href="/conquest/world">🕹️ Play</a>
       </div>
     </div>
 

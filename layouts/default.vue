@@ -3,9 +3,9 @@
     <div class="header slide-down">
 
       <nav class="navigation additional-navigation">
-        <NuxtLink to="/conquest/world" class="nav-link" @click.native="closeMenu">
+        <a href="/conquest/world" class="nav-link" @click.native="closeMenu">
           <span class="nav-link-icon">🕹️</span> Play
-        </NuxtLink>
+        </a>
 
         <NuxtLink to="/guide" class="nav-link" @click.native="closeMenu">
           <span class="nav-link-icon">📖</span> Guide
@@ -85,9 +85,9 @@
               <span class="nav-link-icon">📡</span> Dashboard
             </NuxtLink>
 
-            <NuxtLink to="/conquest/world" class="nav-link" @click.native="closeMenu">
+            <a href="/conquest/world" class="nav-link" @click.native="closeMenu">
               <span class="nav-link-icon">🕹️</span> Play
-            </NuxtLink>
+            </a>
 
             <NuxtLink to="/conquest/economy/items" class="nav-link" @click.native="closeMenu">
               <span class="nav-link-icon">🎁</span> Items
@@ -593,6 +593,7 @@ color: white;
     /* background: #29292b; */
     opacity: 1;
     animation: none;  
+    color: #ff6565;
   }
 
   .navigation .nav-link-login:hover {

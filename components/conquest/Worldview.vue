@@ -328,7 +328,7 @@
       // Just for testing and GUI
       players: [],
 
-      WEBGL_SUPPORT: true,
+      WEBGL_SUPPORT: false,
 
       settingsOpen: false,
       guiOpen: false,
@@ -455,14 +455,10 @@
       // Check if WebGL is supported.
       const canvas = document.getElementById('canvas');
 
-      this.WEBGL_SUPPORT = true;
-
-      // TODO: Warn those without instead
-      // Is this working properly?
-      // this.WEBGL_SUPPORT = !!(
-      //   window.WebGLRenderingContext && 
-      //   (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
-      // );
+      this.WEBGL_SUPPORT = !!(
+        window.WebGLRenderingContext && 
+        (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
+      );
 
       // Used for shared state.
       window.WORLD = {
