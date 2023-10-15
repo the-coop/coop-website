@@ -16,16 +16,13 @@
             <NuxtLink to="/guide" class="nav-link" @click.native="closeMenu">
               <span class="nav-link-icon">💫</span> Guide
             </NuxtLink>
+            
             <NuxtLink to="/vision" class="nav-link" @click.native="closeMenu">
               <span class="nav-link-icon">📄</span> Vision
             </NuxtLink>
 
             <NuxtLink to="/roles" class="nav-link" @click.native="closeMenu">
               <span class="nav-link-icon">⚙️</span> Roles
-            </NuxtLink>
-
-            <NuxtLink to="/projects" class="nav-link" @click.native="closeMenu">
-              <span class="nav-link-icon">👷</span> Projects
             </NuxtLink>
           </div>
         </div>
@@ -63,15 +60,7 @@
             <span class="nav-link-icon">🥚</span> Community
           </span>
 
-          <div class="dropdown-content">
-            <NuxtLink to="/vision" class="nav-link" @click.native="closeMenu">
-              <span class="nav-link-icon">📄</span> Vision
-            </NuxtLink>
-
-            <NuxtLink to="/members" class="nav-link" @click.native="closeMenu">
-              <span class="nav-link-icon">🔮</span> Members
-            </NuxtLink>
-            
+          <div class="dropdown-content">            
             <NuxtLink to="/blog" class="nav-link" @click.native="closeMenu">
               <span class="nav-link-icon">🗞️</span> Blog
             </NuxtLink>
@@ -79,7 +68,9 @@
             <NuxtLink to="/roles" class="nav-link" @click.native="closeMenu">
               <span class="nav-link-icon">⚙️</span> Roles
             </NuxtLink>
-
+            <NuxtLink to="/members" class="nav-link" @click.native="closeMenu">
+              <span class="nav-link-icon">🔮</span> Members
+            </NuxtLink>
             <NuxtLink to="/projects" class="nav-link" @click.native="closeMenu">
               <span class="nav-link-icon">👷</span> Projects
             </NuxtLink>
