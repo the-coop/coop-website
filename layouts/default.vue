@@ -218,20 +218,6 @@
           // 3. [Investigate if problems] - Make sure these are accessible for cleanup.
         });
       });
-
-      // The navigation links animations need another state when blurred to reset opacity.
-      // Makes sure opacity is 1 then resets when safe (longer than animation).
-      const menulinks = Array.from(document.querySelectorAll('.navigation > .nav-link'));
-      const dropdownlinks = Array.from(document.querySelectorAll('.navigation > .dropdown .dropdown-label'));
-      [...menulinks, ...dropdownlinks].map(l => {
-        l.addEventListener('mouseleave', ev => {
-          const link = ev.target;
-          console.log(link);
-          link.style.opacity = 1;
-          setTimeout(() => link.removeAttribute('style'), 333);
-        });
-      });
-      console.log(menulinks);
     },
     methods: {
       async logout() {
@@ -657,16 +643,13 @@
 
         .navigation > .nav-link, .navigation .dropdown-label {
           background: transparent;
-          opacity: 0;
           animation: navReveal .6s linear forwards;
         }
         @keyframes navReveal {
           0% {
-            opacity: 0;
             background: transparent;
           }
           100% {
-            opacity: 1;
             background: #ff6565;
           }
         }
