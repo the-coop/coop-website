@@ -222,11 +222,13 @@
       // The navigation links animations need another state when blurred to reset opacity.
       // Makes sure opacity is 1 then resets when safe (longer than animation).
       const menulinks = Array.from(document.querySelectorAll('.navigation > .nav-link'));
-      menulinks.addEventListener('mouseleave', ev => {
-        const link = ev.target;
-        link.style.opacity = 1;
-        setTimeout(() => content.removeAttribute('style'), 333);
-  });
+      menulinks.map(l => {
+        l.addEventListener('mouseleave', ev => {
+          const link = ev.target;
+          link.style.opacity = 1;
+          setTimeout(() => content.removeAttribute('style'), 333);
+        });
+      });
       console.log(menulinks);
     },
     methods: {
