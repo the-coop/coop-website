@@ -746,6 +746,11 @@
       text-align: left;
     }
 
+    .primary-navigation {
+      flex: calc(50% - 3.5em);
+      margin-left: 1.5em;
+    }
+
     .additional-navigation {
       display: flex;
       justify-content: flex-end;
