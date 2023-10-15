@@ -81,11 +81,14 @@ html {
 
 .button:hover {
   background-color: white;
-  color: black;
+  // color: black;
+  color: #fd6464;
 }
 
 .button.secondary {
-  background-color: black;
+  // background-color: black;
+  background-color: #f2f1f1;
+  color: rgb(45, 45, 45);
 }
 
 .button.secondary:hover {
