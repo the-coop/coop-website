@@ -164,7 +164,7 @@
     <Nuxt user="this.$auth.$state.user" />
 
     <div class="footer-socials">
-      <h4 class="footer-socials-prompt">Follow?</h4>
+      <h4 class="footer-socials-prompt">Social Media</h4>
       <div class="footer-socials-items">
         <a href="https://www.twitch.tv/thecoop_twitch/" target="_blank">
           <Twitch />
@@ -572,7 +572,7 @@ color: white;
   }
 
   .nav-link, .dropdown-label {
-    background: #ff6565;
+    /* background: #ff6565; */
     color: #ffffff;
     font-weight: bold;
     padding: .3em .5em;
@@ -586,11 +586,11 @@ color: white;
   }
 
   .nav-link:hover, .dropdown-label:hover {
-    background: #29292b;
+    /* background: #29292b; */
   }
 
   .navigation > .nav-link:hover, .navigation .dropdown:hover .dropdown-label {
-    background: #29292b;
+    /* background: #29292b; */
     opacity: 1;
     animation: none;  
   }
@@ -675,7 +675,7 @@ color: white;
     animation-delay: 0;
   }
   .additional-navigation > *:nth-child(2) {
-    transform: rotate(5=3deg);
+    transform: rotate(4deg);
     animation-delay: .3s;
   }
   .additional-navigation > *:nth-child(1) {
@@ -788,7 +788,7 @@ color: white;
       background: transparent;
     }
     100% {
-      background: #ff6565;
+      /* background: #ff6565; */
     }
   }
 </style>

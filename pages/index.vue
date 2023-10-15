@@ -230,7 +230,7 @@
   }
 </script>
 
-<style>
+<style scoped>
   .home-wrapper {
     display: flex;
     flex-wrap: wrap;

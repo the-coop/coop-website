@@ -21,7 +21,7 @@
   </div>
 </template>
 
-<style>
+<style scoped>
   @import "../../assets/style/documentation.scss";
 
   hr {

@@ -67,7 +67,7 @@
 };
 </script>
 
-<style>
+<style scoped>
   .roles-interface {
     display: flex;
     color: #e7dfdf;

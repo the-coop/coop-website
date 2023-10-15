@@ -23,8 +23,7 @@
   .content {
     color: white;
   }
-</style>
-<style>
+
   .content a {
     color: #ff8f8f;
   }

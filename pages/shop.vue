@@ -29,7 +29,7 @@
   }
 </script>
 
-<style>
+<style scoped>
   .title {
     color: white;
   }

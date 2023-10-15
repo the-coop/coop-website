@@ -75,7 +75,7 @@
   }
 </script>
 
-<style>
+<style scoped>
   .content-container > hr{
     margin: 3rem 0;
   }
