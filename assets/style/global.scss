@@ -46,6 +46,11 @@ html {
   margin-bottom: 1.5em;
 }
 
+.content-container-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 2em;
+}
 
 .button {
   position: relative;
@@ -83,8 +88,7 @@ html {
 }
 
 .button.secondary:hover {
-  background-color: rgb(38, 38, 38);
-  color: white;
+  color: rgb(255, 101, 101);
 }
 
 .button.confirm {

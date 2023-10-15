@@ -83,31 +83,37 @@
         If you would like an email when a post is added, 
         <NuxtLink class="link" to="/blog/subscribe">please subscribe.</NuxtLink>
       </p>
- 
-      <NuxtLink to="/blog" class="button">
-        <span class="button-icon">🗞️</span>
-        View all
-      </NuxtLink>
+      
+      <div class="content-container-actions">
+        <NuxtLink to="/blog" class="button">
+          <span class="button-icon">🗞️</span>
+          View all
+        </NuxtLink>
+      </div>
     </div>
 
     <div class="content-container slide-up">
       <h1 class="title">👷 Projects ({{ projects.length }}/{{ projectsTotal }})</h1>
       <ProjectsList prefix="home-projects" :projects="projects" />
 
-      <NuxtLink to="/projects" class="button">
-        <span class="button-icon">👷</span>
-        View all
-      </NuxtLink>
+      <div class="content-container-actions">
+        <NuxtLink to="/projects" class="button">
+          <span class="button-icon">👷</span>
+          View all
+        </NuxtLink>
+      </div>
     </div>
 
     <div class="content-container members-content-container slide-up">
       <h1 class="title">🔮 Top Members ({{ users.length }}/{{ usersTotal }})</h1>
       <UsersList :users="users" />
-
-      <NuxtLink to="/members" class="button">
-        <span class="button-icon">🔮</span>
-        ALL MEMBERS
-      </NuxtLink>
+      
+      <div class="content-container-actions">
+        <NuxtLink to="/members" class="button">
+          <span class="button-icon">🔮</span>
+          ALL MEMBERS
+        </NuxtLink>
+      </div>
     </div>
 
     <!-- <div class="content-container">
