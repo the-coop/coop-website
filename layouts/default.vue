@@ -6,10 +6,29 @@
         <a href="/conquest/world" class="nav-link" @click.native="closeMenu">
           <span class="nav-link-icon">🕹️</span> Play
         </a>
+        
+        <div class="dropdown">
+          <span class="dropdown-label" @click="toggleDropdown">
+            <span class="nav-link-icon">📖</span> Info
+          </span>
 
-        <NuxtLink to="/guide" class="nav-link" @click.native="closeMenu">
-          <span class="nav-link-icon">📖</span> Guide
-        </NuxtLink>
+          <div class="dropdown-content">
+            <NuxtLink to="/guide" class="nav-link" @click.native="closeMenu">
+              <span class="nav-link-icon">💫</span> Guide
+            </NuxtLink>
+            <NuxtLink to="/vision" class="nav-link" @click.native="closeMenu">
+              <span class="nav-link-icon">📄</span> Vision
+            </NuxtLink>
+
+            <NuxtLink to="/roles" class="nav-link" @click.native="closeMenu">
+              <span class="nav-link-icon">⚙️</span> Roles
+            </NuxtLink>
+
+            <NuxtLink to="/projects" class="nav-link" @click.native="closeMenu">
+              <span class="nav-link-icon">👷</span> Projects
+            </NuxtLink>
+          </div>
+        </div>
 
         <a 
           @click="closeMenu"
@@ -45,14 +64,6 @@
           </span>
 
           <div class="dropdown-content">
-            <!-- <NuxtLink to="/services" class="nav-link" @click.native="closeMenu">
-              🏷️ Services
-            </NuxtLink> -->
-
-            <NuxtLink to="/" class="nav-link current" @click.native="closeMenu">
-              <span class="nav-link-icon">🏠</span> Home
-            </NuxtLink>
-
             <NuxtLink to="/vision" class="nav-link" @click.native="closeMenu">
               <span class="nav-link-icon">📄</span> Vision
             </NuxtLink>
@@ -81,13 +92,13 @@
           </span>
 
           <div class="dropdown-content">
-            <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
-              <span class="nav-link-icon">📡</span> Dashboard
-            </NuxtLink>
-
             <a href="/conquest/world" class="nav-link" @click.native="closeMenu">
               <span class="nav-link-icon">🕹️</span> Play
             </a>
+            
+            <NuxtLink to="/conquest" class="nav-link" @click.native="toggleMenu">
+              <span class="nav-link-icon">📡</span> Dashboard
+            </NuxtLink>
 
             <NuxtLink to="/conquest/economy/items" class="nav-link" @click.native="closeMenu">
               <span class="nav-link-icon">🎁</span> Items
