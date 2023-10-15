@@ -222,9 +222,8 @@
       // The navigation links animations need another state when blurred to reset opacity.
       // Makes sure opacity is 1 then resets when safe (longer than animation).
       const menulinks = Array.from(document.querySelectorAll('.navigation > .nav-link'));
-
-      // TODO: need the dropdowns too
-      menulinks.map(l => {
+      const dropdownlinks = Array.from(document.querySelectorAll('.navigation > .dropdown .dropdown-label'));
+      [...menulinks, ...dropdownlinks].map(l => {
         l.addEventListener('mouseleave', ev => {
           const link = ev.target;
           console.log(link);
