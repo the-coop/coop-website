@@ -204,19 +204,31 @@
       // When the dropdown menu is hovered...
       // Should trigger an event which blocks the now upwards moving box re-triggering CSS hover.
       const dropdowns = Array.from(document.querySelectorAll('.dropdown'));
+      const wrapper = document.querySelector('.page-wrapper');
       dropdowns.map(dropdown => {
         // TODO: This is never removed, maybe this is a nuxt/vue feature to removeEventListener?
         dropdown.addEventListener('mouseleave', ev => {
+          // Handle the mouseleaving the dropdown box to keep it open.
           const content = ev.target.querySelector('.dropdown-content');
-          if (content) {
-            // 1. Turn off pointer-events for the duration of the hiding animation.
-            content.style.pointerEvents = "none";
+          content.style.pointerEvents = "none";
+          setTimeout(() => content.removeAttribute('style'), 333);
 
-            // 2. Then re-enable.
-            setTimeout(() => content.removeAttribute('style'), 333);
-          }
-          // 3. [Investigate if problems] - Make sure these are accessible for cleanup.
+          // Remove faded class from page-wrapper
+          wrapper.classList.remove('page-wrapper-faded');
         });
+
+        dropdown.addEventListener('mouseenter', ev => {
+          wrapper.classList.add('page-wrapper-faded');
+        });
+
+        // .page-wrapper {
+        //   margin-top: 12.5em;
+        //   transition: opacity .5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        //   opacity: 1;
+        // }
+        // .page-wrapper-faded {
+        //   opacity: .3;
+        // }
       });
     },
     methods: {

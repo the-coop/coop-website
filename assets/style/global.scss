@@ -11,6 +11,11 @@ html {
 
 .page-wrapper {
   margin-top: 12.5em;
+  transition: opacity .5s ease-in;
+  opacity: 1;
+}
+.page-wrapper-faded {
+  opacity: .3;
 }
 
 .content-container {
