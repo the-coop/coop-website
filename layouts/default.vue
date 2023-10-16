@@ -666,9 +666,11 @@ color: white;
   .primary-navigation > *:nth-child(1) .dropdown-label {
     animation-delay: 0;
   }
+  .primary-navigation > *:nth-child(2) {
+    transform: rotate(3deg);
+  }
   .primary-navigation > *:nth-child(2) .dropdown-label {
     animation-delay: .3s;
-    transform: rotate(3deg);
   }
   .primary-navigation > *:nth-child(3) {
     animation-delay: .5s;
