@@ -1,6 +1,6 @@
 <template ref="layout">
   <div :class="['default', page].join(' ')">
-    <div class="header slide-down">
+    <div class="header">
 
       <nav class="navigation additional-navigation">
         <a href="/conquest/world" class="nav-link" @click.native="closeMenu">
@@ -46,13 +46,14 @@
         <NuxtLink to="/">
           <Logo />
         </NuxtLink>
+
+        <svg @click="toggleMenu" class="mobile-nav-trigger" viewBox="0 0 100 80">
+          <rect width="100" height="20"></rect>
+          <rect y="30" width="100" height="20"></rect>
+          <rect y="60" width="100" height="20"></rect>
+        </svg>
       </div>
 
-      <svg @click="toggleMenu" class="mobile-nav-trigger" viewBox="0 0 100 80">
-        <rect width="100" height="20"></rect>
-        <rect y="30" width="100" height="20"></rect>
-        <rect y="60" width="100" height="20"></rect>
-      </svg>
 
       <nav class="navigation primary-navigation"> 
         <div class="dropdown">
@@ -253,7 +254,7 @@
       closeMenu(ev = null)  {
         anime({
           targets: '.navigation',
-          bottom: closedBottom,
+          opacity: 0,
           duration: 125
         });
 
@@ -263,40 +264,41 @@
       },
       toggleMenu(ev) {
         const menu = document.querySelector('.navigation');
-        const isOpen = menu.style.bottom === '0vh';
-        const targetBottom = isOpen ? closedBottom : '0vh';
+        const isOpen = menu.style.opacity === '1';
+        const opacity = isOpen ? 0 : 1;
+        document.body.style.overflow = isOpen ? 'auto' : 'hidden';
         anime({
           targets: '.navigation',
-          bottom: targetBottom,
+          opacity,
           duration: 250
         });
 
         // If mobile, attempt to toggle containing dropdown. :)
-        if (this.isMobileSize()) {
-          // Make sure the desktop menu stays open.
-          ev.target.parentElement.parentElement.classList.toggle('open');
+        // if (this.isMobileSize()) {
+        //   // Make sure the desktop menu stays open.
+        //   ev.target.parentElement.parentElement.classList.toggle('open');
 
-          // Attach mobile menu self-hiding.
-          const menuCloser = this.closeMenu;
-          function blurHandler(ev) {
-            ev.preventDefault();
+        //   // Attach mobile menu self-hiding.
+        //   const menuCloser = this.closeMenu;
+        //   function blurHandler(ev) {
+        //     ev.preventDefault();
 
-            ev.composedPath().map(elem => {
-              console.log(elem);
-              console.log(elem.classList);
-              console.log(elem.classList.contains('navigation'));
-            });
+        //     ev.composedPath().map(elem => {
+        //       // console.log(elem);
+        //       // console.log(elem.classList);
+        //       // console.log(elem.classList.contains('navigation'));
+        //     });
 
-            let clickOnMenu = false;
-            if (!clickOnMenu) {
-              document.removeEventListener('click', this);
-              menuCloser();
-            }
-          }
+        //     let clickOnMenu = false;
+        //     if (!clickOnMenu) {
+        //       document.removeEventListener('click', this);
+        //       menuCloser();
+        //     }
+        //   }
 
-          if (!isOpen)
-            document.addEventListener('click', blurHandler);
-        }
+        //   if (!isOpen)
+        //     document.addEventListener('click', blurHandler);
+        // }
       }
     },
     data() {
@@ -325,11 +327,22 @@ overflow-x: hidden;
 }
 
 .header {
-display: flex;
-justify-content: center;
-align-items: center;
-flex-wrap: wrap;
-padding: 1.5em 0;
+  display: flex;
+  position: absolute;
+  z-index:2;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  top: 1em;
+
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(17, 17, 17, 0.9);
+  flex-direction: column;
+
+
 }
 
 .header-socials {
@@ -370,9 +383,9 @@ color: silver;
 color: white;
 }
 
-.brand svg {
-height: 7em;
-width: 7em;
+.brand .logo {
+  height: 7em;
+  width: 7em;
 }
 
 .navigation {
@@ -384,9 +397,9 @@ display: block;
 
 cursor: pointer;
 
-margin-left: 1rem;
-width: 3rem;  
-height: 3rem;
+margin-left: 1em;
+width: 3em;  
+height: 3em;
 fill: #ff6565;
 }
 
@@ -527,6 +540,12 @@ color: white;
 }
 
 @media screen and (min-width: 850px) {
+
+  .header {
+    flex-direction: row;
+    height:auto;
+  }
+  
   .navigation {
     display: flex;
     align-items: center;
@@ -744,16 +763,27 @@ color: white;
 
   @media screen and (max-width: 850px) {
     
+
+    .brand {
+      display: flex;
+      position: absolute;
+      width: 100%;
+      justify-content: space-between;
+      box-sizing: border-box;
+      top: 0;
+      padding: 2em;
+    }
+
     .nav-link {
       text-align: right;
       font-size: 1.3em;
-      margin-bottom: 1rem;
+      margin-bottom: 1em;
     }
     .dropdown-label {
       font-size: 1.3em;
     }
     .dropdown {
-      margin-bottom: 1rem;
+      margin-bottom: 1em;
       text-align: right;
     }
     .dropdown-content {
@@ -773,18 +803,17 @@ color: white;
 
     .navigation {
       display: flex;
-      position: fixed;
-      bottom: -50vh;
-      right: 0;
+      width: 100%;
       flex-direction: column;
-      transition: bottom .3s ease;
-      padding: 2rem;
-
-      z-index: 3;
-
+      opacity: 0;
       background: rgba(17, 17, 17, 0.9);
-      border-radius: 1rem 0;
+
     }
+
+
+
+
+
 
   }
   
