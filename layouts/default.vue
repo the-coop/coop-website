@@ -251,9 +251,10 @@
       },
       closeMenu(ev = null)  {
         // If mobile, attempt to toggle containing dropdown. :)
-        this.toggleMenu();
-        ev.target.parentElement.parentElement.classList.remove('open');
-           
+        if (this.isMobileSize()){
+          this.toggleMenu();
+          ev.target.parentElement.parentElement.classList.remove('open');
+        }
       },
       toggleMenu(ev = null) {
         // const menu = document.querySelector('.navigation');
@@ -315,6 +316,7 @@
 .menu-open .navigation {
   opacity: 1;
   width: 100%;
+  pointer-events: all;
 }
 
 .header-socials {
@@ -331,7 +333,6 @@
   display: flex;
   flex-direction: column;
   opacity: 0;
-  pointer-events: all;
 
 }
 
@@ -564,7 +565,7 @@ button.nav-link {
     background: transparent;
     justify-content: center;
     height: auto;
-
+    pointer-events: all;
   }
   
   .navigation {

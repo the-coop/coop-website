@@ -267,6 +267,7 @@
 
   .hero .subtitle {
     width: auto;
+    line-height: 2em;
   }
 
   .prompt {
