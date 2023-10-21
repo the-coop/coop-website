@@ -289,7 +289,7 @@
 
   .actions {
     display: flex;
-    margin-top: 3rem;
+    margin-top: 3em;
     justify-content: space-between;
   }
 
@@ -343,7 +343,6 @@
     }
 
     .prompt {
-      flex: 100% 0 0;
       margin-top: 0;
       flex: 39% 0 0;
     }
@@ -354,6 +353,7 @@
     }
 
     .actions .button {
+      display: inline-flex;
       margin-right: 2.35em;
     }
 
