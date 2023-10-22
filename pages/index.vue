@@ -28,7 +28,7 @@
     <div class="hero slide-up" v-if="this.$auth.user">
       <img :src="this.$auth.user.image" />
       
-      <h1 class="title">Welcome back, comrade {{ this.$auth.user.username }}!</h1>
+      <h1 class="title">Welcome back, comrade <span class = "username">{{ this.$auth.user.username }}</span>!</h1>
       WIP: Adding more info to make more useful
       <!-- 
         blog_posts: 
@@ -273,6 +273,9 @@
     line-height: 2em;
   }
 
+  .username {
+    color: white;
+  }
 
   .content-container {
     flex: 1 0 50%;
