@@ -115,7 +115,7 @@
             <img 
               v-show="this.$auth.$state.user"
               :class="[
-                'profile-image', 
+                'nav-link-icon', 'profile-image', 
                 this.$auth.$state.user ? 'profile-image-loaded' : ''
               ].join(' ')"
               :src="this.$auth.$state.user?.image" />
@@ -512,8 +512,8 @@
 }
 
 .profile-image {
-  height: 2em;
-  width: 2em;
+  height: 1em;
+  width: 1em;
   border-radius: 100%;
   border: .1em solid #ff6565;
   margin-right: .75em;
@@ -569,6 +569,7 @@ button.nav-link {
   }
   
   .navigation {
+    flex: 1;
     text-align: left;
     flex-direction: row;
     opacity: 1;
@@ -599,7 +600,7 @@ button.nav-link {
     text-align: left;
   }
 
-  .dropdown, .header > .nav-link {
+  .dropdown, .nav-link {
     margin-right: 3.5em;
   }
 
