@@ -28,7 +28,7 @@
     <div class="hero slide-up" v-if="this.$auth.user">
       <img :src="this.$auth.user.image" />
       
-      <h1 class="title">Welcome back, comrade {{ this.$auth.user.username }}!</h1>
+      <h1 class="title">Welcome back, comrade <span class = "username">{{ this.$auth.user.username }}</span>!</h1>
       WIP: Adding more info to make more useful
       <!-- 
         blog_posts: 
@@ -235,8 +235,10 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+
   }
 
+  /* idk what home is i didn't delete it but this and hero-container idk what they're here for hehe xd  */
   .home {
     display: flex;
     flex-direction: column;
@@ -263,6 +265,7 @@
 
   .hero {
     z-index: 1;
+    flex:100%;
   }
 
   .hero .subtitle {
@@ -270,8 +273,26 @@
     line-height: 2em;
   }
 
+  .username {
+    color: white;
+  }
+
+  .content-container {
+    flex: 1 0 50%;
+  }
+
+  .actions .button {
+    margin: 0 1.5em;
+    width: 50%;
+  }
+
+  .actions {
+    display: flex;
+    margin: 3em 0;
+    justify-content: space-between;
+  }
   .prompt {
-    margin-top: 5rem;
+    margin-top: 5em;
     color: silver;
   }
 
@@ -287,51 +308,25 @@
     background-size: contain;
     background-repeat: no-repeat;
   }
+  
 
-  .actions {
-    display: flex;
-    margin-top: 3em;
-    justify-content: space-between;
+  .conquest-menu-container {
+    flex: 100%;
   }
 
-  .actions .button {
-    display: inline-flex;
-    flex: calc(50% - .5em) 0 0;
-    box-sizing: border-box;
-  }
-
-  .actions .button:last-child {
-    margin-right: 0;
-  }
 
   .home-worldview {
     opacity: .125;
     animation: fade-out .8s ease-out forwards;
   }
 
-  @keyframes fade-out {
-    0% {
-      opacity: 1;
-    }
-    100% {
-      opacity: .125;
-    }
-  }
 
-  .conquest-menu-container {
-    flex: 100%;
-  }
-
-  .members-content-container {
-    flex: 100% 0 0;
-  }
-  
 
   @media screen and (min-width: 850px) {
 
-    .home-wrapper {
+    /* .home-wrapper {
       justify-content: space-between;
-    }
+    }  */
 
     .home {
       flex-direction: row;
@@ -343,19 +338,14 @@
       text-align: center;
     }
 
-    .prompt {
-      margin-top: 0;
-      flex: 39% 0 0;
-    }
-
     .actions {
       display: block;
       font-size: 1.35em;
     }
 
-    .actions .button {
-      display: inline-flex;
-      margin-right: 2.35em;
+    .prompt {
+      margin-top: 0;
+      flex: 39% 0 0;
     }
 
   }
@@ -369,4 +359,15 @@
       flex: 41% 0 0;
     }
   }
+
+  
+  @keyframes fade-out {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: .125;
+    }
+  }
+
 </style>
