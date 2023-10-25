@@ -265,7 +265,9 @@
   }
 
   .content-container {
-    flex: 1 0 50%;
+    flex-basis: 50%;
+    flex-grow: 1;
+    /* flex: 100%; */
   }
 
   .actions .button {
@@ -336,6 +338,13 @@
 
   @media screen and (min-width: 1200px) {
 
+    .content-container {
+      /* flex: 50%; */
+    }
+
+    .members-content-container {
+      /* flex: 100%; */
+    }
     .prompt {
       flex: 41% 0 0;
     }
