@@ -313,7 +313,8 @@ html {
 
 .title {
   margin: 0;
-  font-size: 3.44em;
+  // font-size: 3.44em;
+  font-size: 1.75em;
   font-weight: 600;
   color: #fd6464;
 }
@@ -324,7 +325,6 @@ html {
   font-weight: 500;
   color: #dadada;
   line-height: 150%;
-  width: 75vw;
 
   margin-bottom: 1.5em;
 }
@@ -502,17 +502,6 @@ img.emoji {
   }
 }
 
-
-@media screen and (max-width: 1199.98px) {
-
-    // .page-wrapper {
-    //   margin-top: 12em;
-    // }
-
-    .subtitle {
-        width: 50vw;
-    }
-}
 
 
 .default {
@@ -793,6 +782,10 @@ button.nav-link {
   .default {
     padding: 0 5em 7.5em;
   }
+
+  .title {
+    font-size: 2.5em;
+  }
   
   .header {
     flex-direction: row;
@@ -1001,6 +994,11 @@ button.nav-link {
       text-align: center;
       display: none;
     }
+
+    .title {
+      font-size: 3.44em;
+    }
+
   }
 
   
