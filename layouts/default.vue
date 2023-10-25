@@ -1,5 +1,6 @@
 <template ref="layout">
   <div :class="['default', page].join(' ')">
+    
     <div class="header slide-down">
 
       <nav class="navigation additional-navigation">

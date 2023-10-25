@@ -237,18 +237,6 @@
     justify-content: center;
   }
 
-  .home {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-
-  .hero-container {
-    flex-wrap: wrap;
-    flex-direction: column;
-  }
-
   .login-prompt-container {
     justify-content: center;
     align-items: center;
@@ -289,7 +277,7 @@
 
   .actions {
     display: flex;
-    margin-top: 3rem;
+    /* margin-top: 3rem; */
     justify-content: space-between;
   }
 
@@ -332,11 +320,6 @@
       justify-content: space-between;
     }
 
-    .home {
-      flex-direction: row;
-      justify-content: space-between;
-    }
-
     .hero {
       margin-bottom: 3em;
       text-align: center;
@@ -360,9 +343,6 @@
   }
 
   @media screen and (min-width: 1200px) {
-    .home {
-      flex-wrap: nowrap;
-    }
 
     .prompt {
       flex: 41% 0 0;
