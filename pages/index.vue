@@ -278,7 +278,9 @@
   }
 
   .content-container {
-    flex: 1 0 50%;
+    flex-basis: 50%;
+    flex-grow: 1;
+    /* flex: 100%; */
   }
 
   .actions .button {
@@ -355,6 +357,13 @@
       flex-wrap: nowrap;
     }
 
+    .content-container {
+      /* flex: 50%; */
+    }
+
+    .members-content-container {
+      /* flex: 100%; */
+    }
     .prompt {
       flex: 41% 0 0;
     }
