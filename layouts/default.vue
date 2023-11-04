@@ -242,10 +242,11 @@
       },
       toggleDropdown(ev) {
         // Hide all other dropdowns.
-        const open = document.querySelector('.dropdown.open');
-        ev.target.parentElement.classList.toggle('open');
-        if (open) open.classList.remove('open');
-
+        if (this.isMobileSize()){
+          const open = document.querySelector('.dropdown.open');
+          ev.target.parentElement.classList.toggle('open');
+          if (open) open.classList.remove('open');
+        }
       },
       isMobileSize() {
         return window.matchMedia("(max-width: 850px)")?.matches;
