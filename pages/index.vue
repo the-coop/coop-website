@@ -277,7 +277,6 @@
 
   .actions {
     display: flex;
-    margin: 3em 0;
     justify-content: space-between;
   }
   .prompt {

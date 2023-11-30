@@ -293,10 +293,11 @@ html {
 }
 
 .page-wrapper {
-  margin-top: 12.5em;
+  margin-top: 9.75em;
   transition: opacity .5s ease-in;
   opacity: 1;
 }
+
 .page-wrapper-faded {
   opacity: 0.235;
 }
@@ -625,8 +626,7 @@ img.emoji {
 }
 
 .brand .logo {
-  height: 7em;
-  width: 7em;
+  width: 5em;
 }
 
 .mobile-nav-trigger {
@@ -781,7 +781,6 @@ button.nav-link {
 }
 
 .brand .logo * {
-  width: 3em;
   fill: white;
 }
 .brand:hover .logo * {
