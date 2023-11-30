@@ -4,7 +4,7 @@
     <div class="hero slide-up" v-show="!$auth.$state.loggedIn">
       <h1 class="title">Join our community!</h1>
 
-      <p class="subtitle">
+      <p class="blurb">
         Democratic, free chicken themed, multiplayer universe enabled, 
         gravity simulating, economy having, 
         advice giving, learning community collaboration server 
@@ -252,12 +252,18 @@
 
   .hero {
     z-index: 1;
-    flex:100%;
+    flex: 100%;
+    margin-bottom: 3em;
   }
 
-  .hero .subtitle {
-    width: auto;
+  .hero .blurb {
     line-height: 2em;
+    margin: 0;
+    font-size: 1.122em;
+    font-weight: 500;
+    color: #dadada;
+    line-height: 150%;
+    margin-bottom: 1.5em;
   }
 
   .username {
@@ -265,9 +271,8 @@
   }
 
   .content-container {
-    flex-basis: 50%;
-    flex-grow: 1;
-    /* flex: 100%; */
+    flex: 100%;
+
   }
 
   .actions .button {
@@ -319,8 +324,12 @@
     }  */
 
     .hero {
-      margin-bottom: 3em;
       text-align: center;
+    }
+
+    .hero .blurb {
+      margin: 0 auto 1.75em;
+      width: 65%;
     }
 
     .actions {
@@ -338,15 +347,20 @@
   @media screen and (min-width: 1200px) {
 
     .content-container {
-      /* flex: 50%; */
+      flex: 50%;
     }
 
     .members-content-container {
-      /* flex: 100%; */
+      flex: 100%;
     }
     .prompt {
       flex: 41% 0 0;
     }
+
+    .hero .blurb {
+      width: 45%;
+    }
+
   }
 
   
