@@ -3255,9 +3255,9 @@ cookie@^0.4.0, cookie@^0.4.2:
   resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.4.2.tgz#0e41f24de5ecf317947c82fc789e06a884824432"
   integrity sha512-aSWTXFzaKWkvHO1Ny/s+ePFpvKsPnjc551iI41v3ny/ow6tBG5Vd+FuqGNhh1LxOmVzOlGUriIlOaokOvhaStA==
 
-"coop-shared@git+https://github.com/the-coop/coop-shared.git#c76587f84608555054c0ebc35bacf70a461e387d":
+"coop-shared@git+https://github.com/the-coop/coop-shared.git#5cc966d1c433ae308b8da5eb4ae93e7a1049b099":
   version "1.0.26"
-  resolved "git+https://github.com/the-coop/coop-shared.git#c76587f84608555054c0ebc35bacf70a461e387d"
+  resolved "git+https://github.com/the-coop/coop-shared.git#5cc966d1c433ae308b8da5eb4ae93e7a1049b099"
   dependencies:
     axios "^0.27.2"
     chance "^1.1.8"
