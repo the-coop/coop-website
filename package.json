@@ -33,5 +33,6 @@
   "devDependencies": {
     "sass": "^1.44.0",
     "sass-loader": "10"
-  }
+  },
+  "packageManager": "yarn@4.5.0"
 }
