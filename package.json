@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-app",
+  "name": "coop-website",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "nuxt": "^3.13.0",
+    "nuxt": "latest",
     "vue": "latest",
     "vue-router": "latest"
   }
