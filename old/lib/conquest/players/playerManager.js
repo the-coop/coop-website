@@ -1,6 +1,6 @@
 import { Texture, SpriteMaterial, Sprite, Vector3, Euler, Group, BoxGeometry, MeshBasicMaterial, Mesh, TextureLoader, PlaneGeometry, MeshPhongMaterial, BackSide, DoubleSide } from 'three';
 
-import Player from '~/lib/conquest/players/player';
+import Player from '~/old/lib/conquest/players/player';
 import { PLAYER_SIZE } from '../config';
 
 import CameraManager from '../gameplay/cameraManager';

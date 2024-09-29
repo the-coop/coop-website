@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";  
 import { Vector3  } from "three";
-import API from "~/lib/api/api";
+import API from "~/old/lib/api/api";
 import ControlsManager from "./gameplay/controlsManager";
 import PlayerManager from "./players/playerManager";
 
