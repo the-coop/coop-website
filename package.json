@@ -19,7 +19,7 @@
     "animejs": "^3.2.1",
     "axios": "^0.21.1",
     "babel-runtime": "^6.26.0",
-    "coop-shared": "git+https://github.com/the-coop/coop-shared.git#402a1e97c6ea13a915dd78fb6a2990a8d179d352",
+    "coop-shared": "git+https://github.com/the-coop/coop-shared.git#7c333b6f67813785e0fa9dac7f0a92be4a5705dc",
     "moment": "^2.29.1",
     "nuxt": "^2.15.8",
     "nuxt-webfontloader": "latest",
