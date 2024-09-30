@@ -12,6 +12,7 @@
   "dependencies": {
     "nuxt": "latest",
     "vue": "latest",
-    "vue-router": "latest"
+    "vue-router": "latest",
+    "coop-shared": "git+https://github.com/the-coop/coop-shared.git#b6a2a36a6698814852965971d94b9f584b6edaf2"
   }
 }
