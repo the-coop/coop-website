@@ -1,5 +1,9 @@
 <template>
   <div>
-    <h1>Migrating The Coop Website to Nuxt v3...</h1>
+    <h1>The Coop</h1>
+    <div>
+      <button>Play</button>
+      <button>Website</button>
+    </div>
   </div>
 </template>
