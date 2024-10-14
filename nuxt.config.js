@@ -14,5 +14,7 @@ export default defineNuxtConfig({
         href: 'https://fonts.googleapis.com/css2?family=Teko:wght@400;700&display=swap'
       }
     ]
-  }
+  },
+
+  compatibilityDate: '2024-10-14'
 });

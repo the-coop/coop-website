@@ -18,6 +18,8 @@
   import { onMounted, ref } from 'vue';
   import * as THREE from 'three';
 
+  definePageMeta({ layout: 'fullscreen' });
+
   const canvas = ref(null);
 
   onMounted(() => {
