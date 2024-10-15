@@ -4,6 +4,8 @@
   </NuxtLayout>
 </template>
 
+<!-- TODO: Check if logged in / load profile from token. -->
+
 <style>
   body {
     margin: 0;
