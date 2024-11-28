@@ -15,7 +15,7 @@
 </style>
 
 <script setup>
-  import { onMounted, ref } from 'vue';
+  import { onMounted, onBeforeUnmount, ref } from 'vue';
   import Engine from '../lib/game/engine';
 
   definePageMeta({ layout: 'fullscreen' });
@@ -25,5 +25,12 @@
   onMounted(() => {
     Engine.setup(canvas);
     Engine.loop();
+  });
+
+  onBeforeUnmount(() => {
+    Engine.cleanup();
+    if (document.pointerLockElement) {
+      document.exitPointerLock();
+    }
   });
 </script>

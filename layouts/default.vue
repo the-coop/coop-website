@@ -1,9 +1,8 @@
 <template>
-    <div>
-        <Logo class="logo" />
-
-        <slot></slot>
-    </div>
+  <div class="layout">
+    <Logo class="logo" />
+    <slot></slot>
+  </div>
 </template>
 
 <script setup>
@@ -11,7 +10,16 @@
 </script>
 
 <style scoped>
+  .layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.25em;
+    color: #fff;
+  }
+
   .logo {
-    width: 4em;
+    width: 6em;
+    margin-bottom: 1.25em;
   }
 </style>

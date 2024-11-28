@@ -7,18 +7,10 @@
 <!-- TODO: Check if logged in / load profile from token. -->
 
 <style>
-  body {
+  body, html {
     margin: 0;
     padding: 0;
-    background-color: rgb(33, 33, 33);
-    background: linear-gradient(
-      to bottom,
-      #ff69b4,
-      #ffa500,
-      #ffd700,
-      #40e0d0
-    );
-    background-attachment: fixed; 
+    background-color: #282c34;
     font-family: 'Manrope', sans-serif;
   }
   
