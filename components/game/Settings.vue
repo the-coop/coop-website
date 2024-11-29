@@ -51,6 +51,8 @@
 import { ref, watch, onMounted } from 'vue';
 import ControllerManager from '../lib/game/controllers/controllerManager.mjs';
 import GamepadInput from '../../lib/game/controllers/inputs/gamepad.mjs';
+import PlayerManager from '../lib/game/players/playerManager.mjs';
+import State from '../lib/game/state.mjs';
 
 const props = defineProps({
   show: Boolean,
@@ -66,6 +68,7 @@ const emit = defineEmits(['close', 'updateControlMode', 'updateShowFPS']);
 
 const selectedMode = ref(props.controlMode);
 const showFPS = ref(false);
+const sensitivity = ref(1.0);
 
 // Define a local reactive variable for connectedGamepads
 const localConnectedGamepads = ref([...props.connectedGamepads]);
@@ -76,21 +79,24 @@ watch(() => props.controlMode, (newMode) => {
 
 const onControlModeChange = () => {
   emit('updateControlMode', selectedMode.value);
+  // Verify protagonist after control mode change
+  const protagonist = PlayerManager.getProtagonist();
+  if (!protagonist) {
+    console.warn('Protagonist is not set after control mode change');
+  } else {
+    ControllerManager.switchMode(selectedMode.value);
+  }
 };
 
 const onShowFPSChange = () => {
   emit('updateShowFPS', showFPS.value);
+  State.setShowFPS(showFPS.value);
 };
 
 const handleClose = () => {
   emit('close');
-  // Only request pointer lock if game has started and in FPS mode
-  if (props.gameStarted && selectedMode.value === 'fps') {
-    requestAnimationFrame(() => ControllerManager.requestPointerLock());
-  }
 };
 
-// Update getControllerName to be more detailed
 const getControllerName = (gamepad) => {
   const type = GamepadInput.type;
   const id = gamepad?.id || 'Unknown Controller';
@@ -99,21 +105,10 @@ const getControllerName = (gamepad) => {
   return `Generic Controller (${id})`;
 };
 
-// Handler to update localConnectedGamepads
-const handleControllerUpdate = () => {
-  localConnectedGamepads.value = GamepadInput.getConnectedGamepads();
-};
-
 // Watch for changes in connectedGamepads prop and update local variable
 watch(() => props.connectedGamepads, (newGamepads) => {
   localConnectedGamepads.value = newGamepads;
 }, { immediate: true });
-
-// Optionally, listen to ControllerManager events if needed
-// Example: ControllerManager.on('controllerStateChange', handleControllerUpdate);
-
-// Add sensitivity ref
-const sensitivity = ref(1.0);
 
 onMounted(() => {
   // Initialize sensitivity from ControllerManager
@@ -122,8 +117,12 @@ onMounted(() => {
 
 const onSensitivityChange = () => {
   ControllerManager.setSensitivity(sensitivity.value);
+  // Verify protagonist after sensitivity change
+  const protagonist = PlayerManager.getProtagonist();
+  if (!protagonist) {
+    console.warn('Protagonist is not set after sensitivity change');
+  }
 };
-
 </script>
 
 <style scoped>
