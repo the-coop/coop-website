@@ -1,5 +1,10 @@
+// Deprecated: ThirdPersonControls has been migrated to thirdperson.mjs
+// Remove this file if no longer needed.
 
 import { Vector3, Euler, Quaternion, MathUtils, Matrix3 } from 'three';
+
+// It is recommended to migrate the necessary logic to the new thirdPersonControls.mjs and remove this old file.
+// If specific functionality needs to be retained, integrate it into thirdPersonControls.mjs accordingly.
 
 export default class ThirdPersonControls {
 
