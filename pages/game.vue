@@ -52,7 +52,7 @@
 <style scoped>
 .game-container {
   position: relative;
-  height: 100vh; /* Use vh instead of dvh for better compatibility */
+  height: 100dvh; /* Use dvh for better compatibility */
   width: 100vw;
   overflow: hidden;
 }
@@ -416,6 +416,7 @@ const handlePointerLockChange = () => {
     if (canvasElement) {
       canvasElement.style.width = '100%';
       canvasElement.style.height = '100%';
+      Engine.resize(); // Call resize on the Engine
     }
   }
 };
