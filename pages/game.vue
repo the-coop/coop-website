@@ -5,20 +5,18 @@
     <!-- Game Start UI -->
     <div v-if="!isGameStarted" class="game-start">
       <div class="device-type">{{ deviceType }}</div>
-      <div class="start-prompt">Play Game</div>
+      <div class="start-prompt">
+        {{ connectedGamepads.length > 0 ? 'Press any button' : 'Play Game' }}
+      </div>
       <div class="controls-list" v-html="formattedControlsHint"></div>
     </div>
 
     <!-- Game UI - Only show when game is started -->
     <div v-if="isGameStarted" class="game-ui">
-      <!-- Control Mode Switcher -->
-      <div class="control-switcher">
-        <select v-model="controlMode" @change="switchControlMode">
-          <option value="fps">First-Person</option>
-          <option value="thirdperson">Third-Person</option>
-          <option value="orbit">Orbit</option>
-        </select>
-      </div>
+      <!-- Settings Button -->
+      <button class="settings-button" @click.stop="toggleSettings">
+        <Gear class="gear-icon" />
+      </button>
 
       <!-- Connected Controllers List -->
       <div class="controllers-list" v-if="connectedGamepads.length > 0">
@@ -28,33 +26,31 @@
       </div>
     </div>
 
+    <!-- Settings Overlay -->
+    <Settings 
+      :show="showSettings"
+      :control-mode="controlMode"
+      @close="toggleSettings"
+      @update-control-mode="updateControlMode"
+    />
+
     <!-- Mobile Touch Controls - Only show on mobile when game is started -->
-    <div v-if="isMobile && isGameStarted" class="mobile-controls">
-      <!-- Wrap joystick in client-only -->
-      <ClientOnly>
-        <!-- Virtual joystick for movement -->
-        <div class="touch-joystick" ref="joystickZone"></div>
-      </ClientOnly>
-      
-      <!-- Action buttons -->
-      <div class="touch-buttons">
-        <button class="touch-button jump-button" @touchstart="handleJump" @touchend="handleJumpEnd">
-          Jump
-        </button>
-        <button class="touch-button sprint-button" @touchstart="handleSprint" @touchend="handleSprintEnd">
-          Sprint
-        </button>
-      </div>
-    </div>
+    <MobileControls v-if="isMobile && isGameStarted" />
   </div>
 </template>
 
 <style scoped>
 .game-container {
   position: relative;
-  height: 100dvh; /* Use dvh for better compatibility */
+  height: 100dvh; /* Use dvh for dynamic viewport height */
+  min-height: 100dvh; /* Ensure minimum height */
   width: 100vw;
   overflow: hidden;
+}
+
+canvas {
+  height: 100dvh !important; /* Force dvh on canvas */
+  width: 100% !important;
 }
 
 .game-start {
@@ -133,19 +129,9 @@
   z-index: 10;
 }
 
-.control-switcher {
-  background: rgba(0, 0, 0, 0.7);
-  padding: 0.5em;
-  border-radius: 0.5em;
-}
-
+.control-switcher,
 .control-switcher select {
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  padding: 0.3em 0.6em;
-  border-radius: 0.3em;
-  font-size: 0.9em;
-  cursor: pointer;
+  display: none;
 }
 
 .controllers-list {
@@ -216,30 +202,113 @@
   padding: 0.5em 1em;
   border-radius: 0.5em;
 }
+
+.settings-button {
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.gear-icon {
+  width: 100%;
+  height: 100%;
+  fill: white;
+}
+
+.settings-button:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
 </style>
 
 <script setup>
+// Set the layout to fullscreen
+definePageMeta({
+  layout: 'fullscreen'
+});
+
 import { onMounted, onBeforeUnmount, ref, reactive, nextTick, watch } from 'vue';
 import Engine from '../lib/game/engine';
 import ControllerManager from '../lib/game/controllers/controllerManager.mjs';
 import PlayerManager from '../lib/game/players/playerManager.mjs';
 import InputManager from '../lib/game/controllers/inputManager.mjs';
+import Gear from '../components/icons/Gear.vue';
+import Settings from '../components/game/Settings.vue';
+import GamepadInput from '../lib/game/controllers/inputs/gamepad.mjs';
+import MobileControls from '../components/game/MobileControls.vue';
 
-definePageMeta({ layout: 'fullscreen' });
+// Add default control mode
+const defaultControlMode = 'fps';
 
-const canvas = ref(null);
-const isGameStarted = ref(false);
+// Helper functions should be defined first
+const updateControlsHint = () => {
+  if (isMobile.value) {
+    return `
+      <ul>
+        <li>Left virtual joystick: Move</li>
+        <li>Swipe screen: Look around</li>
+        <li>Jump button: Jump</li>
+        <li>Sprint button: Sprint/Run</li>
+      </ul>
+    `;
+  } 
+  if (hasGamepad.value) {
+    const jumpBtn = GamepadInput.type === 'xbox' ? 'A' : 'X';
+    const sprintBtn = GamepadInput.type === 'xbox' ? 'Left Stick Click' : 'L3';
+    return `
+      <ul>
+        <li>Left Stick: Move</li>
+        <li>Right Stick: Look around</li>
+        <li>${jumpBtn} button: Jump</li>
+        <li>${sprintBtn}: Sprint/Run</li>
+      </ul>
+    `;
+  }
+  return `
+    <ul>
+      <li>WASD: Move</li>
+      <li>Mouse: Look around</li>
+      <li>Space: Jump</li>
+      <li>Shift: Sprint/Run</li>
+    </ul>
+  `;
+};
+
+// Reactive references
 const hasActiveController = ref(false);
 const hasGamepad = ref(false);
 const connectedGamepads = reactive([]);
+const isMobile = ref(false);
+const deviceType = ref('');
+const canvas = ref(null);
+const isGameStarted = ref(false);
+const controlMode = ref('fps');
+const showSettings = ref(false);
+const showGamepadPrompt = ref(true);
+const formattedControlsHint = ref(updateControlsHint());
 let pollGamepads;
 
-const showGamepadPrompt = ref(true);
-const defaultControlMode = 'fps';
-const controlMode = ref(defaultControlMode);
-const isMobile = ref(false);
-const gamepadType = ref(null);
-const deviceType = ref('');
+// Rest of the existing code...
+
+const getControllerName = (gamepad) => {
+  const type = GamepadInput.type;
+  if (type === 'xbox') return 'Xbox Controller';
+  if (type === 'playstation') return 'PlayStation Controller';
+  return 'Generic Controller';
+};
+
+const updateDeviceType = () => {
+  const device = isMobile.value ? 'MOBILE' : 'DESKTOP';
+  const input = hasGamepad.value ? ' + CONTROLLER' : '';
+  deviceType.value = device + input;
+};
 
 const switchControlMode = () => {
   ControllerManager.switchMode(controlMode.value);
@@ -286,6 +355,9 @@ const start = (usingGamepad = false) => {
   // Setup input manager
   InputManager.setup();
 
+  // Tell ComputerInput that game has started
+  InputManager.computerInput?.setGameStarted(true);
+
   Engine.loop();
 
   if (isMobile.value) {
@@ -295,49 +367,9 @@ const start = (usingGamepad = false) => {
   }
 
   if (!usingGamepad && controlMode.value === 'fps') {
-    requestAnimationFrame(() => document.body.requestPointerLock());
+    requestAnimationFrame(() => ControllerManager.requestPointerLock());
   }
 };
-
-const checkGamepadStart = () => {
-  if (!isGameStarted.value) {
-    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-    for (let gamepad of gamepads) {
-      if (gamepad && gamepad.buttons.some(btn => btn.pressed)) {
-        hasActiveController.value = true;
-        connectedGamepads.splice(0, connectedGamepads.length, gamepad);
-        start(true);
-        break;
-      }
-    }
-  } else {
-    const gamepads = Engine.getConnectedGamepads();
-    connectedGamepads.splice(0, connectedGamepads.length, ...gamepads.filter(gp => gp !== null));
-  }
-};
-
-onMounted(() => {
-  const promptStatus = localStorage.getItem('shown-gamepad-prompt');
-  showGamepadPrompt.value = promptStatus !== 'false';
-
-  const updateGamepads = () => {
-    checkGamepadStart();
-    pollGamepads = requestAnimationFrame(updateGamepads);
-  };
-  updateGamepads();
-});
-
-onBeforeUnmount(() => {
-  Engine.cleanup();
-  if (pollGamepads) {
-    cancelAnimationFrame(pollGamepads);
-  }
-  if (document.pointerLockElement) {
-    document.exitPointerLock();
-  }
-  isGameStarted.value = false;
-  hasGamepad.value = false;
-});
 
 const handleDrag = (e) => {
   const currentController = ControllerManager.currentController;
@@ -348,7 +380,39 @@ const handleDrag = (e) => {
   }
 };
 
+// Single consolidated onMounted block
 onMounted(() => {
+  const promptStatus = localStorage.getItem('shown-gamepad-prompt');
+  showGamepadPrompt.value = promptStatus !== 'false';
+
+  // Initialize mobile detection
+  detectMobile();
+  window.addEventListener('resize', detectMobile);
+
+  // Initialize gamepad detection and checking
+  window.addEventListener('gamepadconnected', onGamepadConnect);
+  
+  // Start gamepad polling
+  const updateGamepads = () => {
+    checkGamepadStart();
+    pollGamepads = requestAnimationFrame(updateGamepads);
+  };
+  updateGamepads();
+
+  // Listen for settings events
+  ControllerManager.on('openSettings', () => {
+    if (isGameStarted.value) {
+      toggleSettings();
+    }
+  });
+  
+  ControllerManager.on('doubleEsc', () => {
+    if (isGameStarted.value) {
+      toggleSettings();
+    }
+  });
+
+  // Initialize drag handlers
   const gameContainer = document.querySelector('.game-container');
   if (gameContainer) {
     gameContainer.addEventListener('dragstart', handleDrag);
@@ -356,12 +420,33 @@ onMounted(() => {
   }
 });
 
+// Single consolidated onBeforeUnmount block
 onBeforeUnmount(() => {
+  // Cleanup all event listeners
+  window.removeEventListener('gamepadconnected', onGamepadConnect);
+  window.removeEventListener('resize', detectMobile);
+  document.removeEventListener('pointerlockchange', handlePointerLockChange);
+  
   const gameContainer = document.querySelector('.game-container');
   if (gameContainer) {
     gameContainer.removeEventListener('dragstart', handleDrag);
     gameContainer.removeEventListener('drag', handleDrag);
   }
+
+  // Cleanup game state
+  Engine.cleanup();
+  if (pollGamepads) {
+    cancelAnimationFrame(pollGamepads);
+  }
+  ControllerManager.exitPointerLock();
+  isGameStarted.value = false;
+  hasGamepad.value = false;
+  Engine.isGameStarted = false;
+
+  // Cleanup event listeners
+  ControllerManager.off('openSettings', toggleSettings);
+  ControllerManager.off('doubleEsc', toggleSettings);
+  InputManager.computerInput?.setGameStarted(false);
 });
 
 const isTouchDevice = () => {
@@ -369,56 +454,17 @@ const isTouchDevice = () => {
 };
 
 const detectMobile = () => {
-  isMobile.value = isTouchDevice();
-};
-
-const detectGamepadType = (gamepad) => {
-  if (!gamepad) return null;
-  const id = gamepad.id.toLowerCase();
-  if (id.includes('xbox')) return 'xbox';
-  if (id.includes('054c') || id.includes('playstation') || id.includes('ps4') || id.includes('ps5')) {
-    return 'playstation';
-  }
-  return null;
+  // Check if device is mobile using touch capability and screen size
+  isMobile.value = isTouchDevice() && window.innerWidth <= 768;
+  updateDeviceType();
 };
 
 const onGamepadConnect = (e) => {
   hasActiveController.value = true;
   hasGamepad.value = true;
-  gamepadType.value = detectGamepadType(e.gamepad);
+  // Use GamepadInput.type instead of local detection
+  deviceType.value = `${isMobile.value ? 'MOBILE' : 'DESKTOP'}${GamepadInput.type ? ' + CONTROLLER' : ''}`;
   connectedGamepads.splice(0, connectedGamepads.length, e.gamepad);
-};
-
-onMounted(() => {
-  detectMobile();
-  window.addEventListener('gamepadconnected', onGamepadConnect);
-  checkGamepadInput();
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('gamepadconnected', onGamepadConnect);
-  document.removeEventListener('pointerlockchange', handlePointerLockChange);
-});
-
-const getControllerName = (gamepad) => {
-  const id = gamepad.id.toLowerCase();
-  if (id.includes('xbox')) return 'Xbox Controller';
-  if (id.includes('054c') || id.includes('playstation')) return 'PlayStation Controller';
-  return 'Generic Controller';
-};
-
-const handlePointerLockChange = () => {
-  if (document.pointerLockElement) {
-    isGameStarted.value = true;
-  } else {
-    // Ensure canvas resizes correctly when pointer lock changes
-    const canvasElement = canvas.value;
-    if (canvasElement) {
-      canvasElement.style.width = '100%';
-      canvasElement.style.height = '100%';
-      Engine.resize(); // Call resize on the Engine
-    }
-  }
 };
 
 const joystickZone = ref(null);
@@ -470,50 +516,8 @@ const handleSprintEnd = () => {
   ControllerManager.setInput('mobile', 'sprint', false);
 };
 
-const updateDeviceType = () => {
-  const device = isMobile.value ? 'MOBILE' : 'DESKTOP';
-  const input = hasGamepad.value ? ' + CONTROLLER' : '';
-  deviceType.value = device + input;
-};
-
-const updateControlsHint = () => {
-  let hint = '';
-  if (isMobile.value) {
-    hint = `
-      <ul>
-        <li>Left virtual joystick: Move</li>
-        <li>Swipe screen: Look around</li>
-        <li>Jump button: Jump</li>
-        <li>Sprint button: Sprint/Run</li>
-      </ul>
-    `;
-  } else if (hasGamepad.value) {
-    const jumpBtn = gamepadType.value === 'xbox' ? 'A' : 'X';
-    const sprintBtn = gamepadType.value === 'xbox' ? 'Left Stick Click' : 'L3';
-    hint = `
-      <ul>
-        <li>Left Stick: Move</li>
-        <li>Right Stick: Look around</li>
-        <li>${jumpBtn} button: Jump</li>
-        <li>${sprintBtn}: Sprint/Run</li>
-      </ul>
-    `;
-  } else {
-    hint = `
-      <ul>
-        <li>WASD: Move</li>
-        <li>Mouse: Look around</li>
-        <li>Space: Jump</li>
-        <li>Shift: Sprint/Run</li>
-      </ul>
-    `;
-  }
-  return hint.replace(/\n/g, '<br>');
-};
-
-const formattedControlsHint = ref(updateControlsHint());
-
-watch([isMobile, hasGamepad, gamepadType], () => {
+// Move the watch after all refs are defined
+watch([isMobile, hasGamepad], () => {
   updateDeviceType();
   formattedControlsHint.value = updateControlsHint();
 });
@@ -526,7 +530,7 @@ const handleGameStart = () => {
 };
 
 // Check for gamepad input
-const checkGamepadInput = () => {
+const checkGamepadStart = () => {
   if (!isGameStarted.value) {
     const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
     for (let gamepad of gamepads) {
@@ -540,22 +544,15 @@ const checkGamepadInput = () => {
       }
     }
   }
-  requestAnimationFrame(checkGamepadInput);
 };
 
-// Initialize gamepad detection
-onMounted(() => {
-  // Start checking for gamepad input
-  checkGamepadInput();
+const toggleSettings = () => {
+  showSettings.value = !showSettings.value;
+};
 
-  // Listen for gamepad connections
-  window.addEventListener('gamepadconnected', () => {
-    hasGamepad.value = true;
-  });
-});
-
-onBeforeUnmount(() => {
-  isGameStarted.value = false;
-  Engine.isGameStarted = false; // Reset the flag in the Engine class
-});
+const updateControlMode = (mode) => {
+  controlMode.value = mode;
+  ControllerManager.switchMode(mode);
+  togglePlayerVisibility(mode);
+};
 </script>

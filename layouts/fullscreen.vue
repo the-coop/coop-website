@@ -5,16 +5,29 @@
 </template>
 
 <style scoped>
-  body {
+.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
     height: 100dvh;
-    width: 100dvw;
-  }
-  canvas {
+    overflow: hidden;
+}
+
+:global(body) {
+    margin: 0;
+    padding: 0;
+    height: 100dvh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+:global(canvas) {
     display: block;
-    height: 100%;
-    width: 100%;
-  }
-  .fullscreen {
-    
-  }
+    width: 100vw !important;
+    height: 100dvh !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
 </style>
