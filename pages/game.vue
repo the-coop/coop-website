@@ -754,67 +754,44 @@ watch([isMobile, hasGamepad], () => {
 const handleGameStart = async (event) => {
     if (showSettings.value || reactiveState.isGameStarted || isRequestingFullscreen.value) return;
     
+    if (!State.isControllersInitialized) {
+        console.error('Controllers not initialized');
+        // Optionally, display a user-friendly message
+        return;
+    }
+
     try {
         if (event) event.stopPropagation();
         isRequestingFullscreen.value = true;
 
-        // Request fullscreen first
-        let fullscreenSuccess = false;
-        while (!fullscreenSuccess && fullscreenAttempts.value < maxFullscreenAttempts) {
-            try {
-                if (gameContainer.value.requestFullscreen) {
-                    await gameContainer.value.requestFullscreen();
-                } else if (gameContainer.value.webkitRequestFullscreen) {
-                    await gameContainer.value.webkitRequestFullscreen();
-                } else if (gameContainer.value.mozRequestFullScreen) {
-                    await gameContainer.value.mozRequestFullScreen();
-                } else if (gameContainer.value.msRequestFullscreen) {
-                    await gameContainer.value.msRequestFullscreen();
-                }
-                fullscreenSuccess = true;
-            } catch (err) {
-                console.warn('Fullscreen request attempt failed:', err);
-                fullscreenAttempts.value++;
-                if (fullscreenAttempts.value < maxFullscreenAttempts) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
-            }
+        // 1. Initialize engine and player first
+        await Engine.setup(canvas.value);
+        
+        // 2. Verify player and controller setup
+        if (!PlayerManager.getProtagonist()) {
+            throw new Error('Failed to create player');
         }
 
-        // Set game state BEFORE engine initialization
+        if (!ControllerManager.isInitialized) {
+            throw new Error('Controllers not initialized');
+        }
+
+        // 3. Set game state after setup verification
+        Engine.setGameStarted(true);
         State.setGameStarted(true);
         setLayout('fullscreen');
 
-        // Initialize game
-        await start();
-
-        // Request pointer lock with retry
-        const canvas = document.getElementById('gameCanvas');
-        if (!canvas) throw new Error('Canvas element not found');
-
-        let pointerLockSuccess = false;
-        try {
-            if (canvas.requestPointerLock) {
-                canvas.requestPointerLock();
-                pointerLockSuccess = true;
-            } else if (canvas.mozRequestPointerLock) {
-                canvas.mozRequestPointerLock();
-                pointerLockSuccess = true;
-            } else if (canvas.webkitRequestPointerLock) {
-                canvas.webkitRequestPointerLock();
-                pointerLockSuccess = true;
-            }
-        } catch (err) {
-            console.warn('Pointer lock request failed:', err);
+        // 4. Request fullscreen after successful initialization
+        const container = gameContainer.value;
+        if (container?.requestFullscreen) {
+            await container.requestFullscreen();
         }
 
-        if (!pointerLockSuccess) {
-            console.warn('Pointer lock not supported by browser');
+        // 5. Finally request pointer lock
+        const gameCanvas = document.getElementById('gameCanvas');
+        if (gameCanvas?.requestPointerLock) {
+            gameCanvas.requestPointerLock();
         }
-
-        // Start game loop
-        InputManager.setGameRunning(true);
-        Engine.loop();
 
     } catch (err) {
         console.error('Failed to start game:', err);
@@ -856,19 +833,22 @@ const updateControlMode = (newMode) => {
 };
 
 // Add new helper method to handle exiting
-const exitFullscreenAndGame = () => {
+const exitFullscreenAndGame = async () => {
+    if (document.fullscreenElement) {
+        try {
+            await document.exitFullscreen();
+        } catch (error) {
+            console.error('Failed to exit fullscreen:', error);
+        }
+    }
+    Engine.setGameStarted(false);
     State.setGameStarted(false);
     setLayout('default');
     
-    if (document.exitFullscreen) {
-        document.exitFullscreen();
-    } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-    } else if (document.mozCancelFullScreen) {
-        document.mozCancelFullScreen();
-    } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
-    }
+    // Force cleanup of all systems
+    Engine.cleanup();
+    ControllerManager.cleanup();
+    InputManager.cleanup();
 };
 
 // Add fullscreen change listener
