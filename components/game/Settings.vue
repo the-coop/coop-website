@@ -30,7 +30,8 @@ import ControllerManager from '../lib/game/controllers/controllerManager.mjs';
 
 const props = defineProps({
   show: Boolean,
-  controlMode: String
+  controlMode: String,
+  gameStarted: Boolean  // Add this prop
 });
 
 const emit = defineEmits(['close', 'updateControlMode', 'updateShowFPS']);
@@ -52,8 +53,8 @@ const onShowFPSChange = () => {
 
 const handleClose = () => {
   emit('close');
-  // Request pointer lock if in FPS mode
-  if (selectedMode.value === 'fps') {
+  // Only request pointer lock if game has started and in FPS mode
+  if (props.gameStarted && selectedMode.value === 'fps') {
     requestAnimationFrame(() => ControllerManager.requestPointerLock());
   }
 };

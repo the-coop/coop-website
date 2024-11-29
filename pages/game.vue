@@ -1,14 +1,20 @@
 <template>
-  <div class="game-container" @click="handleGameStart">
+  <div class="game-container" :class="{ fullscreen: isGameStarted }" @click="handleGameStart">
     <canvas ref="canvas"></canvas>
     
     <!-- Game Start UI -->
     <div v-if="!isGameStarted" class="game-start">
       <div class="device-type">{{ deviceType }}</div>
-      <div class="start-prompt">
-        {{ connectedGamepads.length > 0 ? 'Press any button' : 'Play Game' }}
+      <div class="start-content">
+        <div class="start-prompt">
+          {{ startPromptText }}
+        </div>
+        <div class="controls-list" v-html="formattedControlsHint"></div>
+        <button class="settings-button start-settings-button" @click.stop="toggleSettings">
+          <Gear class="gear-icon" />
+          Settings
+        </button>
       </div>
-      <div class="controls-list" v-html="formattedControlsHint"></div>
     </div>
 
     <!-- Game UI - Only show when game is started -->
@@ -30,6 +36,7 @@
     <Settings 
       :show="showSettings"
       :control-mode="controlMode"
+      :game-started="isGameStarted"
       @close="toggleSettings"
       @update-control-mode="updateControlMode"
       @updateShowFPS="updateShowFPS"
@@ -43,19 +50,19 @@
 <style scoped>
 .game-container {
   position: relative;
-  height: 100dvh; /* Use dvh for dynamic viewport height */
-  min-height: 100dvh; /* Ensure minimum height */
-  width: 100vw;
+  height: calc(100vh - 120px); /* Account for logo and padding */
+  width: 100%;
   overflow: hidden;
+  border-radius: 8px; /* Optional: adds nice rounded corners before game starts */
 }
 
 canvas {
-  height: 100dvh !important; /* Force dvh on canvas */
+  height: 100% !important;
   width: 100% !important;
 }
 
 .game-start {
-  position: fixed;
+  position: absolute; /* Changed from fixed to absolute */
   top: 0;
   left: 0;
   width: 100%;
@@ -67,6 +74,17 @@ canvas {
   background: rgba(0, 0, 0, 0.8);
   cursor: pointer;
   z-index: 100;
+}
+
+/* When game is started, make container fullscreen */
+.game-container.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100dvh;
+  width: 100vw;
+  border-radius: 0;
+  z-index: 1000;
 }
 
 .start-prompt {
@@ -227,11 +245,41 @@ canvas {
 .settings-button:hover {
   background: rgba(0, 0, 0, 0.9);
 }
+
+.start-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+  text-align: center;
+}
+
+.start-settings-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 1em;
+  font-size: 1em;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 4px;
+  width: auto;
+  margin-top: 1em;
+}
+
+.start-settings-button .gear-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.start-settings-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
 </style>
 
 <script setup>
 // Set the layout to fullscreen
-import { onMounted, onBeforeUnmount, ref, reactive, nextTick, watch } from 'vue';
+import { onMounted, onBeforeUnmount, ref, reactive, nextTick, watch, computed } from 'vue';
 import Engine from '../lib/game/engine';
 import ControllerManager from '../lib/game/controllers/controllerManager.mjs';
 import PlayerManager from '../lib/game/players/playerManager.mjs';
@@ -395,6 +443,7 @@ onMounted(() => {
 
   // Initialize gamepad detection and checking
   window.addEventListener('gamepadconnected', onGamepadConnect);
+  window.addEventListener('gamepaddisconnected', onGamepadDisconnect);
   
   // Start gamepad polling
   const updateGamepads = () => {
@@ -423,6 +472,7 @@ onBeforeUnmount(() => {
   
   // Cleanup all event listeners
   window.removeEventListener('gamepadconnected', onGamepadConnect);
+  window.removeEventListener('gamepaddisconnected', onGamepadDisconnect);
   window.removeEventListener('resize', detectMobile);
   document.removeEventListener('pointerlockchange', handlePointerLockChange);
   
@@ -455,9 +505,18 @@ const detectMobile = () => {
 const onGamepadConnect = (e) => {
   hasActiveController.value = true;
   hasGamepad.value = true;
-  // Use GamepadInput.type instead of local detection
-  deviceType.value = `${isMobile.value ? 'MOBILE' : 'DESKTOP'}${GamepadInput.type ? ' + CONTROLLER' : ''}`;
+  // Update the type and connected gamepads
+  updateDeviceType();
   connectedGamepads.splice(0, connectedGamepads.length, e.gamepad);
+  // Update the controls hint when gamepad connects
+  formattedControlsHint.value = updateControlsHint();
+};
+
+const onGamepadDisconnect = (e) => {
+  connectedGamepads.splice(0, connectedGamepads.length);
+  hasGamepad.value = connectedGamepads.length > 0;
+  updateDeviceType();
+  formattedControlsHint.value = updateControlsHint();
 };
 
 const joystickZone = ref(null);
@@ -516,7 +575,10 @@ watch([isMobile, hasGamepad], () => {
 });
 
 // Game start handler
-const handleGameStart = () => {
+const handleGameStart = (event) => {
+  // Don't start if settings is showing
+  if (showSettings.value) return;
+  
   if (!isGameStarted.value) {
     start();
   }
@@ -539,7 +601,10 @@ const checkGamepadStart = () => {
   }
 };
 
-const toggleSettings = () => {
+const toggleSettings = (event) => {
+  if (event) {
+    event.stopPropagation();
+  }
   showSettings.value = !showSettings.value;
 };
 
@@ -548,4 +613,11 @@ const updateControlMode = (mode) => {
   ControllerManager.switchMode(mode);
   togglePlayerVisibility(mode);
 };
+
+const startPromptText = computed(() => {
+  if (hasGamepad.value) {
+    return 'Press any button to start';
+  }
+  return 'Click to start';
+});
 </script>
