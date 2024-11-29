@@ -52,8 +52,8 @@
 <style scoped>
 .game-container {
   position: relative;
-  height: 100dvh;
-  width: 100dvw;
+  height: 100vh; /* Use vh instead of dvh for better compatibility */
+  width: 100vw;
   overflow: hidden;
 }
 
@@ -410,6 +410,13 @@ const getControllerName = (gamepad) => {
 const handlePointerLockChange = () => {
   if (document.pointerLockElement) {
     isGameStarted.value = true;
+  } else {
+    // Ensure canvas resizes correctly when pointer lock changes
+    const canvasElement = canvas.value;
+    if (canvasElement) {
+      canvasElement.style.width = '100%';
+      canvasElement.style.height = '100%';
+    }
   }
 };
 
