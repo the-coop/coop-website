@@ -410,7 +410,7 @@ import PlayerManager from '../lib/game/players/playerManager.mjs';
 import ControllerManager from '../lib/game/controllers/controllerManager.mjs';
 import InputManager from '../lib/game/controllers/inputManager.mjs';
 import GamepadInput from '../lib/game/controllers/inputs/gamepad.mjs';
-import MobileInterface from '../components/game/MobileInterface.vue';
+import MobileInterface from '../components/game/MobileInterface.vue'; // Ensure correct import
 import Settings from '../components/game/Settings.vue';
 import Gear from '../components/icons/Gear.vue';
 

@@ -48,7 +48,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import ControllerManager from '../lib/game/controllers/controllerManager.mjs';
 import GamepadInput from '../../lib/game/controllers/inputs/gamepad.mjs';
 import PlayerManager from '../lib/game/players/playerManager.mjs';
@@ -72,6 +72,12 @@ const sensitivity = ref(1.0);
 
 // Define a local reactive variable for connectedGamepads
 const localConnectedGamepads = ref([...props.connectedGamepads]);
+
+// Define a computed property for isMobile from global State
+const isMobile = computed(() => State.isMobile);
+
+// Define a computed property for gameStarted for consistency
+const gameStarted = computed(() => props.gameStarted);
 
 watch(() => props.controlMode, (newMode) => {
   selectedMode.value = newMode;
