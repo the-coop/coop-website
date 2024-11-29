@@ -12,6 +12,13 @@
         </select>
       </div>
 
+      <div class="setting-group">
+        <label>
+          <input type="checkbox" v-model="showFPS" @change="onShowFPSChange" />
+          Show FPS
+        </label>
+      </div>
+
       <button class="close-button" @click="handleClose">Close</button>
     </div>
   </div>
@@ -26,9 +33,10 @@ const props = defineProps({
   controlMode: String
 });
 
-const emit = defineEmits(['close', 'updateControlMode']);
+const emit = defineEmits(['close', 'updateControlMode', 'updateShowFPS']);
 
 const selectedMode = ref(props.controlMode);
+const showFPS = ref(false);
 
 watch(() => props.controlMode, (newMode) => {
   selectedMode.value = newMode;
@@ -36,6 +44,10 @@ watch(() => props.controlMode, (newMode) => {
 
 const onControlModeChange = () => {
   emit('updateControlMode', selectedMode.value);
+};
+
+const onShowFPSChange = () => {
+  emit('updateShowFPS', showFPS.value);
 };
 
 const handleClose = () => {

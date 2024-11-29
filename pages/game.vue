@@ -32,6 +32,7 @@
       :control-mode="controlMode"
       @close="toggleSettings"
       @update-control-mode="updateControlMode"
+      @updateShowFPS="updateShowFPS"
     />
 
     <!-- Mobile Touch Controls - Only show on mobile when game is started -->
@@ -230,10 +231,6 @@ canvas {
 
 <script setup>
 // Set the layout to fullscreen
-definePageMeta({
-  layout: 'fullscreen'
-});
-
 import { onMounted, onBeforeUnmount, ref, reactive, nextTick, watch } from 'vue';
 import Engine from '../lib/game/engine';
 import ControllerManager from '../lib/game/controllers/controllerManager.mjs';
@@ -243,6 +240,10 @@ import Gear from '../components/icons/Gear.vue';
 import Settings from '../components/game/Settings.vue';
 import GamepadInput from '../lib/game/controllers/inputs/gamepad.mjs';
 import MobileControls from '../components/game/MobileControls.vue';
+import { useNuxtApp } from '#app';
+import { useLayout } from '../composables/useLayout'
+
+const { setLayout } = useLayout()
 
 // Add default control mode
 const defaultControlMode = 'fps';
@@ -295,9 +296,17 @@ const showGamepadPrompt = ref(true);
 const formattedControlsHint = ref(updateControlsHint());
 let pollGamepads;
 
+const showFPS = ref(false);
+
+const updateShowFPS = (value) => {
+  showFPS.value = value;
+  Engine.setShowFPS(value);
+};
+
 // Rest of the existing code...
 
 const getControllerName = (gamepad) => {
+  console.log('gamepad debug', gamepad);
   const type = GamepadInput.type;
   if (type === 'xbox') return 'Xbox Controller';
   if (type === 'playstation') return 'PlayStation Controller';
@@ -325,8 +334,12 @@ const togglePlayerVisibility = (mode) => {
   }
 };
 
+const { $layout } = useNuxtApp();
+
 const start = (usingGamepad = false) => {
   if (isGameStarted.value) return;
+  
+  setLayout('fullscreen')
 
   console.log('Game start clicked');
   isGameStarted.value = true;
@@ -371,15 +384,6 @@ const start = (usingGamepad = false) => {
   }
 };
 
-const handleDrag = (e) => {
-  const currentController = ControllerManager.currentController;
-  const isOrbit = currentController && currentController.constructor.name.toLowerCase().includes('orbit');
-  if (!isOrbit) {
-    e.preventDefault();
-    e.stopPropagation();
-  }
-};
-
 // Single consolidated onMounted block
 onMounted(() => {
   const promptStatus = localStorage.getItem('shown-gamepad-prompt');
@@ -411,28 +415,17 @@ onMounted(() => {
       toggleSettings();
     }
   });
-
-  // Initialize drag handlers
-  const gameContainer = document.querySelector('.game-container');
-  if (gameContainer) {
-    gameContainer.addEventListener('dragstart', handleDrag);
-    gameContainer.addEventListener('drag', handleDrag);
-  }
 });
 
 // Single consolidated onBeforeUnmount block
 onBeforeUnmount(() => {
+  setLayout('default')
+  
   // Cleanup all event listeners
   window.removeEventListener('gamepadconnected', onGamepadConnect);
   window.removeEventListener('resize', detectMobile);
   document.removeEventListener('pointerlockchange', handlePointerLockChange);
   
-  const gameContainer = document.querySelector('.game-container');
-  if (gameContainer) {
-    gameContainer.removeEventListener('dragstart', handleDrag);
-    gameContainer.removeEventListener('drag', handleDrag);
-  }
-
   // Cleanup game state
   Engine.cleanup();
   if (pollGamepads) {

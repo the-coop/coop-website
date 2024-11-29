@@ -1,1 +1,0 @@
-export const inviteLink = 'https://discord.gg/aYfTmnvS3z';
