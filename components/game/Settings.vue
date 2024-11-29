@@ -3,6 +3,16 @@
     <div class="settings-content">
       <h2>Settings</h2>
       
+      <!-- Controllers Section -->
+      <div class="setting-group" v-if="localConnectedGamepads.length > 0">
+        <label>Connected Controllers:</label>
+        <div class="controllers-list">
+          <div v-for="gamepad in localConnectedGamepads" :key="gamepad.index" class="controller-item">
+            {{ getControllerName(gamepad) }}
+          </div>
+        </div>
+      </div>
+
       <div class="setting-group">
         <label>Control Mode:</label>
         <select v-model="selectedMode" @change="onControlModeChange">
@@ -27,17 +37,25 @@
 <script setup>
 import { ref, watch } from 'vue';
 import ControllerManager from '../lib/game/controllers/controllerManager.mjs';
+import GamepadInput from '../../lib/game/controllers/inputs/gamepad.mjs';
 
 const props = defineProps({
   show: Boolean,
   controlMode: String,
-  gameStarted: Boolean  // Add this prop
+  gameStarted: Boolean,
+  connectedGamepads: {
+    type: Array,
+    default: () => []
+  }
 });
 
 const emit = defineEmits(['close', 'updateControlMode', 'updateShowFPS']);
 
 const selectedMode = ref(props.controlMode);
 const showFPS = ref(false);
+
+// Define a local reactive variable for connectedGamepads
+const localConnectedGamepads = ref([...props.connectedGamepads]);
 
 watch(() => props.controlMode, (newMode) => {
   selectedMode.value = newMode;
@@ -58,6 +76,29 @@ const handleClose = () => {
     requestAnimationFrame(() => ControllerManager.requestPointerLock());
   }
 };
+
+// Update getControllerName to be more detailed
+const getControllerName = (gamepad) => {
+  const type = GamepadInput.type;
+  const id = gamepad?.id || 'Unknown Controller';
+  if (type === 'xbox') return `Xbox Controller (${id})`;
+  if (type === 'playstation') return `PlayStation Controller (${id})`;
+  return `Generic Controller (${id})`;
+};
+
+// Handler to update localConnectedGamepads
+const handleControllerUpdate = () => {
+  localConnectedGamepads.value = GamepadInput.getConnectedGamepads();
+};
+
+// Watch for changes in connectedGamepads prop and update local variable
+watch(() => props.connectedGamepads, (newGamepads) => {
+  localConnectedGamepads.value = newGamepads;
+}, { immediate: true });
+
+// Optionally, listen to ControllerManager events if needed
+// Example: ControllerManager.on('controllerStateChange', handleControllerUpdate);
+
 </script>
 
 <style scoped>
@@ -112,5 +153,21 @@ const handleClose = () => {
 
 .close-button:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+.controllers-list {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5em;
+  border-radius: 4px;
+  margin-top: 0.5em;
+}
+
+.controller-item {
+  padding: 0.5em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.controller-item:last-child {
+  border-bottom: none;
 }
 </style>

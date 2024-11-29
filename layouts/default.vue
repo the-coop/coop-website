@@ -18,7 +18,7 @@
     align-items: center;
     padding: 1.25em;
     color: #fff;
-    min-height: 100vh;
+    /* min-height: 100vh; */
   }
 
   .logo {

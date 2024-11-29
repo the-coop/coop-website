@@ -4,16 +4,22 @@
     
     <!-- Game Start UI -->
     <div v-if="!isGameStarted" class="game-start">
-      <div class="device-type">{{ deviceType }}</div>
+      <div class="device-info">
+        <div class="device-type">{{ deviceType }}</div>
+        <div v-if="hasGamepad" class="controller-status">{{ getControllerName(connectedGamepads[0]) }} Connected</div>
+      </div>
       <div class="start-content">
-        <div class="start-prompt">
-          {{ startPromptText }}
-        </div>
+        <h1 class="game-title">Conquest</h1>
         <div class="controls-list" v-html="formattedControlsHint"></div>
-        <button class="settings-button start-settings-button" @click.stop="toggleSettings">
-          <Gear class="gear-icon" />
-          Settings
-        </button>
+        <div class="start-buttons">
+          <button class="start-button" @click.stop="handleGameStart">
+            {{ startPromptText }}
+          </button>
+          <button class="settings-button start-settings-button" @click.stop="toggleSettings">
+            <Gear class="gear-icon" />
+            Settings
+          </button>
+        </div>
       </div>
     </div>
 
@@ -23,13 +29,6 @@
       <button class="settings-button" @click.stop="toggleSettings">
         <Gear class="gear-icon" />
       </button>
-
-      <!-- Connected Controllers List -->
-      <div class="controllers-list" v-if="connectedGamepads.length > 0">
-        <span v-for="gamepad in connectedGamepads" :key="gamepad.index" class="controller-item">
-          {{ getControllerName(gamepad) }}
-        </span>
-      </div>
     </div>
 
     <!-- Settings Overlay -->
@@ -37,6 +36,7 @@
       :show="showSettings"
       :control-mode="controlMode"
       :game-started="isGameStarted"
+      :connected-gamepads="connectedGamepads"
       @close="toggleSettings"
       @update-control-mode="updateControlMode"
       @updateShowFPS="updateShowFPS"
@@ -48,9 +48,13 @@
 </template>
 
 <style scoped>
+* {
+  box-sizing: border-box;
+}
+
 .game-container {
   position: relative;
-  height: calc(100vh - 120px); /* Account for logo and padding */
+  height: 400px; /* Reduced from calc(100vh - 120px) to fixed height */
   width: 100%;
   overflow: hidden;
   border-radius: 8px; /* Optional: adds nice rounded corners before game starts */
@@ -211,12 +215,26 @@ canvas {
   background: rgba(255, 0, 0, 0.5);
 }
 
-.device-type {
+.device-info {
   position: absolute;
   top: 1em;
   left: 1em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.device-type {
   color: white;
   font-size: 1.2em;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 0.5em 1em;
+  border-radius: 0.5em;
+}
+
+.controller-status {
+  color: #4CAF50;
+  font-size: 1em;
   background: rgba(0, 0, 0, 0.7);
   padding: 0.5em 1em;
   border-radius: 0.5em;
@@ -275,6 +293,54 @@ canvas {
 .start-settings-button:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+.game-title {
+  color: white;
+  font-size: 3em;
+  margin: 0 0 0.5em;
+  text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+}
+
+.start-buttons {
+  display: flex;
+  gap: 1em;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.start-button {
+  background: rgba(255, 204, 0, 0.9);
+  color: black;
+  padding: 0.5em 1em;
+  font-size: 1em;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.start-button:hover {
+  background: rgba(255, 204, 0, 1);
+}
+
+.start-settings-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 4px;
+  width: auto;
+  margin: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1em;
+}
 </style>
 
 <script setup>
@@ -295,6 +361,9 @@ const { setLayout } = useLayout()
 
 // Add default control mode
 const defaultControlMode = 'fps';
+
+// Initialize GamepadInput immediately
+GamepadInput.setup();
 
 // Helper functions should be defined first
 const updateControlsHint = () => {
@@ -354,11 +423,17 @@ const updateShowFPS = (value) => {
 // Rest of the existing code...
 
 const getControllerName = (gamepad) => {
-  console.log('gamepad debug', gamepad);
+  if (!gamepad) return 'Unknown Controller';
+  
   const type = GamepadInput.type;
   if (type === 'xbox') return 'Xbox Controller';
   if (type === 'playstation') return 'PlayStation Controller';
-  return 'Generic Controller';
+  
+  // If type isn't set yet, try to detect from gamepad.id
+  if (gamepad.id.toLowerCase().includes('xbox')) return 'Xbox Controller';
+  if (gamepad.id.toLowerCase().includes('playstation')) return 'PlayStation Controller';
+  
+  return 'Game Controller';
 };
 
 const updateDeviceType = () => {
@@ -432,8 +507,39 @@ const start = (usingGamepad = false) => {
   }
 };
 
+// Add this function to check initial gamepads
+const checkInitialGamepads = () => {
+  const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+  for (let gamepad of gamepads) {
+    if (gamepad) {
+      hasGamepad.value = true;
+      connectedGamepads.splice(0, connectedGamepads.length, gamepad);
+      GamepadInput.handleGamepadConnected({ gamepad }); // This will set the controller type
+      updateDeviceType();
+      formattedControlsHint.value = updateControlsHint();
+      break;
+    }
+  }
+};
+
+// Define listener functions to allow removal
+const onOpenSettings = () => {
+  if (isGameStarted.value) {
+    toggleSettings();
+  }
+};
+
+const onDoubleEsc = () => {
+  if (isGameStarted.value) {
+    toggleSettings();
+  }
+};
+
 // Single consolidated onMounted block
 onMounted(() => {
+  // Add this line at the start of onMounted
+  checkInitialGamepads();
+
   const promptStatus = localStorage.getItem('shown-gamepad-prompt');
   showGamepadPrompt.value = promptStatus !== 'false';
 
@@ -445,7 +551,7 @@ onMounted(() => {
   window.addEventListener('gamepadconnected', onGamepadConnect);
   window.addEventListener('gamepaddisconnected', onGamepadDisconnect);
   
-  // Start gamepad polling
+  // Start gamepad polling with all checks
   const updateGamepads = () => {
     checkGamepadStart();
     pollGamepads = requestAnimationFrame(updateGamepads);
@@ -453,17 +559,8 @@ onMounted(() => {
   updateGamepads();
 
   // Listen for settings events
-  ControllerManager.on('openSettings', () => {
-    if (isGameStarted.value) {
-      toggleSettings();
-    }
-  });
-  
-  ControllerManager.on('doubleEsc', () => {
-    if (isGameStarted.value) {
-      toggleSettings();
-    }
-  });
+  ControllerManager.on('openSettings', onOpenSettings);
+  ControllerManager.on('doubleEsc', onDoubleEsc);
 });
 
 // Single consolidated onBeforeUnmount block
@@ -487,8 +584,8 @@ onBeforeUnmount(() => {
   Engine.isGameStarted = false;
 
   // Cleanup event listeners
-  ControllerManager.off('openSettings', toggleSettings);
-  ControllerManager.off('doubleEsc', toggleSettings);
+  ControllerManager.off('openSettings', onOpenSettings);
+  ControllerManager.off('doubleEsc', onDoubleEsc);
   InputManager.computerInput?.setGameStarted(false);
 });
 
