@@ -29,13 +29,26 @@
         </label>
       </div>
 
+      <div class="setting-group">
+        <label>Aim Sensitivity: {{ sensitivity.toFixed(2) }}</label>
+        <input 
+          type="range" 
+          v-model="sensitivity" 
+          min="0.1" 
+          max="3" 
+          step="0.1"
+          class="sensitivity-slider"
+          @input="onSensitivityChange"
+        />
+      </div>
+
       <button class="close-button" @click="handleClose">Close</button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import ControllerManager from '../lib/game/controllers/controllerManager.mjs';
 import GamepadInput from '../../lib/game/controllers/inputs/gamepad.mjs';
 
@@ -98,6 +111,18 @@ watch(() => props.connectedGamepads, (newGamepads) => {
 
 // Optionally, listen to ControllerManager events if needed
 // Example: ControllerManager.on('controllerStateChange', handleControllerUpdate);
+
+// Add sensitivity ref
+const sensitivity = ref(1.0);
+
+onMounted(() => {
+  // Initialize sensitivity from ControllerManager
+  sensitivity.value = ControllerManager.getSensitivity();
+});
+
+const onSensitivityChange = () => {
+  ControllerManager.setSensitivity(sensitivity.value);
+};
 
 </script>
 
@@ -169,5 +194,33 @@ watch(() => props.connectedGamepads, (newGamepads) => {
 
 .controller-item:last-child {
   border-bottom: none;
+}
+
+.sensitivity-slider {
+  width: 100%;
+  margin: 10px 0;
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-appearance: none;
+  height: 8px;
+  border-radius: 4px;
+  outline: none;
+}
+
+.sensitivity-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.sensitivity-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
 }
 </style>
