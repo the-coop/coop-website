@@ -410,36 +410,21 @@ canvas {
 import { ref, reactive, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useLayout } from '../composables/useLayout';
 
-// Add destructuring of setLayout
 const { setLayout } = useLayout();
 
 import State from '../lib/game/state.mjs';
-import Engine from '../lib/game/engine';
+import Engine from '../lib/game/engine.mjs';
 import InputManager from '../lib/game/controllers/inputManager.mjs';
 import ControllerManager from '../lib/game/controllers/controllerManager.mjs';
 import Gear from '../components/icons/Gear.vue';
 import Settings from '../components/game/Settings.vue';
 import LoadingStatus from '../components/game/LoadingStatus.vue';
-import PlayerManager from '../lib/game/players/playerManager.mjs';
+// Removed unnecessary import of PlayerManager
 
-// Add showSettings ref with other refs near top of script setup
 const showSettings = ref(false);
 const gameCanvas = ref(null);
-
-// Remove the computed wrapper and use State.controlMode directly
-// const controlMode = computed(() => State.controlMode);
 const controlMode = State.controlMode;
-
-// Remove unused gameState reactive object
-// const gameState = reactive({
-//     isStarted: State.isGameStarted,
-//     isFullscreen: State.isFullscreen
-// });
-
-// Add isLoading ref
-const isLoading = ref(true)
-
-// Add a ref to track if startGame has been initiated
+const isLoading = ref(true);
 const isStartInitiated = ref(false);
 
 const startGame = async () => {
@@ -456,12 +441,6 @@ const startGame = async () => {
             State.addLog('Game engine loaded', 'game.vue');
         }
 
-        // Create protagonist first before starting game
-        const protagonist = await PlayerManager.create(Engine.scene, Engine.cam);
-        if (!protagonist) {
-            throw new Error('Failed to create protagonist');
-        }
-
         // Start the game and await setGameStarted
         await Engine.setGameStarted(true);
 
@@ -469,7 +448,7 @@ const startGame = async () => {
         setLayout('fullscreen');
 
         await new Promise(resolve => setTimeout(resolve, 500));
-        State.setInitialised(true); // Previously setInitializing(false);
+        State.setInitialised(true);
     } catch (err) {
         console.error('Game start failed:', err);
         State.addLog(`Error: ${err.message}`, 'game.vue');
