@@ -427,6 +427,13 @@ const controlMode = State.controlMode;
 const isLoading = ref(true);
 const isStartInitiated = ref(false);
 
+// Update startPromptText computed to check for engine loaded instead of initialised
+const startPromptText = computed(() => {
+  if (!Engine.loaded || State.currentStage || isLoading.value) return '';
+  return 'Click or Press Enter';
+});
+
+// No longer need to manage initialised state here since engine handles it
 const startGame = async () => {
     if (State.isGameStarted || isStartInitiated.value) return;
     isStartInitiated.value = true;
@@ -441,14 +448,12 @@ const startGame = async () => {
             State.addLog('Game engine loaded', 'game.vue');
         }
 
-        // Start the game and await setGameStarted
+        // Start the game
         await Engine.setGameStarted(true);
 
         State.addLog('Game ready!', 'game.vue');
         setLayout('fullscreen');
 
-        await new Promise(resolve => setTimeout(resolve, 500));
-        State.setInitialised(true);
     } catch (err) {
         console.error('Game start failed:', err);
         State.addLog(`Error: ${err.message}`, 'game.vue');
@@ -540,12 +545,6 @@ const formattedControlsHint = computed(() => {
       <li>Shift - Sprint</li>
     </ul>
   `;
-});
-
-// Update startPromptText computed
-const startPromptText = computed(() => {
-  if (!State.isEngineInitialised || State.currentStage || isLoading.value) return '';
-  return 'Click or Press Enter';
 });
 
 // Define the missing event handler updateShowFPS
