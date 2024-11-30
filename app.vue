@@ -1,19 +1,8 @@
 <template>
-  <NuxtLayout :name="layout">
+  <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
 </template>
-
-<script setup>
-import { useLayout } from '~/composables/useLayout'
-import { computed } from 'vue'
-
-const { layoutName } = useLayout()
-
-const layout = computed(() => layoutName.value)
-</script>
-
-<!-- TODO: Check if logged in / load profile from token. -->
 
 <style>
   body, html {
