@@ -1,31 +1,35 @@
 <template>
   <div ref="gameContainer" class="container" :class="{ full: isGameStarted }">
+    <!-- Keep global LoadingStatus -->
+    <LoadingStatus />
+    
     <canvas id="gameCanvas" ref="gameCanvas"></canvas>
     
     <!-- Game Start UI -->
-    <div v-if="!isGameStarted" class="start" @click="startGame">
-      <!-- Connected Gamepads Display -->
-      <div v-if="hasGamepad" class="pads">
-        <h3>Connected Controllers:</h3>
-        <ul>
-          <li v-for="gamepad in connectedGamepads" :key="gamepad.index">
-            {{ getControllerName(gamepad) }}
-          </li>
-        </ul>
-      </div>
-      
+    <div v-if="!isGameStarted" class="start" @click="handleStartClick">
       <div class="content">
-        <!-- Remove the title h1 since it's now in the layout -->
+        <!-- Start prompt at the top -->
+        <span class="start-prompt">{{ startPromptText }}</span>
+        
         <div class="blurb">
           A Web3 MMO Combat Experience on Algorand
         </div>
+        
         <div class="controls" v-html="formattedControlsHint"></div>
+        
+        <!-- Connected Gamepads Display -->
+        <div v-if="hasGamepad" class="pads">
+          <h3>Connected Controllers:</h3>
+          <ul>
+            <li v-for="gamepad in connectedGamepads" :key="gamepad.index">
+              {{ getControllerName(gamepad) }}
+            </li>
+          </ul>
+        </div>
+
         <div class="actions">
-          <!-- Replace the start button with a span -->
-          <span class="start-prompt">{{ startPromptText }}</span>
-          <!-- Keep the settings button -->
           <button class="btn config" @click.stop="toggleSettings">
-            <Gear class="icon" />
+            <Gear class="icon"></Gear>
             Settings
           </button>
         </div>
@@ -35,23 +39,23 @@
     <!-- Game UI -->
     <div v-if="isGameStarted" class="hud">
       <button class="btn" @click.stop="toggleSettings">
-        <Gear class="icon" />
+        <Gear class="icon"></Gear>
       </button>
     </div>
 
     <!-- Settings Overlay -->
     <Settings 
       :show="showSettings"
-      :control-mode="controlMode"
-      :game-started="isGameStarted"
-      :connected-gamepads="connectedGamepads"
+      :control-mode="controlMode || 'fps'"
+      :game-started="!!isGameStarted"
+      :connected-gamepads="connectedGamepads || []"
       @close="toggleSettings"
       @update-control-mode="updateControlMode"
       @updateShowFPS="updateShowFPS"
     />
 
     <!-- Mobile Touch Controls - Only show on mobile when game is started -->
-    <MobileInterface v-if="isMobile && isGameStarted" />
+    <!-- <MobileInterface v-if="isMobile && isGameStarted"></MobileInterface> -->
   </div>
 </template>
 
@@ -85,6 +89,7 @@ canvas {
   align-items: center;
   cursor: pointer;
   z-index: 100;
+  background: rgba(0, 0, 0, 0.7); /* Add semi-transparent background */
 }
 
 /* When game is started, make container fullscreen */
@@ -99,13 +104,15 @@ canvas {
 }
 
 .start-prompt {
-  font-size: 1.5em;
-  color: white;
+  font-size: 2em;
+  color: #ffcc00; /* Make it stand out */
+  font-weight: bold;
   user-select: none;
   /* Optional: Center the text */
   display: block;
   text-align: center;
   margin-bottom: 1em;
+  text-shadow: 0 0 10px rgba(255, 204, 0, 0.5); /* Add glow effect */
 }
 
 .controls {
@@ -278,8 +285,10 @@ canvas {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1em;
+  gap: 2em;
   text-align: center;
+  padding: 2em;
+  max-width: 600px;
 }
 
 .config {
@@ -398,515 +407,188 @@ canvas {
 </style>
 
 <script setup>
-// Add definePageMeta at the top of your script
-definePageMeta({
-  layout: 'default',
-  layoutProps: {
-    title: 'CONQUEST'
-  }
-});
-
-import { onMounted, onBeforeUnmount, ref, reactive, nextTick, watch, computed } from 'vue';
-import { useNuxtApp } from '#app';
+import { ref, reactive, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useLayout } from '../composables/useLayout';
+
+// Add destructuring of setLayout
+const { setLayout } = useLayout();
 
 import State from '../lib/game/state.mjs';
 import Engine from '../lib/game/engine';
-
-import PlayerManager from '../lib/game/players/playerManager.mjs';
-import ControllerManager from '../lib/game/controllers/controllerManager.mjs';
 import InputManager from '../lib/game/controllers/inputManager.mjs';
-import GamepadInput from '../lib/game/controllers/inputs/gamepad.mjs';
-import MobileInterface from '../components/game/MobileInterface.vue'; // Ensure correct import
-import Settings from '../components/game/Settings.vue';
+import ControllerManager from '../lib/game/controllers/controllerManager.mjs';
 import Gear from '../components/icons/Gear.vue';
+import Settings from '../components/game/Settings.vue';
+import LoadingStatus from '../components/game/LoadingStatus.vue';
+import PlayerManager from '../lib/game/players/playerManager.mjs';
 
-const { setLayout } = useLayout()
-
-// Add default control mode
-const defaultControlMode = 'fps';
-
-// Helper functions should be defined first
-const updateControlsHint = () => {
-  if (State.isMobile) {
-    return `
-      <ul>
-        <li>Left virtual joystick: Move</li>
-        <li>Swipe screen: Look around</li>
-        <li>Jump button: Jump</li>
-        <li>Sprint button: Sprint/Run</li>
-      </ul>
-    `;
-  } 
-  if (hasGamepad.value) {
-    const type = ControllerManager.inputState.gamepad.type;
-    const jumpBtn = type === 'xbox' ? 'A' : 'X';
-    const sprintBtn = type === 'xbox' ? 'Left Stick Click' : 'L3';
-    return `
-      <ul>
-        <li>Left Stick: Move</li>
-        <li>Right Stick: Look around</li>
-        <li>${jumpBtn} button: Jump</li>
-        <li>${sprintBtn}: Sprint/Run</li>
-      </ul>
-    `;
-  }
-  return `
-    <ul>
-      <li>WASD: Move</li>
-      <li>Mouse: Look around</li>
-      <li>Space: Jump</li>
-      <li>Shift: Sprint/Run</li>
-    </ul>
-  `;
-};
-
-// Single source of truth for game state
-const reactiveState = reactive({
-    isGameStarted: State.isGameStarted,
-    isMobile: State.isMobile,
-    isSafari: State.isSafari,
-    showFPS: State.showFPS,
-    isFullscreen: State.isFullscreen,
-    isEngineInitialized: false // Add this to reactiveState
-});
-
-// All refs declared in one place
-const hasGamepad = ref(false);
-const connectedGamepads = reactive([]);
-const deviceType = ref('');
-const gameCanvas = ref(null);
-const gameContainer = ref(null);
-const controlMode = ref('fps');
+// Add showSettings ref with other refs near top of script setup
 const showSettings = ref(false);
-const showGamepadPrompt = ref(true);
-const formattedControlsHint = ref(updateControlsHint());
-const isControllerReady = ref(false);
-const selectedMode = ref('fps');
-const joystickZone = ref(null);
-let pollGamepads;
-let joystick = null;
+const gameCanvas = ref(null);
 
-// Add these as class fields after other refs
-const isRequestingFullscreen = ref(false);
-const fullscreenAttempts = ref(0);
-const maxFullscreenAttempts = 2;
+// Remove the computed wrapper and use State.controlMode directly
+// const controlMode = computed(() => State.controlMode);
+const controlMode = State.controlMode;
 
-// All computed properties in one place
-const isGameStarted = computed(() => reactiveState.isGameStarted);
-const isMobile = computed(() => reactiveState.isMobile);
-const isSafari = computed(() => reactiveState.isSafari);
-const showFPS = computed(() => reactiveState.showFPS);
-const isEngineInitialized = computed(() => State.isEngineInitialized); // Add this computed
-const startPromptText = computed(() => {
-    if (hasGamepad.value) return 'Press any button to start';
-    if (isControllerReady.value) return 'Click again to start game';
-    return 'Click to connect controller';
-});
+// Remove unused gameState reactive object
+// const gameState = reactive({
+//     isStarted: State.isGameStarted,
+//     isFullscreen: State.isFullscreen
+// });
 
-const getControllerName = (gamepad) => {
-  if (!gamepad) return 'Unknown Controller';
-  const type = ControllerManager.getGamepadType(gamepad);
-  if (type === 'xbox') return 'Xbox Controller';
-  if (type === 'playstation') return 'PlayStation Controller';
-  return 'Game Controller';
-};
+// Add isLoading ref
+const isLoading = ref(true)
 
-const updateDeviceType = () => {
-  const device = isMobile.value ? 'MOBILE' : 'DESKTOP';
-  const input = hasGamepad.value ? ' + CONTROLLER' : '';
-  deviceType.value = device + input;
-};
+// Add a ref to track if startGame has been initiated
+const isStartInitiated = ref(false);
 
-const switchControlMode = () => {
-  ControllerManager.switchMode(controlMode.value);
-  togglePlayerVisibility(controlMode.value);
-};
-
-const togglePlayerVisibility = (mode) => {
-  if (PlayerManager.protagonist) {
-    if (mode === 'thirdperson') {
-      PlayerManager.protagonist.mesh.visible = true;
-    } else {
-      PlayerManager.protagonist.mesh.visible = false;
-    }
-  }
-};
-
-const { $layout } = useNuxtApp();
-
-// Update the start function to ensure proper initialization order
-const start = async () => {
-    if (!gameCanvas.value) {
-        throw new Error('Canvas element not found');
-    }
+const startGame = async () => {
+    if (State.isGameStarted || isStartInitiated.value) return;
+    isStartInitiated.value = true;
 
     try {
-        // 1. Initialize engine first and ensure it's complete
-        const engineSetupSuccess = await Engine.setup(gameCanvas.value);
-        if (!engineSetupSuccess) {
-            throw new Error('Engine setup failed');
+        State.clearLogs();
+        
+        // Initialize engine if not already loaded
+        if (!Engine.loaded) {
+            State.addLog('Loading game engine...', 'game.vue');
+            await Engine.setup(gameCanvas.value);
+            State.addLog('Game engine loaded', 'game.vue');
         }
 
-        // 2. Verify scene and camera exist
-        if (!Engine.scene || !Engine.cam) {
-            throw new Error('Engine scene or camera not initialized');
-        }
-
-        // 3. Create player with verified scene and camera
-        console.log('Creating player...');
-        const playerCreated = await PlayerManager.create(Engine.scene, Engine.cam);
-        if (!playerCreated) {
-            throw new Error('Failed to create player');
-        }
-
-        // 4. Get protagonist and verify it exists
-        const protagonist = PlayerManager.getProtagonist();
+        // Create protagonist first before starting game
+        const protagonist = await PlayerManager.create(Engine.scene, Engine.cam);
         if (!protagonist) {
-            throw new Error('Protagonist not created');
+            throw new Error('Failed to create protagonist');
         }
 
-        // 5. Initialize controllers with protagonist
-        await ControllerManager.setProtagonist(protagonist);
-        
-        // 6. Set game state
-        State.setGameStarted(true);
-        
-        // 7. Start game systems
-        await ControllerManager.setGameRunning(true);
-        await InputManager.setGameRunning(true);
+        // Start the game and await setGameStarted
+        await Engine.setGameStarted(true);
 
-        return true;
+        State.addLog('Game ready!', 'game.vue');
+        setLayout('fullscreen');
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+        State.setInitialised(true); // Previously setInitializing(false);
     } catch (err) {
-        console.error('Failed to start game:', err);
-        State.setGameStarted(false);
+        console.error('Game start failed:', err);
+        State.addLog(`Error: ${err.message}`, 'game.vue');
         await cleanup();
-        throw err;
     }
 };
 
-// Add this function before onMounted
-const checkInitialGamepads = () => {
-    if (!process.client) return;
-    
-    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-    for (const gamepad of gamepads) {
-        if (gamepad) {
-            hasGamepad.value = true;
-            connectedGamepads.splice(0, connectedGamepads.length, gamepad);
-            updateDeviceType();
-            formattedControlsHint.value = updateControlsHint();
-            break;
+// Cleanup function
+const cleanup = async () => {
+    try {
+        await Engine.cleanup();
+        InputManager.cleanup();
+        ControllerManager.cleanup();
+        State.setGameStarted(false);
+        setLayout('default');
+    } catch (err) {
+        console.error('Cleanup failed:', err);
+    }
+};
+
+// Setup basic systems when component mounts
+onMounted(async () => {
+    if (process.client) {
+        console.log('Setting up basic systems...');
+        
+        try {
+            // Setup engine first
+            await Engine.setup(gameCanvas.value);
+            
+            // Then setup controllers
+            await ControllerManager.setup();
+            if (!ControllerManager.ready) {
+                throw new Error('Controller initialization failed');
+            }
+            
+            // Finally setup input
+            await InputManager.setup();
+            
+            // Add event listeners
+            window.addEventListener('resize', Engine.handleResize);
+            ControllerManager.on('startGame', startGame);
+            
+            console.log('Basic systems ready');
+        } catch (err) {
+            console.error('System setup failed:', err);
+            State.addLog(`Error: ${err.message}`, 'game.vue');
         }
     }
-};
+});
 
-// Move event listener functions before onMounted
-const onOpenSettings = () => {
-  if (isGameStarted.value) {
-    toggleSettings();
-  }
-};
+// Add mounted hook to clear loading after init
+onMounted(() => {
+  // ...existing mounted code...
+  
+  // Clear loading after short delay
+  setTimeout(() => {
+    isLoading.value = false
+  }, 500)
+})
 
-const onDoubleEsc = () => {
-  if (isGameStarted.value) {
-    toggleSettings();
-  }
-};
-
+// Existing toggleSettings method can stay the same since it uses the new ref
 const toggleSettings = () => {
   showSettings.value = !showSettings.value;
 };
 
-// Remove Engine.setup call from onMounted
-onMounted(async () => {
-  if (!process.client) return;
-  
-  nextTick(() => {
-    if (gameCanvas.value) {
-      gameCanvas.value.width = gameCanvas.value.offsetWidth || window.innerWidth;
-      gameCanvas.value.height = gameCanvas.value.offsetHeight || window.innerHeight;
-    }
-  });
-
-  checkInitialGamepads();
-
-  const promptStatus = localStorage.getItem('shown-gamepad-prompt');
-  showGamepadPrompt.value = promptStatus !== 'false';
-
-  // Initialize mobile detection
-  detectMobile();
-  window.addEventListener('resize', detectMobile);
-
-  // Initialize ControllerManager without protagonist
-  await ControllerManager.setup();
-
-  // Initialize InputManager
-  await InputManager.setup();
-
-  // Initialize gamepad detection and checking
-  window.addEventListener('gamepadconnected', onGamepadConnect);
-  window.addEventListener('gamepaddisconnected', onGamepadDisconnect);
-  
-  // Start gamepad polling with all checks
-  const updateGamepads = () => {
-    // Update connected gamepads list
-    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-    connectedGamepads.splice(0, connectedGamepads.length, ...gamepads.filter(gp => gp));
-    hasGamepad.value = connectedGamepads.length > 0;
-    updateDeviceType();
-    formattedControlsHint.value = updateControlsHint();
-
-    pollGamepads = requestAnimationFrame(updateGamepads);
-  };
-  updateGamepads();
-
-  // Listen for settings events
-  ControllerManager.on('openSettings', onOpenSettings);
-  ControllerManager.on('doubleEsc', onDoubleEsc);
-
-  // Add pointer lock change listener
-  document.addEventListener('pointerlockchange', handlePointerLockChange);
-
-  // Initialize canvas size
-  if (gameCanvas.value) {
-    gameCanvas.value.width = gameCanvas.value.offsetWidth;
-    gameCanvas.value.height = gameCanvas.value.offsetHeight;
-  }
-
-  // Add fullscreen change listeners
-  document.addEventListener('fullscreenchange', handleFullscreenChange);
-  document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-  document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-  document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-});
-
-// Single consolidated onBeforeUnmount block
-onBeforeUnmount(() => {
-  setLayout('default');
-  window.removeEventListener('gamepadconnected', onGamepadConnect);
-  window.removeEventListener('gamepaddisconnected', onGamepadDisconnect);
-  window.removeEventListener('resize', detectMobile);
-  document.removeEventListener('pointerlockchange', handlePointerLockChange);
-  
-  if (pollGamepads) {
-    cancelAnimationFrame(pollGamepads);
-  }
-
-  cleanup();
-  
-  ControllerManager.off('openSettings', onOpenSettings);
-  ControllerManager.off('doubleEsc', onDoubleEsc);
-  InputManager.computerInput?.setGameStarted(false);
-
-  // Remove fullscreen change listeners
-  document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-  document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
-  document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
-});
-
-const isTouchDevice = () => {
-  return window.matchMedia('(pointer: coarse)').matches;
-};
-
-const detectMobile = () => {
-  // Check if device is mobile using touch capability and screen size
-  State.setMobile(isTouchDevice() && window.innerWidth <= 768);
-  updateDeviceType();
-};
-
-const onGamepadConnect = (e) => {
-  hasGamepad.value = true;
-  // Update the type and connected gamepads
-  updateDeviceType();
-  connectedGamepads.splice(0, connectedGamepads.length, e.gamepad);
-  // Update the controls hint when gamepad connects
-  formattedControlsHint.value = updateControlsHint();
-};
-
-const onGamepadDisconnect = (e) => {
-  connectedGamepads.splice(0, connectedGamepads.length);
-  hasGamepad.value = false;
-  updateDeviceType();
-  formattedControlsHint.value = updateControlsHint();
-};
-
-const initTouchControls = () => {
-  if (typeof window === 'undefined' || !joystickZone.value || !isMobile.value) return;
-
-  import('nipplejs').then(({ default: nipplejs }) => {
-    joystick = nipplejs.create({
-      zone: joystickZone.value,
-      mode: 'static',
-      position: { left: '80px', bottom: '80px' },
-      color: 'white',
-      size: 120
-    });
-
-    joystick.on('move', (evt, data) => {
-      if (data.vector.y > 0.3) ControllerManager.setInput('mobile', 'forward', true);
-      if (data.vector.y < -0.3) ControllerManager.setInput('mobile', 'back', true);
-      if (data.vector.x > 0.3) ControllerManager.setInput('mobile', 'right', true);
-      if (data.vector.x < -0.3) ControllerManager.setInput('mobile', 'left', true);
-    });
-
-    joystick.on('end', () => {
-      ControllerManager.setInput('mobile', 'forward', false);
-      ControllerManager.setInput('mobile', 'back', false);
-      ControllerManager.setInput('mobile', 'left', false);
-      ControllerManager.setInput('mobile', 'right', false);
-    });
-  }).catch(err => {
-    console.error('Failed to load nipplejs:', err);
-  });
-};
-
-const handleJump = () => {
-  ControllerManager.setInput('mobile', 'jump', true);
-};
-
-const handleJumpEnd = () => {
-  ControllerManager.setInput('mobile', 'jump', false);
-};
-
-const handleSprint = () => {
-  ControllerManager.setInput('mobile', 'sprint', true);
-};
-
-const handleSprintEnd = () => {
-  ControllerManager.setInput('mobile', 'sprint', false);
-};
-
-// Move the watch after all refs are defined
-watch([isMobile, hasGamepad], () => {
-  updateDeviceType();
-  formattedControlsHint.value = updateControlsHint();
-});
-
-// Game start handler
-
-// Modify handleGameStart to remove early controller setup
-const handleGameStart = async (event) => {
-    if (showSettings.value || reactiveState.isGameStarted || isRequestingFullscreen.value) return;
-
-    try {
-        if (event) event.stopPropagation();
-        isRequestingFullscreen.value = true;
-
-        // 1. Request fullscreen first
-        const container = gameContainer.value;
-        if (container?.requestFullscreen) {
-            await container.requestFullscreen();
-        }
-
-        // 2. Request pointer lock
-        const gameCanvas = document.getElementById('gameCanvas');
-        if (gameCanvas?.requestPointerLock) {
-            gameCanvas.requestPointerLock();
-        }
-
-        // 3. Start the game, which includes engine setup and player creation
-        await start();
-
-        // 4. Set game state and layout after successful initialization
-        State.setGameStarted(true);
-        setLayout('fullscreen');
-
-    } catch (err) {
-        console.error('Failed to start game:', err);
-        exitFullscreenAndGame();
-    } finally {
-        isRequestingFullscreen.value = false;
-        fullscreenAttempts.value = 0;
-    }
-};
-
-// Simplify cleanup
-const cleanup = () => {
-    if (!reactiveState.isGameStarted) return;
-    
-    State.setGameStarted(false);
-    InputManager.setGameRunning(false);
-    Engine.cleanup();
-    setLayout('default');
-};
-
-// Add the updateShowFPS method
-const updateShowFPS = (value) => {
-  State.setShowFPS(value);
-  Engine.setShowFPS(value);
-};
-
-// Add pointer lock change handler
-const handlePointerLockChange = () => {
-  ControllerManager.handlePointerLockChange();
-};
-
+// Add updateControlMode method since it's used in the template
 const updateControlMode = (newMode) => {
-  controlMode.value = newMode;
-  ControllerManager.switchMode(newMode);
+  State.controlMode = newMode;
+  if (ControllerManager.currentController) {
+    ControllerManager.switchMode(newMode);
+  }
 };
 
-// Add new helper method to handle exiting
-const exitFullscreenAndGame = async () => {
-    if (document.fullscreenElement) {
-        try {
-            await document.exitFullscreen();
-        } catch (error) {
-            console.error('Failed to exit fullscreen:', error);
-        }
-    }
-    Engine.setGameStarted(false);
-    State.setGameStarted(false);
-    setLayout('default');
-    
-    // Force cleanup of all systems
-    Engine.cleanup();
-    ControllerManager.cleanup();
-    InputManager.cleanup();
+// Define computed properties
+const isGameStarted = computed(() => State.isGameStarted);
+const connectedGamepads = computed(() => {
+  return Array.isArray(State.connectedGamepads) ? State.connectedGamepads : [];
+});
+const hasGamepad = computed(() => connectedGamepads.value.length > 0);
+const localControlMode = computed(() => State.controlMode); // Optionally rename for clarity
+
+// Define formattedControlsHint
+const formattedControlsHint = computed(() => {
+  return `
+    <ul>
+      <li>WASD - Move</li>
+      <li>Mouse - Look around</li>
+      <li>Space - Jump</li>
+      <li>Shift - Sprint</li>
+    </ul>
+  `;
+});
+
+// Update startPromptText computed
+const startPromptText = computed(() => {
+  if (!State.isEngineInitialised || State.currentStage || isLoading.value) return '';
+  return 'Click or Press Enter';
+});
+
+// Define the missing event handler updateShowFPS
+const updateShowFPS = (value) => {
+  State.showFPS = value;
 };
 
-// Add fullscreen change listener
-const handleFullscreenChange = () => {
-    const isFullscreen = !!(
-        document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        document.mozFullScreenElement ||
-        document.msFullscreenElement
-    );
-    
-    State.setFullscreen(isFullscreen);
-    
-    if (!isFullscreen && reactiveState.isGameStarted) {
-        cleanup();
-    }
+// Define getControllerName method
+const getControllerName = (gamepad) => {
+  if (!gamepad) return 'Unknown Controller';
+  const type = ControllerManager.inputState.gamepad.type || 'generic';
+  const id = gamepad.id || 'Unknown ID';
+  if (type === 'xbox') return `Xbox Controller (${id})`;
+  if (type === 'playstation') return `PlayStation Controller (${id})`;
+  return `Generic Controller (${id})`;
 };
 
-// Replace the State.on listener with watch statements
-watch(() => State.isGameStarted, (value) => {
-    reactiveState.isGameStarted = value;
-});
-
-watch(() => State.isMobile, (value) => {
-    reactiveState.isMobile = value;
-});
-
-watch(() => State.isSafari, (value) => {
-    reactiveState.isSafari = value;
-});
-watch(() => State.showFPS, (value) => {
-    reactiveState.showFPS = value;
-});
-
-watch(() => State.isEngineInitialized, (value) => {
-    reactiveState.isEngineInitialized = value;
-});
-
-const startGame = async () => {
-    const started = await start(); // Existing start function
-    if (started) {
-        Engine.setGameStarted(true);
+// Update click handler in template to emit through ControllerManager
+const handleStartClick = (event) => {
+    event.preventDefault();
+    if (!State.isGameStarted && !isStartInitiated.value) {
+        ControllerManager.emit('startGame');
     }
 };
 </script>

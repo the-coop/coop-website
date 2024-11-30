@@ -48,16 +48,26 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue';
-import ControllerManager from '../lib/game/controllers/controllerManager.mjs';
+import { ref, watch, onMounted } from 'vue';
+import ControllerManager from '../../lib/game/controllers/controllerManager.mjs';
 import GamepadInput from '../../lib/game/controllers/inputs/gamepad.mjs';
-import PlayerManager from '../lib/game/players/playerManager.mjs';
-import State from '../lib/game/state.mjs';
+import PlayerManager from '../../lib/game/players/playerManager.mjs';
+import State from '../../lib/game/state.mjs';
 
+// Fix prop types
 const props = defineProps({
-  show: Boolean,
-  controlMode: String,
-  gameStarted: Boolean,
+  show: {
+    type: Boolean,
+    default: false
+  },
+  controlMode: {
+    type: String,
+    default: 'fps'
+  },
+  gameStarted: {
+    type: Boolean,
+    default: false
+  },
   connectedGamepads: {
     type: Array,
     default: () => []
@@ -66,18 +76,16 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'updateControlMode', 'updateShowFPS']);
 
+// Use refs instead of computed for local state
 const selectedMode = ref(props.controlMode);
 const showFPS = ref(false);
 const sensitivity = ref(1.0);
+const localConnectedGamepads = ref([]);
 
-// Define a local reactive variable for connectedGamepads
-const localConnectedGamepads = ref([...props.connectedGamepads]);
-
-// Define a computed property for isMobile from global State
-const isMobile = computed(() => State.isMobile);
-
-// Define a computed property for gameStarted for consistency
-const gameStarted = computed(() => props.gameStarted);
+// Watch props for changes
+watch(() => props.connectedGamepads, (newGamepads) => {
+  localConnectedGamepads.value = Array.isArray(newGamepads) ? newGamepads : [];
+}, { immediate: true });
 
 watch(() => props.controlMode, (newMode) => {
   selectedMode.value = newMode;
@@ -85,18 +93,10 @@ watch(() => props.controlMode, (newMode) => {
 
 const onControlModeChange = () => {
   emit('updateControlMode', selectedMode.value);
-  // Verify protagonist after control mode change
-  const protagonist = PlayerManager.getProtagonist();
-  if (!protagonist) {
-    console.warn('Protagonist is not set after control mode change');
-  } else {
-    ControllerManager.switchMode(selectedMode.value);
-  }
 };
 
 const onShowFPSChange = () => {
   emit('updateShowFPS', showFPS.value);
-  State.setShowFPS(showFPS.value);
 };
 
 const handleClose = () => {
@@ -104,29 +104,19 @@ const handleClose = () => {
 };
 
 const getControllerName = (gamepad) => {
-  const type = GamepadInput.type;
-  const id = gamepad?.id || 'Unknown Controller';
-  if (type === 'xbox') return `Xbox Controller (${id})`;
-  if (type === 'playstation') return `PlayStation Controller (${id})`;
-  return `Generic Controller (${id})`;
+  if (!gamepad) return 'Unknown Controller';
+  const id = gamepad.id || 'Unknown ID';
+  return `Game Controller (${id})`;
 };
 
-// Watch for changes in connectedGamepads prop and update local variable
-watch(() => props.connectedGamepads, (newGamepads) => {
-  localConnectedGamepads.value = newGamepads;
-}, { immediate: true });
-
 onMounted(() => {
-  // Initialize sensitivity from ControllerManager
-  sensitivity.value = ControllerManager.getSensitivity();
+  // Set default sensitivity
+  sensitivity.value = 1.0;
 });
 
 const onSensitivityChange = () => {
-  ControllerManager.setSensitivity(sensitivity.value);
-  // Verify protagonist after sensitivity change
-  const protagonist = PlayerManager.getProtagonist();
-  if (!protagonist) {
-    console.warn('Protagonist is not set after sensitivity change');
+  if (ControllerManager.setSensitivity) {
+    ControllerManager.setSensitivity(sensitivity.value);
   }
 };
 </script>
