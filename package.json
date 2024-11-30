@@ -11,9 +11,8 @@
   },
   "dependencies": {
     "coop-shared": "git+https://github.com/the-coop/coop-shared.git#b6a2a36a6698814852965971d94b9f584b6edaf2",
-    "nipplejs": "^0.10.2",
     "nuxt": "latest",
-    "three": "^0.169.0",
+    "three": "latest",
     "vue": "latest",
     "vue-router": "latest"
   }
