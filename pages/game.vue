@@ -1,9 +1,9 @@
 <template>
-  <div ref="gameContainer" class="container" :class="{ full: isGameStarted }" @click="handleGameStart">
-    <canvas id="gameCanvas" ref="canvas"></canvas>
+  <div ref="gameContainer" class="container" :class="{ full: isGameStarted }">
+    <canvas id="gameCanvas" ref="gameCanvas"></canvas>
     
     <!-- Game Start UI -->
-    <div v-if="!isGameStarted" class="start">
+    <div v-if="!isGameStarted" class="start" @click="startGame">
       <!-- Connected Gamepads Display -->
       <div v-if="hasGamepad" class="pads">
         <h3>Connected Controllers:</h3>
@@ -21,9 +21,9 @@
         </div>
         <div class="controls" v-html="formattedControlsHint"></div>
         <div class="actions">
-          <button class="btn" @click.stop="handleGameStart">
-            {{ startPromptText }}
-          </button>
+          <!-- Replace the start button with a span -->
+          <span class="start-prompt">{{ startPromptText }}</span>
+          <!-- Keep the settings button -->
           <button class="btn config" @click.stop="toggleSettings">
             <Gear class="icon" />
             Settings
@@ -99,10 +99,13 @@ canvas {
 }
 
 .start-prompt {
+  font-size: 1.5em;
   color: white;
-  font-size: 2em;
-  margin-bottom: 1em;
+  user-select: none;
+  /* Optional: Center the text */
+  display: block;
   text-align: center;
+  margin-bottom: 1em;
 }
 
 .controls {
@@ -310,6 +313,10 @@ canvas {
   max-width: 400px;
 }
 
+.actions .btn {
+  display: none;
+}
+
 .btn {
   background: rgba(255, 204, 0, 0.9);
   color: black;
@@ -468,7 +475,7 @@ const reactiveState = reactive({
 const hasGamepad = ref(false);
 const connectedGamepads = reactive([]);
 const deviceType = ref('');
-const canvas = ref(null);
+const gameCanvas = ref(null);
 const gameContainer = ref(null);
 const controlMode = ref('fps');
 const showSettings = ref(false);
@@ -528,34 +535,46 @@ const togglePlayerVisibility = (mode) => {
 
 const { $layout } = useNuxtApp();
 
-// Modify the start function to handle initialization order
+// Update the start function to ensure proper initialization order
 const start = async () => {
-    if (!canvas.value) {
+    if (!gameCanvas.value) {
         throw new Error('Canvas element not found');
     }
 
     try {
-        // Initialize engine first
-        const engineSetupSuccess = await Engine.setup(canvas.value);
+        // 1. Initialize engine first and ensure it's complete
+        const engineSetupSuccess = await Engine.setup(gameCanvas.value);
         if (!engineSetupSuccess) {
             throw new Error('Engine setup failed');
         }
 
-        // Initialize controls after engine setup
-        const controllerSetupSuccess = await ControllerManager.setup();
-        if (!controllerSetupSuccess) {
-            throw new Error('Controller setup failed');
-        }
-        
-        // Initialize input systems last
-        const inputSetupSuccess = await InputManager.setup();
-        if (!inputSetupSuccess) {
-            throw new Error('Input setup failed');
+        // 2. Verify scene and camera exist
+        if (!Engine.scene || !Engine.cam) {
+            throw new Error('Engine scene or camera not initialized');
         }
 
-        // Set game running state after all systems are initialized
+        // 3. Create player with verified scene and camera
+        console.log('Creating player...');
+        const playerCreated = await PlayerManager.create(Engine.scene, Engine.cam);
+        if (!playerCreated) {
+            throw new Error('Failed to create player');
+        }
+
+        // 4. Get protagonist and verify it exists
+        const protagonist = PlayerManager.getProtagonist();
+        if (!protagonist) {
+            throw new Error('Protagonist not created');
+        }
+
+        // 5. Initialize controllers with protagonist
+        await ControllerManager.setProtagonist(protagonist);
+        
+        // 6. Set game state
         State.setGameStarted(true);
-        InputManager.setGameRunning(true);
+        
+        // 7. Start game systems
+        await ControllerManager.setGameRunning(true);
+        await InputManager.setGameRunning(true);
 
         return true;
     } catch (err) {
@@ -566,23 +585,23 @@ const start = async () => {
     }
 };
 
-// Add this function to check initial gamepads
+// Add this function before onMounted
 const checkInitialGamepads = () => {
-  if (!process.client) return;
-  
-  const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-  for (let gamepad of gamepads) {
-    if (gamepad) {
-      hasGamepad.value = true;
-      connectedGamepads.splice(0, connectedGamepads.length, gamepad);
-      updateDeviceType();
-      formattedControlsHint.value = updateControlsHint();
-      break;
+    if (!process.client) return;
+    
+    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (const gamepad of gamepads) {
+        if (gamepad) {
+            hasGamepad.value = true;
+            connectedGamepads.splice(0, connectedGamepads.length, gamepad);
+            updateDeviceType();
+            formattedControlsHint.value = updateControlsHint();
+            break;
+        }
     }
-  }
 };
 
-// Define listener functions to allow removal
+// Move event listener functions before onMounted
 const onOpenSettings = () => {
   if (isGameStarted.value) {
     toggleSettings();
@@ -595,14 +614,18 @@ const onDoubleEsc = () => {
   }
 };
 
-// Single consolidated onMounted block
-onMounted(() => {
+const toggleSettings = () => {
+  showSettings.value = !showSettings.value;
+};
+
+// Remove Engine.setup call from onMounted
+onMounted(async () => {
   if (!process.client) return;
   
   nextTick(() => {
-    if (canvas.value) {
-      canvas.value.width = canvas.value.offsetWidth || window.innerWidth;
-      canvas.value.height = canvas.value.offsetHeight || window.innerHeight;
+    if (gameCanvas.value) {
+      gameCanvas.value.width = gameCanvas.value.offsetWidth || window.innerWidth;
+      gameCanvas.value.height = gameCanvas.value.offsetHeight || window.innerHeight;
     }
   });
 
@@ -615,12 +638,25 @@ onMounted(() => {
   detectMobile();
   window.addEventListener('resize', detectMobile);
 
+  // Initialize ControllerManager without protagonist
+  await ControllerManager.setup();
+
+  // Initialize InputManager
+  await InputManager.setup();
+
   // Initialize gamepad detection and checking
   window.addEventListener('gamepadconnected', onGamepadConnect);
   window.addEventListener('gamepaddisconnected', onGamepadDisconnect);
   
   // Start gamepad polling with all checks
   const updateGamepads = () => {
+    // Update connected gamepads list
+    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    connectedGamepads.splice(0, connectedGamepads.length, ...gamepads.filter(gp => gp));
+    hasGamepad.value = connectedGamepads.length > 0;
+    updateDeviceType();
+    formattedControlsHint.value = updateControlsHint();
+
     pollGamepads = requestAnimationFrame(updateGamepads);
   };
   updateGamepads();
@@ -633,9 +669,9 @@ onMounted(() => {
   document.addEventListener('pointerlockchange', handlePointerLockChange);
 
   // Initialize canvas size
-  if (canvas.value) {
-    canvas.value.width = canvas.value.offsetWidth;
-    canvas.value.height = canvas.value.offsetHeight;
+  if (gameCanvas.value) {
+    gameCanvas.value.width = gameCanvas.value.offsetWidth;
+    gameCanvas.value.height = gameCanvas.value.offsetHeight;
   }
 
   // Add fullscreen change listeners
@@ -750,48 +786,32 @@ watch([isMobile, hasGamepad], () => {
 
 // Game start handler
 
-// Modify handleGameStart to set game state before engine setup
+// Modify handleGameStart to remove early controller setup
 const handleGameStart = async (event) => {
     if (showSettings.value || reactiveState.isGameStarted || isRequestingFullscreen.value) return;
-    
-    if (!State.isControllersInitialized) {
-        console.error('Controllers not initialized');
-        // Optionally, display a user-friendly message
-        return;
-    }
 
     try {
         if (event) event.stopPropagation();
         isRequestingFullscreen.value = true;
 
-        // 1. Initialize engine and player first
-        await Engine.setup(canvas.value);
-        
-        // 2. Verify player and controller setup
-        if (!PlayerManager.getProtagonist()) {
-            throw new Error('Failed to create player');
-        }
-
-        if (!ControllerManager.isInitialized) {
-            throw new Error('Controllers not initialized');
-        }
-
-        // 3. Set game state after setup verification
-        Engine.setGameStarted(true);
-        State.setGameStarted(true);
-        setLayout('fullscreen');
-
-        // 4. Request fullscreen after successful initialization
+        // 1. Request fullscreen first
         const container = gameContainer.value;
         if (container?.requestFullscreen) {
             await container.requestFullscreen();
         }
 
-        // 5. Finally request pointer lock
+        // 2. Request pointer lock
         const gameCanvas = document.getElementById('gameCanvas');
         if (gameCanvas?.requestPointerLock) {
             gameCanvas.requestPointerLock();
         }
+
+        // 3. Start the game, which includes engine setup and player creation
+        await start();
+
+        // 4. Set game state and layout after successful initialization
+        State.setGameStarted(true);
+        setLayout('fullscreen');
 
     } catch (err) {
         console.error('Failed to start game:', err);
@@ -821,10 +841,6 @@ const updateShowFPS = (value) => {
 // Add pointer lock change handler
 const handlePointerLockChange = () => {
   ControllerManager.handlePointerLockChange();
-};
-
-const toggleSettings = () => {
-  showSettings.value = !showSettings.value;
 };
 
 const updateControlMode = (newMode) => {
@@ -879,7 +895,6 @@ watch(() => State.isMobile, (value) => {
 watch(() => State.isSafari, (value) => {
     reactiveState.isSafari = value;
 });
-
 watch(() => State.showFPS, (value) => {
     reactiveState.showFPS = value;
 });
@@ -887,4 +902,11 @@ watch(() => State.showFPS, (value) => {
 watch(() => State.isEngineInitialized, (value) => {
     reactiveState.isEngineInitialized = value;
 });
+
+const startGame = async () => {
+    const started = await start(); // Existing start function
+    if (started) {
+        Engine.setGameStarted(true);
+    }
+};
 </script>
