@@ -1,10 +1,8 @@
 <template>
   <div ref="gameContainer" class="container" :class="{ full: isGameStarted }">
-    <!-- Keep global LoadingStatus -->
     <LoadingStatus />
-    
     <canvas id="gameCanvas" ref="gameCanvas"></canvas>
-    
+
     <!-- Game Start UI -->
     <div v-if="!isGameStarted" class="start" @click="handleStartClick">
       <div class="content">
@@ -43,19 +41,15 @@
       </button>
     </div>
 
-    <!-- Settings Overlay -->
     <Settings 
       :show="showSettings"
-      :control-mode="controlMode || 'fps'"
-      :game-started="!!isGameStarted"
-      :connected-gamepads="connectedGamepads || []"
+      :control-mode="controlMode"
+      :game-started="isGameStarted"
+      :connected-gamepads="connectedGamepads"
       @close="toggleSettings"
       @update-control-mode="updateControlMode"
       @updateShowFPS="updateShowFPS"
     />
-
-    <!-- Mobile Touch Controls - Only show on mobile when game is started -->
-    <!-- <MobileInterface v-if="isMobile && isGameStarted"></MobileInterface> -->
   </div>
 </template>
 
@@ -407,165 +401,86 @@ canvas {
 </style>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useLayout } from '../composables/useLayout';
-
-const { setLayout } = useLayout();
-
+import LoadingStatus from '../components/game/LoadingStatus.vue'; // Existing import
+import Gear from '../components/icons/Gear.vue'; // Existing import
+import Settings from '../components/game/Settings.vue'; // Existing import
 import State from '../lib/game/state.mjs';
 import Engine from '../lib/game/engine.mjs';
 import InputManager from '../lib/game/controllers/inputManager.mjs';
 import ControllerManager from '../lib/game/controllers/controllerManager.mjs';
-import Gear from '../components/icons/Gear.vue';
-import Settings from '../components/game/Settings.vue';
-import LoadingStatus from '../components/game/LoadingStatus.vue';
-// Removed unnecessary import of PlayerManager
 
-const showSettings = ref(false);
+// const { setLayout } = useLayout(); // Assuming it's used elsewhere
+
+// Core refs
 const gameCanvas = ref(null);
-const controlMode = State.controlMode;
+const gameContainer = ref(null);
 const isLoading = ref(true);
 const isStartInitiated = ref(false);
-const isEngineSetup = ref(false); // New flag to prevent multiple setups
 
-// Update startPromptText computed to check for engine loaded instead of initialised
+// Computed state
+const isGameStarted = computed(() => State.isGameStarted);
+const showSettings = computed(() => State.showSettings);
+const connectedGamepads = computed(() => State.connectedGamepads);
+const controlMode = computed(() => State.controlMode);
+const hasGamepad = computed(() => connectedGamepads.value?.length > 0);
+
+// UI computed properties
 const startPromptText = computed(() => {
   if (!Engine.loaded || State.currentStage || isLoading.value) return '';
   return 'Click or Press Enter';
 });
 
-// Update startGame function to remove redundant Engine.setup call
-const startGame = async () => {
-    if (State.isGameStarted || isStartInitiated.value) return; // Prevent multiple starts
-    isStartInitiated.value = true;
+const formattedControlsHint = computed(() => `
+  <ul>
+    <li>WASD - Move</li>
+    <li>Mouse - Look around</li>
+    <li>Space - Jump</li>
+    <li>Shift - Sprint</li>
+  </ul>
+`);
 
-    try {
-        State.clearLogs();
-        
-        // Engine is already set up during onMounted
-        
-        // Start the game
-        await Engine.setGameStarted(true);
+// Event Handlers
+async function handleStartClick(event) {
+  console.log('Start button clicked'); // Debugging
+  await Engine.setGameStarted(true); // Adjusted to use Engine directly
+}
 
-        State.addLog('Game ready!', 'game.vue');
-        setLayout('fullscreen');
+function toggleSettings() {
+  State.setShowSettings(!State.showSettings);
+}
 
-    } catch (err) {
-        console.error('Game start failed:', err);
-        State.addLog(`Error: ${err.message}`, 'game.vue');
-        await cleanup();
-    } finally {
-        isStartInitiated.value = false;
-    }
-};
-
-// Cleanup function
-const cleanup = async () => {
-    try {
-        await Engine.cleanup();
-        InputManager.cleanup();
-        ControllerManager.cleanup();
-        State.setGameStarted(false);
-        setLayout('default');
-    } catch (err) {
-        console.error('Cleanup failed:', err);
-    }
-};
-
-// Setup basic systems when component mounts
-onMounted(async () => {
-    if (process.client && !isEngineSetup.value) { // Check setup flag
-        console.log('Setting up basic systems...');
-        
-        try {
-            // Setup engine first
-            await Engine.setup(gameCanvas.value);
-            isEngineSetup.value = true; // Set flag after setup
-
-            // Then setup controllers
-            await ControllerManager.setup();
-            if (!ControllerManager.ready) {
-                throw new Error('Controller initialization failed');
-            }
-            
-            // Finally setup input
-            await InputManager.setup();
-            
-            // Add event listeners
-            window.addEventListener('resize', Engine.handleResize);
-            ControllerManager.on('startGame', startGame);
-            
-            console.log('Basic systems ready');
-        } catch (err) {
-            console.error('System setup failed:', err);
-            State.addLog(`Error: ${err.message}`, 'game.vue');
-        }
-    }
-});
-
-// Add mounted hook to clear loading after init
-onMounted(() => {
-  // ...existing mounted code...
-  
-  // Clear loading after short delay
-  setTimeout(() => {
-    isLoading.value = false
-  }, 500)
-})
-
-// Existing toggleSettings method can stay the same since it uses the new ref
-const toggleSettings = () => {
-  showSettings.value = !showSettings.value;
-};
-
-// Add updateControlMode method since it's used in the template
-const updateControlMode = (newMode) => {
+function updateControlMode(newMode) {
+  // Update control mode without Player
   State.controlMode = newMode;
-  if (ControllerManager.currentController) {
-    ControllerManager.switchMode(newMode);
-  }
-};
+  ControllerManager.switchMode(newMode);
+}
 
-// Define computed properties
-const isGameStarted = computed(() => State.isGameStarted);
-const connectedGamepads = computed(() => {
-  return Array.isArray(State.connectedGamepads) ? State.connectedGamepads : [];
-});
-const hasGamepad = computed(() => connectedGamepads.value.length > 0);
-const localControlMode = computed(() => State.controlMode); // Optionally rename for clarity
+function updateShowFPS(value) {
+  State.setShowFPS(value);
+  Engine.setShowFPS(value);
+}
 
-// Define formattedControlsHint
-const formattedControlsHint = computed(() => {
-  return `
-    <ul>
-      <li>WASD - Move</li>
-      <li>Mouse - Look around</li>
-      <li>Space - Jump</li>
-      <li>Shift - Sprint</li>
-    </ul>
-  `;
-});
-
-// Define the missing event handler updateShowFPS
-const updateShowFPS = (value) => {
-  State.showFPS = value;
-};
-
-// Define getControllerName method
-const getControllerName = (gamepad) => {
+function getControllerName(gamepad) {
   if (!gamepad) return 'Unknown Controller';
-  const type = ControllerManager.inputState.gamepad.type || 'generic';
   const id = gamepad.id || 'Unknown ID';
-  if (type === 'xbox') return `Xbox Controller (${id})`;
-  if (type === 'playstation') return `PlayStation Controller (${id})`;
-  return `Generic Controller (${id})`;
-};
+  return `Game Controller (${id})`;
+}
 
-// Update click handler in template to emit through ControllerManager
-const handleStartClick = (event) => {
-    event.preventDefault();
-    if (!State.isGameStarted && !isStartInitiated.value) {
-        ControllerManager.emit('startGame');
-    }
-};
+// Game Lifecycle
+onMounted(async () => {
+  // Initialize Engine without Player
+  try {
+    await Engine.setup(gameCanvas.value);
+    isLoading.value = false;
+  } catch (err) {
+    console.error('Game setup failed:', err);
+    isLoading.value = false;
+  }
+});
+
+onBeforeUnmount(() => {
+  Engine.cleanup();
+});
 </script>

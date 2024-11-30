@@ -48,11 +48,10 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, defineProps, defineEmits } from 'vue';
 import ControllerManager from '../../lib/game/controllers/controllerManager.mjs';
 import GamepadInput from '../../lib/game/controllers/inputs/gamepad.mjs';
-import PlayerManager from '../../lib/game/players/playerManager.mjs';
-import State from '../../lib/game/state.mjs';
+import State from '../../lib/game/state.mjs'; // Use State instead of UIState
 
 // Fix prop types
 const props = defineProps({
@@ -78,7 +77,7 @@ const emit = defineEmits(['close', 'updateControlMode', 'updateShowFPS']);
 
 // Use refs instead of computed for local state
 const selectedMode = ref(props.controlMode);
-const showFPS = ref(false);
+const showFPS = ref(State.showFPS); // Initialize from State
 const sensitivity = ref(1.0);
 const localConnectedGamepads = ref([]);
 
@@ -100,7 +99,7 @@ const onShowFPSChange = () => {
 };
 
 const handleClose = () => {
-  emit('close');
+  State.setShowSettings(false);
 };
 
 const getControllerName = (gamepad) => {
@@ -110,7 +109,7 @@ const getControllerName = (gamepad) => {
 };
 
 onMounted(() => {
-  // Set default sensitivity
+  // Set default sensitivity from State or default
   sensitivity.value = 1.0;
 });
 
