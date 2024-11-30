@@ -426,6 +426,7 @@ const gameCanvas = ref(null);
 const controlMode = State.controlMode;
 const isLoading = ref(true);
 const isStartInitiated = ref(false);
+const isEngineSetup = ref(false); // New flag to prevent multiple setups
 
 // Update startPromptText computed to check for engine loaded instead of initialised
 const startPromptText = computed(() => {
@@ -433,21 +434,16 @@ const startPromptText = computed(() => {
   return 'Click or Press Enter';
 });
 
-// No longer need to manage initialised state here since engine handles it
+// Update startGame function to remove redundant Engine.setup call
 const startGame = async () => {
-    if (State.isGameStarted || isStartInitiated.value) return;
+    if (State.isGameStarted || isStartInitiated.value) return; // Prevent multiple starts
     isStartInitiated.value = true;
 
     try {
         State.clearLogs();
         
-        // Initialize engine if not already loaded
-        if (!Engine.loaded) {
-            State.addLog('Loading game engine...', 'game.vue');
-            await Engine.setup(gameCanvas.value);
-            State.addLog('Game engine loaded', 'game.vue');
-        }
-
+        // Engine is already set up during onMounted
+        
         // Start the game
         await Engine.setGameStarted(true);
 
@@ -458,6 +454,8 @@ const startGame = async () => {
         console.error('Game start failed:', err);
         State.addLog(`Error: ${err.message}`, 'game.vue');
         await cleanup();
+    } finally {
+        isStartInitiated.value = false;
     }
 };
 
@@ -476,13 +474,14 @@ const cleanup = async () => {
 
 // Setup basic systems when component mounts
 onMounted(async () => {
-    if (process.client) {
+    if (process.client && !isEngineSetup.value) { // Check setup flag
         console.log('Setting up basic systems...');
         
         try {
             // Setup engine first
             await Engine.setup(gameCanvas.value);
-            
+            isEngineSetup.value = true; // Set flag after setup
+
             // Then setup controllers
             await ControllerManager.setup();
             if (!ControllerManager.ready) {
