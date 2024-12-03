@@ -1,49 +1,41 @@
 <template>
   <div class="layout">
-    <Logo class="logo" />
-    <h1 v-if="title" class="page-title">{{ title }}</h1>
-    <div class="content">
+    <nav class="nav">
+      <Logo class="logo" />
+      <h1 v-if="title">{{ title }}</h1>
+    </nav>
+    <main class="main">
       <slot></slot>
-    </div>
+    </main>
   </div>
 </template>
 
 <script setup>
-  import Logo from '../components/Logo.vue';
-
-  defineProps({
-    title: {
-      type: String,
-      default: ''
-    }
-  });
+import Logo from '../components/Logo.vue';
+defineProps({ title: String });
 </script>
 
 <style scoped>
-  .layout {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1.25em;
-    color: #fff;
-  }
+.layout {
+  min-height: 100vh;
+  background: #000;
+  color: white;
+}
 
-  .logo {
-    width: 6em;
-    margin-bottom: 1.25em;
-    z-index: 10;
-  }
+.nav {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.8);
+}
 
-  .page-title {
-    color: white;
-    font-size: 3em;
-    margin: 0 0 0.5em;
-    text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
-  }
+.logo {
+  width: 100px;
+  height: auto;
+}
 
-  .content {
-    flex: 1;
-    width: 100%;
-    position: relative;
-  }
+.main {
+  padding: 20px;
+}
 </style>
