@@ -1,6 +1,6 @@
 <template>
   <div class="game">
-    <Start v-if="!started" :gamepads="gamepads" :start="start" />
+    <Start v-if="!started" :gamepad="gamepad" :start="start" />
     <canvas class="viewer" ref="canvas"></canvas>
   </div>
 </template>
@@ -18,12 +18,15 @@
     data() {
       return {
         started: false,
-        gamepads: []
+        gamepad: null
       };
     },
     methods: {
       start() {
         this.started = true;
+      },
+      updateGamepad() {
+        this.gamepad = Engine.ui.gamepad;
       }
     },
     mounted() {
@@ -39,6 +42,10 @@
 
       // Start game loop.
       Engine.loop();
+
+      // Update gamepad state periodically.
+      this.updateGamepad();
+      setInterval(this.updateGamepad, 100);
     },
     unmounted() {
       Engine.cleanup();
