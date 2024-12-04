@@ -1,7 +1,7 @@
 <template>
   <div class="game">
     <Start v-if="!started" :gamepad="gamepad" :start="start" />
-    <canvas class="viewer" ref="canvas"></canvas>
+    <canvas class="viewer" ref="canvas" tabindex="0"></canvas>
   </div>
 </template>
 
@@ -18,20 +18,18 @@
     data() {
       return {
         started: false,
-        gamepad: null
+        gamepad: null,
+        fullscreenHandler: null
       };
     },
     methods: {
-      start() {
+      async start() {
         this.started = true;
-      },
-      updateGamepad() {
-        const gamepads = navigator.getGamepads();
-        if (Engine.ui.gamepad && gamepads[Engine.ui.gamepad.index]) {
-          this.gamepad = gamepads[Engine.ui.gamepad.index];
-        } else {
-          this.gamepad = null;
-        }
+        const canvas = this.$refs.canvas;
+
+        // Start fullscreen and pointer lock.
+        canvas.requestFullscreen();
+        canvas.requestPointerLock();
       }
     },
     mounted() {
@@ -47,12 +45,10 @@
 
       // Start game loop.
       Engine.loop();
-
-      // Update gamepad state periodically.
-      this.updateGamepad();
-      setInterval(this.updateGamepad, 100);
     },
     unmounted() {
+      if (this.fullscreenHandler)
+        document.removeEventListener('fullscreenchange', this.fullscreenHandler);
       Engine.cleanup();
       Gamepad.cleanup();
     }
@@ -77,6 +73,9 @@
   }
 
   .viewer {
+    position: absolute;
+    left: 0;
+    top: 0;
     width: 100%;
     height: 100%;
   }
