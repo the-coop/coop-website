@@ -1,19 +1,8 @@
 <template>
   <div class="start">
     <span class="startcta" @click="start">
-      <span v-if="!gamepad">Start Game</span>
-      <span v-if="gamepad">Press Button</span>
+      Start Game
     </span>
-
-    <!-- Display connected gamepad -->
-    <div v-if="gamepad" class="gamepad-info">
-      <h3>Connected Controller:</h3>
-      <div>
-        Type: {{ gamepad.type || 'Unknown' }}
-        <br>
-        Buttons pressed: {{ gamepad.buttons?.filter(btn => btn.pressed).length || 0 }}
-      </div>
-    </div>
   </div>
 </template>
 
@@ -35,15 +24,12 @@
     },
     methods: {
       listen() {
-        if (!this.listening || !this.gamepad) return;
+        if (!this.listening) return;
 
-        const buttons = this?.gamepad?.buttons;
-
-        // Check buttons 0 (A/Cross) and 2 (X/Square)
-        if (buttons?.[0].pressed || buttons?.[2].pressed) {
+        const pressed = this?.gamepad?.buttons[0].pressed;
+        if (pressed) {
           this.start();
           this.listening = false;
-          return;
         }
 
         requestAnimationFrame(this.listen);

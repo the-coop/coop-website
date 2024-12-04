@@ -26,7 +26,12 @@
         this.started = true;
       },
       updateGamepad() {
-        this.gamepad = Engine.ui.gamepad;
+        const gamepads = navigator.getGamepads();
+        if (Engine.ui.gamepad && gamepads[Engine.ui.gamepad.index]) {
+          this.gamepad = gamepads[Engine.ui.gamepad.index];
+        } else {
+          this.gamepad = null;
+        }
       }
     },
     mounted() {
