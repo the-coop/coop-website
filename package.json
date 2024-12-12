@@ -10,7 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "coop-shared": "git+https://github.com/the-coop/coop-shared.git#b6a2a36a6698814852965971d94b9f584b6edaf2",
+    "coop-shared": "git+https://github.com/the-coop/coop-shared.git#0471a5b7883b5a5c2055144b42977cb7e9b9c676",
     "nuxt": "latest",
     "three": "latest",
     "vue": "latest",

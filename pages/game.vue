@@ -25,11 +25,11 @@
     methods: {
       async start() {
         this.started = true;
-        const canvas = this.$refs.canvas;
-
+        
         // Start fullscreen and pointer lock.
-        canvas.requestFullscreen();
-        canvas.requestPointerLock();
+        const canvas = this.$refs.canvas;
+        canvas?.requestFullscreen();
+        canvas?.requestPointerLock();
       }
     },
     mounted() {
