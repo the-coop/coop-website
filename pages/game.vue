@@ -5,44 +5,36 @@
   </div>
 </template>
 
-<script>
+<script setup>
   import Engine from '../lib/game/engine.mjs';
   import Start from '../components/game/Start.vue';
+  import { ref, onMounted, onBeforeUnmount } from 'vue';
 
-  export default {
-    name: 'Game',
-    layout: 'Gaming',
-    components: {
-      Start
-    },
-    data: () => ({ 
-      started: false 
-    }),
-    methods: {
-      async start() {
-        try {
-          // Get full screen and pointer lock.
-          await document.documentElement?.requestFullscreen();
-          document.body?.requestPointerLock();
-          requestAnimationFrame(() => Engine.resize());
+  definePageMeta({
+    layout: 'gaming'
+  });
 
-          // Start the game/show other elements.
-          this.started = true;
+  const started = ref(false);
+  const canvas = ref(null);
 
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    },
-    async mounted() {
-      Engine.setup(this);
-    },
-    beforeUnmount() {
-      document.documentElement?.exitPointerLock();
-      document?.exitPointerLock?.();
-      Engine.cleanup();
+  async function start() {
+    try {
+      await document.documentElement?.requestFullscreen();
+      document.body?.requestPointerLock();
+      requestAnimationFrame(() => Engine.resize());
+      started.value = true;
+    } catch (e) {
+      console.error(e);
     }
-  };
+  }
+
+  onMounted(() => Engine.setup({ $refs: { canvas: canvas.value } }));
+
+  onBeforeUnmount(() => {
+    document.documentElement?.exitPointerLock();
+    document?.exitPointerLock?.();
+    Engine.cleanup();
+  });
 </script>
 
 <style scoped>
@@ -52,6 +44,7 @@
   }
 
   .canvas {
+    display: block;
     height: 100%;
     width: 100%;
   }
