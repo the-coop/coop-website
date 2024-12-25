@@ -1,9 +1,10 @@
 <template>
   <div class="layout">
-    <nav class="nav" :class="{ 'nav--hidden': $route.name === 'game' }">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <nav v-if="$route.name !== 'game'" class="nav">
       <Logo class="logo" />
     </nav>
-    <main class="main" :class="{ 'main--fullscreen': $route.name === 'game' }">
+    <main class="main">
       <slot></slot>
     </main>
   </div>
@@ -14,7 +15,6 @@
 </script>
 
 <style scoped>
-  /* Ensure html and body occupy full height and have no margins */
   html, body {
     height: 100%;
     margin: 0;
@@ -23,19 +23,16 @@
 
   .layout {
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
     background: #000;
     color: white;
-    overflow: hidden;
   }
 
   .nav {
-    flex: 0 0 auto;
-    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    flex: 0 0 auto;
+    padding: 1.2em;
     background: rgba(0, 0, 0, 0.8);
   }
 
@@ -44,18 +41,9 @@
   }
 
   .main {
-    flex: 1;
     position: relative;
-    overflow: hidden;
+    height: 100%;
     display: flex;
     flex-direction: column;
-  }
-
-  .nav--hidden {
-    display: none;
-  }
-
-  .main--fullscreen {
-    height: 100vh;
   }
 </style>
