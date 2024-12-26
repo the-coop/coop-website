@@ -10,9 +10,7 @@
   import Start from '../components/game/Start.vue';
   import { ref, onMounted, onBeforeUnmount } from 'vue';
 
-  definePageMeta({
-    layout: 'gaming'
-  });
+  definePageMeta({ layout: 'gaming' });
 
   const started = ref(false);
   const canvas = ref(null);
@@ -21,6 +19,7 @@
     try {
       await document.documentElement?.requestFullscreen();
       document.body?.requestPointerLock();
+
       requestAnimationFrame(() => Engine.resize());
       started.value = true;
     } catch (e) {

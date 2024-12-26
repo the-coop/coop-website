@@ -1,6 +1,6 @@
 <template>
   <div class="start">
-    <button @click="start">Start Game</button>
+    <button class="cta" @click="start">Start Game</button>
   </div>
 </template>
 
@@ -19,12 +19,12 @@ export default {
     background: rgba(0,0,0,0.8);
 }
 
-button {
+.cta {
     font-size: 2em;
     padding: 1em 2em;
     background: none;
     color: white;
-    border: 1px solid white;
+    border: .1em solid white;
     cursor: pointer;
 }
 </style>
