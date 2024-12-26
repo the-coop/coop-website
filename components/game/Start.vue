@@ -4,27 +4,28 @@
   </div>
 </template>
 
-<script>
-export default {
-    props: ['start']
-}
+<script setup>
+  const props = defineProps(['start']);
+  
+
+  
 </script>
 
 <style scoped>
-.start {
+  .start {
     position: fixed;
     inset: 0;
     display: grid;
     place-items: center;
     background: rgba(0,0,0,0.8);
-}
+  }
 
-.cta {
+  .cta {
     font-size: 2em;
     padding: 1em 2em;
     background: none;
     color: white;
     border: .1em solid white;
     cursor: pointer;
-}
+  }
 </style>

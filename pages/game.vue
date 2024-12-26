@@ -22,10 +22,11 @@
 
       requestAnimationFrame(() => Engine.resize());
       started.value = true;
+
     } catch (e) {
       console.error(e);
     }
-  }
+  };
 
   onMounted(() => Engine.setup({ $refs: { canvas: canvas.value } }));
 
