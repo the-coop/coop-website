@@ -20,24 +20,23 @@
 
   // Starting the game, hiding the UI and handling spawning.
   async function start() {
+    if (started.value) return;
+    
     try {
       // Enter fullscreen and pointer lock, if possible.
       await document.documentElement?.requestFullscreen();
       document.body?.requestPointerLock();
 
-      // Resize after fullscren and pointer lock to account for UI/change.
-      requestAnimationFrame(() => Engine.resize());
+      // Wait for fullscreen transition to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      Engine.resize();
 
-      // Indicate game started to engine.
-      started.value = true;
-
-      // TODO: Should attempt to load data/tell if they're a new player.
-
-      // TODO: Should spawn
-
-      // Should change to FPS controller
+      // Change to FPS controller first
       ControlManager.change(FPSController);
 
+      // Mark as started last to prevent duplicate starts
+      started.value = true;
+      
     } catch (e) {
       console.error(e);
     }
