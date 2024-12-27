@@ -6,9 +6,11 @@
 </template>
 
 <script setup>
-  import Engine from '../lib/game/engine.mjs';
-  import Start from '../components/game/Start.vue';
   import { ref, onMounted, onBeforeUnmount } from 'vue';
+  import Engine from '../lib/game/engine.mjs';
+  import ControlManager from '../lib/game/control.mjs';
+  import FPSController from '../lib/game/controllers/FPSController.mjs';
+  import Start from '../components/game/Start.vue';
 
   // Use the full sized game layout for simplicity/separation.
   definePageMeta({ layout: 'gaming' });
@@ -16,6 +18,7 @@
   const started = ref(false);
   const canvas = ref(null);
 
+  // Starting the game, hiding the UI and handling spawning.
   async function start() {
     try {
       // Enter fullscreen and pointer lock, if possible.
@@ -32,8 +35,8 @@
 
       // TODO: Should spawn
 
-      // TODO: Should change to FPS controller
-      // ControlManager.change(FPSController);
+      // Should change to FPS controller
+      ControlManager.change(FPSController);
 
     } catch (e) {
       console.error(e);
@@ -45,8 +48,7 @@
 
   // Cleanup engine, fullscreen,inputs an pointer lock.
   onBeforeUnmount(() => {
-    document.documentElement?.exitPointerLock();
-    document?.exitPointerLock?.();
+    document.exitPointerLock();
     Engine.cleanup();
   });
 </script>
