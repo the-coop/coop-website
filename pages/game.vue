@@ -11,6 +11,7 @@
   import ControlManager from '../lib/game/control.mjs';
   import FPSController from '../lib/game/controllers/FPSController.mjs';
   import Start from '../components/game/Start.vue';
+  import PlayersManager from '../lib/game/players.mjs';
 
   // Use the full sized game layout for simplicity/separation.
   definePageMeta({ layout: 'gaming' });
@@ -31,7 +32,8 @@
       await new Promise(resolve => setTimeout(resolve, 100));
       Engine.resize();
 
-      // Change to FPS controller first
+      // Spawn player before changing to FPS controller
+      PlayersManager.spawn();
       ControlManager.change(FPSController);
 
       // Mark as started last to prevent duplicate starts
