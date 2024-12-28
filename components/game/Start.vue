@@ -7,7 +7,7 @@
       Please use Chrome, Firefox, or Edge instead, mobile Safari works(?).
     </div>
     <transition name="fade">
-      <button v-if="!incompatible && ready" class="cta" @click="start">
+      <button v-if="!incompatible && ready" class="cta" @click="props.start">
         {{ label }}
       </button>
     </transition>
@@ -19,8 +19,7 @@
   import Engine from '../../lib/game/engine.mjs';
   import StartMenuController from '../../lib/game/controllers/StartMenuController.mjs';
 
-  const props = defineProps(['start', 'gamepad']);
-
+  const props = defineProps(['start']);
   const incompatible = ref(false);
   const ready = ref(false);
 
@@ -36,7 +35,7 @@
     const ua = navigator.userAgent;
     incompatible.value = ua.includes('Macintosh') && ua.includes('Safari') && !ua.includes('Chrome') && !ua.includes('Mobile');
 
-    // Start menu controller needs UI mutation hook.
+    // Pass start function directly to controller
     StartMenuController.start = props.start;
 
     // Show button after a brief delay to ensure state is ready
