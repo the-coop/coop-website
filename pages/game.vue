@@ -21,8 +21,6 @@
 
   // Starting the game, hiding the UI and handling spawning.
   async function start() {
-    if (started.value) return;
-    
     try {
       // Enter fullscreen and pointer lock, if possible.
       await document.documentElement?.requestFullscreen();
