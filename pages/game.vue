@@ -8,8 +8,6 @@
 <script setup>
   import { ref, onMounted, onBeforeUnmount } from 'vue';
   import Engine from '../lib/game/engine.mjs';
-  import ControlManager from '../lib/game/control.mjs';
-  import FPSController from '../lib/game/controllers/FPSController.mjs';
   import Start from '../components/game/Start.vue';
   import PlayersManager from '../lib/game/players.mjs';
 
@@ -32,7 +30,6 @@
 
       // Spawn player before changing to FPS controller
       PlayersManager.spawn();
-      ControlManager.change(FPSController);
 
       // Mark as started last to prevent duplicate starts
       started.value = true;
