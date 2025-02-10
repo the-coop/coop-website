@@ -1,0 +1,327 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\OldhardDisk\\Web\\coop-website\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\controllers\\FPSController.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:lib\\game\\controllers\\FPSController.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\controllers\\inputs\\pc.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:lib\\game\\controllers\\inputs\\pc.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\controllers\\inputs\\mobile.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:lib\\game\\controllers\\inputs\\mobile.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\controllers\\inputs\\gamepad.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:lib\\game\\controllers\\inputs\\gamepad.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\scene.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:lib\\game\\scene.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\physics.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:lib\\game\\physics.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\players.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:lib\\game\\players.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\engine.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:lib\\game\\engine.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\control.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:lib\\game\\control.mjs||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\OldhardDisk\\Web\\coop-website\\components\\game\\Start.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:components\\game\\Start.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\OldhardDisk\\Web\\coop-website\\pages\\game.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:pages\\game.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\OldhardDisk\\Web\\coop-website\\pages\\index.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:pages\\index.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\OldhardDisk\\Web\\coop-website\\layouts\\gaming.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:layouts\\gaming.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\OldhardDisk\\Web\\coop-website\\layouts\\default.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:layouts\\default.vue||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 7,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:6:0:{34c7837f-3b3a-449c-bdf0-bdad86cbaf4a}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:2:0:{34c7837f-3b3a-449c-bdf0-bdad86cbaf4a}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{dcc4ea97-1c0c-482b-b205-e541c0df9728}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{dcc4ea97-1c0c-482b-b205-e541c0df9728}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cf577b8c-4134-11d2-83e5-00c04f9902c1}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{57d563b6-44a5-47df-85be-f4199ad6b651}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "pc.mjs",
+              "DocumentMoniker": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\controllers\\inputs\\pc.mjs",
+              "RelativeDocumentMoniker": "lib\\game\\controllers\\inputs\\pc.mjs",
+              "ToolTip": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\controllers\\inputs\\pc.mjs",
+              "RelativeToolTip": "lib\\game\\controllers\\inputs\\pc.mjs",
+              "ViewState": "AQIAABcAAAAAAAAAAAAQwDsAAABFAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-02-10T04:14:57.917Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "FPSController.mjs",
+              "DocumentMoniker": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\controllers\\FPSController.mjs",
+              "RelativeDocumentMoniker": "lib\\game\\controllers\\FPSController.mjs",
+              "ToolTip": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\controllers\\FPSController.mjs",
+              "RelativeToolTip": "lib\\game\\controllers\\FPSController.mjs",
+              "ViewState": "AQIAAFYAAAAAAAAAAAAQwGsAAAAJAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-02-10T01:42:28.372Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "physics.mjs",
+              "DocumentMoniker": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\physics.mjs",
+              "RelativeDocumentMoniker": "lib\\game\\physics.mjs",
+              "ToolTip": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\physics.mjs",
+              "RelativeToolTip": "lib\\game\\physics.mjs",
+              "ViewState": "AQIAAAkAAAAAAAAAAAAqwBMAAAAuAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-02-10T00:22:38.168Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "engine.mjs",
+              "DocumentMoniker": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\engine.mjs",
+              "RelativeDocumentMoniker": "lib\\game\\engine.mjs",
+              "ToolTip": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\engine.mjs",
+              "RelativeToolTip": "lib\\game\\engine.mjs",
+              "ViewState": "AQIAAC8AAAAAAAAAAAAQwDoAAAAkAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-02-10T00:21:04.048Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "scene.mjs",
+              "DocumentMoniker": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\scene.mjs",
+              "RelativeDocumentMoniker": "lib\\game\\scene.mjs",
+              "ToolTip": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\scene.mjs",
+              "RelativeToolTip": "lib\\game\\scene.mjs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-02-10T00:20:59.896Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "mobile.mjs",
+              "DocumentMoniker": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\controllers\\inputs\\mobile.mjs",
+              "RelativeDocumentMoniker": "lib\\game\\controllers\\inputs\\mobile.mjs",
+              "ToolTip": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\controllers\\inputs\\mobile.mjs",
+              "RelativeToolTip": "lib\\game\\controllers\\inputs\\mobile.mjs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-02-10T00:20:59.113Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "gamepad.mjs",
+              "DocumentMoniker": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\controllers\\inputs\\gamepad.mjs",
+              "RelativeDocumentMoniker": "lib\\game\\controllers\\inputs\\gamepad.mjs",
+              "ToolTip": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\controllers\\inputs\\gamepad.mjs",
+              "RelativeToolTip": "lib\\game\\controllers\\inputs\\gamepad.mjs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-02-10T00:20:57.937Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "players.mjs",
+              "DocumentMoniker": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\players.mjs",
+              "RelativeDocumentMoniker": "lib\\game\\players.mjs",
+              "ToolTip": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\players.mjs",
+              "RelativeToolTip": "lib\\game\\players.mjs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-02-10T00:20:55.144Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "control.mjs",
+              "DocumentMoniker": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\control.mjs",
+              "RelativeDocumentMoniker": "lib\\game\\control.mjs",
+              "ToolTip": "D:\\OldhardDisk\\Web\\coop-website\\lib\\game\\control.mjs",
+              "RelativeToolTip": "lib\\game\\control.mjs",
+              "ViewState": "AQIAABoAAAAAAAAAAAAQwAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
+              "WhenOpened": "2025-02-10T00:20:54.422Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "gaming.vue",
+              "DocumentMoniker": "D:\\OldhardDisk\\Web\\coop-website\\layouts\\gaming.vue",
+              "RelativeDocumentMoniker": "layouts\\gaming.vue",
+              "ToolTip": "D:\\OldhardDisk\\Web\\coop-website\\layouts\\gaming.vue",
+              "RelativeToolTip": "layouts\\gaming.vue",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2025-02-10T00:20:38.847Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "default.vue",
+              "DocumentMoniker": "D:\\OldhardDisk\\Web\\coop-website\\layouts\\default.vue",
+              "RelativeDocumentMoniker": "layouts\\default.vue",
+              "ToolTip": "D:\\OldhardDisk\\Web\\coop-website\\layouts\\default.vue",
+              "RelativeToolTip": "layouts\\default.vue",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2025-02-10T00:20:37.256Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Start.vue",
+              "DocumentMoniker": "D:\\OldhardDisk\\Web\\coop-website\\components\\game\\Start.vue",
+              "RelativeDocumentMoniker": "components\\game\\Start.vue",
+              "ToolTip": "D:\\OldhardDisk\\Web\\coop-website\\components\\game\\Start.vue",
+              "RelativeToolTip": "components\\game\\Start.vue",
+              "ViewState": "AQIAAAkAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2025-02-10T00:20:32.681Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "game.vue",
+              "DocumentMoniker": "D:\\OldhardDisk\\Web\\coop-website\\pages\\game.vue",
+              "RelativeDocumentMoniker": "pages\\game.vue",
+              "ToolTip": "D:\\OldhardDisk\\Web\\coop-website\\pages\\game.vue",
+              "RelativeToolTip": "pages\\game.vue",
+              "ViewState": "AQIAACcAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2025-02-10T00:20:29.751Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "index.vue",
+              "DocumentMoniker": "D:\\OldhardDisk\\Web\\coop-website\\pages\\index.vue",
+              "RelativeDocumentMoniker": "pages\\index.vue",
+              "ToolTip": "D:\\OldhardDisk\\Web\\coop-website\\pages\\index.vue",
+              "RelativeToolTip": "pages\\index.vue",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003491|",
+              "WhenOpened": "2025-02-10T00:20:27.552Z"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 107,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{a80febb4-e7e0-4147-b476-21aaf2453969}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3822e751-eb69-4b0e-b301-595a9e4c74d5}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{90243340-bd7a-11d0-93ef-00a0c90f2734}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{0504ff91-9d61-11d0-a794-00a0c9110051}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{f2e84780-2af1-11d1-a7fa-00a0c9110051}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{4a18f9d0-b838-11d0-93eb-00a0c90f2734}"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 1135,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:8:0:{e8034f19-ab72-4f06-83fd-f6832b41aa63}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
