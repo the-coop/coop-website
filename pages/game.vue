@@ -1,7 +1,7 @@
 <template>
   <div class="game">
     <Start v-if="!started" :start="start" />
-    <canvas class="canvas" ref="canvas"></canvas>
+    <canvas class="canvas" ref="canvas" @click="requestLock"></canvas>
   </div>
 </template>
 
@@ -38,6 +38,12 @@
       console.error(e);
     }
   };
+
+  function requestLock() {
+    if (!document.pointerLockElement) {
+      document.body?.requestPointerLock();
+    }
+  }
 
   // Setup game engine when page ready.
   onMounted(() => Engine.setup(canvas));
