@@ -106,6 +106,8 @@ package-lock.json
 .vs/coopwebsite/FileContentIndex/a320e57e-c8d8-4b14-9ea0-0680cc14b912.vsidx
 *.vsidx
 *.lock
+.vs/*
 .vs/coopwebsite/v17/.suo
 .vs/coopwebsite/v17/.wsuo
 .vs/coopwebsite/config/applicationhost.config
+.vs/coop-website/v17/.wsuo
