@@ -1,22 +1,18 @@
 <template>
   <div class="ui">
-    <div class="outer movement" ref="movementOuter">
-      <div class="inner"
-           @touchstart.prevent="e => startDrag('movement', e)"
-           @touchmove.prevent="e => drag('movement', e)"
-           @touchend.prevent="e => endDrag('movement', e)"
-           @touchcancel.prevent="e => endDrag('movement', e)"
-           :style="movementTransform">
-      </div>
+    <div class="outer movement" ref="movementOuter"
+         @touchstart.prevent="e => startDrag('movement', e)"
+         @touchmove.prevent="e => drag('movement', e)"
+         @touchend.prevent="e => endDrag('movement', e)"
+         @touchcancel.prevent="e => endDrag('movement', e)">
+      <div class="inner" :style="movementTransform"></div>
     </div>
-    <div class="outer aim" ref="aimOuter">
-      <div class="inner"
-           @touchstart.prevent="e => startDrag('aim', e)"
-           @touchmove.prevent="e => drag('aim', e)"
-           @touchend.prevent="e => endDrag('aim', e)"
-           @touchcancel.prevent="e => endDrag('aim', e)"
-           :style="aimTransform">
-      </div>
+    <div class="outer aim" ref="aimOuter"
+         @touchstart.prevent="e => startDrag('aim', e)"
+         @touchmove.prevent="e => drag('aim', e)"
+         @touchend.prevent="e => endDrag('aim', e)"
+         @touchcancel.prevent="e => endDrag('aim', e)">
+      <div class="inner" :style="aimTransform"></div>
     </div>
   </div>
 </template>
@@ -141,6 +137,8 @@ const aimTransform = computed(() => ({
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   border: 0.125em solid rgba(255, 255, 255, 0.3);
+  touch-action: none;  /* Add this line */
+  user-select: none;   /* Add this line */
 }
 
 .inner {
