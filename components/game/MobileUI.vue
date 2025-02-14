@@ -8,7 +8,6 @@
            @mousedown.prevent="e => startDrag('movement', e)"
            @mousemove.prevent="e => drag('movement', e)"
            @mouseup.prevent="e => endDrag('movement')"
-           @mouseleave.prevent="e => endDrag('movement')"
            :style="movementStyle">
       </div>
     </div>
@@ -20,7 +19,6 @@
            @mousedown.prevent="e => startDrag('aim', e)"
            @mousemove.prevent="e => drag('aim', e)"
            @mouseup.prevent="e => endDrag('aim')"
-           @mouseleave.prevent="e => endDrag('aim')"
            :style="aimStyle">
       </div>
     </div>
@@ -55,7 +53,7 @@ function startDrag(control, event) {
 }
 
 function drag(control, event) {
-  if (event.type === 'mousemove' && !isMouseDown.value) return;
+  // Only check if we're dragging, ignore mouse position
   if (!isDragging.value[control]) return;
 
   const coords = getEventCoords(event);
@@ -64,26 +62,42 @@ function drag(control, event) {
   const centerX = rect.left + rect.width / 2;
   const centerY = rect.top + rect.height / 2;
 
+  // Calculate position relative to center
   let x = coords.clientX - centerX;
   let y = coords.clientY - centerY;
 
+  // Constrain visual position to circle but keep input normalized
   const radius = rect.width / 2;
   const distance = Math.sqrt(x * x + y * y);
   if (distance > radius) {
     const angle = Math.atan2(y, x);
-    x = Math.cos(angle) * radius;
-    y = Math.sin(angle) * radius;
-  }
-
-  const normalizedX = x / radius;
-  const normalizedY = y / radius;
-
-  if (control === 'movement') {
-    movementPos.value = { x, y };
-    Mobile.movement = { x: normalizedX, y: -normalizedY };
+    // Visual position is constrained
+    const visualX = Math.cos(angle) * radius;
+    const visualY = Math.sin(angle) * radius;
+    
+    // Input uses actual position normalized
+    const normalizedX = x / distance; // This gives -1 to 1 range
+    const normalizedY = y / distance;
+    
+    if (control === 'movement') {
+      movementPos.value = { x: visualX, y: visualY };
+      Mobile.movement = { x: normalizedX, y: -normalizedY };
+    } else {
+      aimPos.value = { x: visualX, y: visualY };
+      Mobile.aim = { x: normalizedX, y: normalizedY };
+    }
   } else {
-    aimPos.value = { x, y };
-    Mobile.aim = { x: normalizedX, y: normalizedY };
+    // Within bounds, use regular normalized position
+    const normalizedX = x / radius;
+    const normalizedY = y / radius;
+    
+    if (control === 'movement') {
+      movementPos.value = { x, y };
+      Mobile.movement = { x: normalizedX, y: -normalizedY };
+    } else {
+      aimPos.value = { x, y };
+      Mobile.aim = { x: normalizedX, y: normalizedY };
+    }
   }
 }
 
