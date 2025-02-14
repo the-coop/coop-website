@@ -1,7 +1,7 @@
 <template>
-  <div class="game">
+  <div class="game" @click="requestLock">
     <Start v-if="!started" :start="start" />
-    <canvas class="canvas" ref="canvas" @click="requestLock"></canvas>
+    <canvas class="canvas" ref="canvas"></canvas>
     <MobileUI v-if="started" />
   </div>
 </template>
@@ -12,19 +12,35 @@
   import Start from '../components/game/Start.vue';
   import MobileUI from '../components/game/MobileUI.vue';
   import PlayersManager from '../lib/game/players.mjs';
+  import Mobile from '../lib/game/controllers/inputs/mobile.mjs';
 
   // Use the full sized game layout for simplicity/separation.
   definePageMeta({ layout: 'gaming' });
 
   const started = ref(false);
   const canvas = ref(null);
+  const isMobile = ref(false);
+
+  // Check for mobile device
+  function detectMobile() {
+    // return 'ontouchstart' in window && window.innerWidth <= 768;
+    return window.innerWidth <= 768;
+  };
 
   // Starting the game, hiding the UI and handling spawning.
   async function start() {
     try {
-      // Enter fullscreen and pointer lock, if possible.
-      await document.documentElement?.requestFullscreen();
-      document.body?.requestPointerLock();
+      // Enter fullscreen
+      // await document.documentElement?.requestFullscreen();
+      
+      isMobile.value = detectMobile();
+      if (isMobile.value) Mobile.setup();
+
+      // Only request pointer lock for non-mobile
+      if (!isMobile.value) {
+        console.log(isMobile);
+        document.body?.requestPointerLock();
+      }
 
       // Wait for fullscreen transition to complete
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -41,18 +57,25 @@
     }
   };
 
-  function requestLock() {
-    if (!document.pointerLockElement) {
+  function requestLock(ev) {
+    if (!isMobile.value && !document.pointerLockElement) {
       document.body?.requestPointerLock();
     }
   };
 
   // Setup game engine when page ready.
-  onMounted(() => Engine.setup(canvas));
+  onMounted(() => {   
+    // Setup game engine.
+    Engine.setup(canvas);
+  });
 
-  // Cleanup engine, fullscreen,inputs an pointer lock.
+  // Cleanup engine, fullscreen, inputs and pointer lock.
   onBeforeUnmount(() => {
-    document.exitPointerLock();
+    // Remove pointer lock if it was applied.
+    if (!isMobile.value)
+      document.exitPointerLock();
+
+    // Cleanup the entire engine.
     Engine.cleanup();
   });
 </script>

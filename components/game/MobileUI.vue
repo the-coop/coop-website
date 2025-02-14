@@ -4,22 +4,18 @@
       <div class="inner"
            @touchstart.prevent="e => startDrag('movement', e)"
            @touchmove.prevent="e => drag('movement', e)"
-           @touchend.prevent="e => endDrag('movement')"
-           @mousedown.prevent="e => startDrag('movement', e)"
-           @mousemove.prevent="e => drag('movement', e)"
-           @mouseup.prevent="e => endDrag('movement')"
-           :style="movementStyle">
+           @touchend.prevent="e => endDrag('movement', e)"
+           @touchcancel.prevent="e => endDrag('movement', e)"
+           :style="movementTransform">
       </div>
     </div>
     <div class="outer aim" ref="aimOuter">
       <div class="inner"
            @touchstart.prevent="e => startDrag('aim', e)"
            @touchmove.prevent="e => drag('aim', e)"
-           @touchend.prevent="e => endDrag('aim')"
-           @mousedown.prevent="e => startDrag('aim', e)"
-           @mousemove.prevent="e => drag('aim', e)"
-           @mouseup.prevent="e => endDrag('aim')"
-           :style="aimStyle">
+           @touchend.prevent="e => endDrag('aim', e)"
+           @touchcancel.prevent="e => endDrag('aim', e)"
+           :style="aimTransform">
       </div>
     </div>
   </div>
@@ -33,50 +29,39 @@ const movementOuter = ref(null);
 const aimOuter = ref(null);
 const movementPos = ref({ x: 0, y: 0 });
 const aimPos = ref({ x: 0, y: 0 });
-const isDragging = ref({ movement: false, aim: false });
-const isMouseDown = ref(false);
-
-function getEventCoords(event) {
-  if (event.touches) {
-    return { clientX: event.touches[0].clientX, clientY: event.touches[0].clientY };
-  }
-  return { clientX: event.clientX, clientY: event.clientY };
-}
+const touches = ref({ movement: null, aim: null });
 
 function startDrag(control, event) {
-  if (event.type === 'mousedown') {
-    isMouseDown.value = true;
-    window.addEventListener('mousemove', mouseMoveHandler);
-    window.addEventListener('mouseup', mouseUpHandler);
-  }
-  isDragging.value[control] = true;
+  // Store the touch identifier for this control
+  touches.value[control] = event.touches[0].identifier;
+}
+
+function findTouch(event, controlId) {
+  return Array.from(event.touches).find(
+    touch => touch.identifier === touches.value[controlId]
+  );
 }
 
 function drag(control, event) {
-  // Only check if we're dragging, ignore mouse position
-  if (!isDragging.value[control]) return;
+  const touch = findTouch(event, control);
+  if (!touch) return;
 
-  const coords = getEventCoords(event);
   const outer = control === 'movement' ? movementOuter.value : aimOuter.value;
   const rect = outer.getBoundingClientRect();
   const centerX = rect.left + rect.width / 2;
   const centerY = rect.top + rect.height / 2;
 
-  // Calculate position relative to center
-  let x = coords.clientX - centerX;
-  let y = coords.clientY - centerY;
+  let x = touch.clientX - centerX;
+  let y = touch.clientY - centerY;
 
-  // Constrain visual position to circle but keep input normalized
   const radius = rect.width / 2;
   const distance = Math.sqrt(x * x + y * y);
+
   if (distance > radius) {
     const angle = Math.atan2(y, x);
-    // Visual position is constrained
     const visualX = Math.cos(angle) * radius;
     const visualY = Math.sin(angle) * radius;
-    
-    // Input uses actual position normalized
-    const normalizedX = x / distance; // This gives -1 to 1 range
+    const normalizedX = x / distance;
     const normalizedY = y / distance;
     
     if (control === 'movement') {
@@ -87,7 +72,6 @@ function drag(control, event) {
       Mobile.aim = { x: normalizedX, y: normalizedY };
     }
   } else {
-    // Within bounds, use regular normalized position
     const normalizedX = x / radius;
     const normalizedY = y / radius;
     
@@ -101,8 +85,16 @@ function drag(control, event) {
   }
 }
 
-function endDrag(control) {
-  isDragging.value[control] = false;
+function endDrag(control, event) {
+  // Only end if it's the right touch
+  if (event.touches.length === 0 || 
+      !Array.from(event.changedTouches).find(
+        touch => touch.identifier === touches.value[control]
+      )) {
+    return;
+  }
+
+  touches.value[control] = null;
   if (control === 'movement') {
     movementPos.value = { x: 0, y: 0 };
     Mobile.movement = { x: 0, y: 0 };
@@ -112,45 +104,20 @@ function endDrag(control) {
   }
 }
 
-function mouseMoveHandler(event) {
-  if (isDragging.value.movement) {
-    drag('movement', event);
-  } else if (isDragging.value.aim) {
-    drag('aim', event);
-  }
-}
-
-function mouseUpHandler() {
-  if (isDragging.value.movement) {
-    endDrag('movement');
-  } else if (isDragging.value.aim) {
-    endDrag('aim');
-  }
-  isMouseDown.value = false;
-  window.removeEventListener('mousemove', mouseMoveHandler);
-  window.removeEventListener('mouseup', mouseUpHandler);
-}
-
 onMounted(() => {
-  if (Mobile.detect()) {
-    Mobile.setup();
-  }
+  console.log('mobile ui mounted');
 });
 
 onBeforeUnmount(() => {
-  if (Mobile.detect()) {
-    Mobile.cleanup();
-  }
-  window.removeEventListener('mousemove', mouseMoveHandler);
-  window.removeEventListener('mouseup', mouseUpHandler);
+  Mobile.cleanup();
 });
 
-const movementStyle = computed(() => ({
+const movementTransform = computed(() => ({
   transform: `translate(calc(${movementPos.value.x}px - 50%), calc(${movementPos.value.y}px - 50%))`,
   transition: 'transform 0.15s ease-out'
 }));
 
-const aimStyle = computed(() => ({
+const aimTransform = computed(() => ({
   transform: `translate(calc(${aimPos.value.x}px - 50%), calc(${aimPos.value.y}px - 50%))`,
   transition: 'transform 0.15s ease-out'
 }));
