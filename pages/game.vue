@@ -2,6 +2,7 @@
   <div class="game">
     <Start v-if="!started" :start="start" />
     <canvas class="canvas" ref="canvas" @click="requestLock"></canvas>
+    <MobileUI v-if="started" />
   </div>
 </template>
 
@@ -9,6 +10,7 @@
   import { ref, onMounted, onBeforeUnmount } from 'vue';
   import Engine from '../lib/game/engine.mjs';
   import Start from '../components/game/Start.vue';
+  import MobileUI from '../components/game/MobileUI.vue';
   import PlayersManager from '../lib/game/players.mjs';
 
   // Use the full sized game layout for simplicity/separation.
@@ -43,7 +45,7 @@
     if (!document.pointerLockElement) {
       document.body?.requestPointerLock();
     }
-  }
+  };
 
   // Setup game engine when page ready.
   onMounted(() => Engine.setup(canvas));
