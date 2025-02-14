@@ -31,7 +31,7 @@
   async function start() {
     try {
       // Enter fullscreen
-      // await document.documentElement?.requestFullscreen();
+      await document.documentElement?.requestFullscreen();
       
       isMobile.value = detectMobile();
       if (isMobile.value) Mobile.setup();
