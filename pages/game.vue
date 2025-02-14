@@ -1,6 +1,6 @@
 <template>
   <div class="game" @click="requestLock">
-    <Start v-if="!started" :start="start" />
+    <Start v-if="!started" :started="started" />
     <canvas class="canvas" ref="canvas"></canvas>
     <MobileUI v-if="started" />
   </div>
@@ -27,39 +27,44 @@
     return window.innerWidth <= 768;
   };
 
-  // Starting the game, hiding the UI and handling spawning.
-  async function start() {
-    try {
-      // Enter fullscreen
-      await document.documentElement?.requestFullscreen();
-      
-      isMobile.value = detectMobile();
-      if (isMobile.value) Mobile.setup();
+  // Remove the start function since we'll merge it into requestLock
+  async function requestLock(ev) {
+    // Handle initial game start
+    if (!started.value) {
+      try {
+        isMobile.value = detectMobile();
+        if (isMobile.value) {
+          Mobile.setup();
+        }
 
-      // Only request pointer lock for non-mobile
-      if (!isMobile.value) {
-        console.log(isMobile);
-        document.body?.requestPointerLock();
+        // Start the game first
+        Engine.resize();
+        PlayersManager.spawn();
+        started.value = true;
+
+        // Then handle fullscreen/pointer lock for desktop
+        if (!isMobile.value) {
+          await document.documentElement?.requestFullscreen();
+          await new Promise(resolve => setTimeout(resolve, 100));
+          await document.body?.requestPointerLock();
+        }
+      } catch (e) {
+        console.error('Failed to start game:', e);
       }
-
-      // Wait for fullscreen transition to complete
-      await new Promise(resolve => setTimeout(resolve, 100));
-      Engine.resize();
-
-      // Spawn player before changing to FPS controller
-      PlayersManager.spawn();
-
-      // Mark as started last to prevent duplicate starts
-      started.value = true;
-      
-    } catch (e) {
-      console.error(e);
+      return;
     }
-  };
 
-  function requestLock(ev) {
-    if (!isMobile.value && !document.pointerLockElement) {
-      document.body?.requestPointerLock();
+    // Handle reapplying lock/fullscreen for desktop
+    if (started.value && !isMobile.value && !document.pointerLockElement) {
+      try {
+        if (!document.fullscreenElement) {
+          await document.documentElement?.requestFullscreen();
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        await document.body?.requestPointerLock();
+      } catch (e) {
+        console.error('Failed to enter fullscreen/pointer lock:', e);
+      }
     }
   };
 
