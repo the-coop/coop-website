@@ -25,7 +25,8 @@ const movementOuter = ref(null);
 const aimOuter = ref(null);
 const movementPos = ref({ x: 0, y: 0 });
 const aimPos = ref({ x: 0, y: 0 });
-const activeTouches = ref(new Map()); // Map<identifier, {control, touch}>
+const movementTouch = ref(null);
+const aimTouch = ref(null);
 
 function getControlFromElement(element) {
   if (element.classList.contains('movement') || element.closest('.movement')) {
@@ -40,43 +41,43 @@ function getControlFromElement(element) {
 function handleTouchStart(event) {
   Array.from(event.changedTouches).forEach(touch => {
     const control = getControlFromElement(event.target);
-    if (control && !Array.from(activeTouches.value.values()).some(t => t.control === control)) {
-      activeTouches.value.set(touch.identifier, { control, touch });
-      updateTouch(touch.identifier);
+    if (!control) return;
+
+    if (control === 'movement' && !movementTouch.value) {
+      movementTouch.value = touch.identifier;
+      updateTouch(touch, 'movement');
+    } else if (control === 'aim' && !aimTouch.value) {
+      aimTouch.value = touch.identifier;
+      updateTouch(touch, 'aim');
     }
   });
 }
 
 function handleTouchMove(event) {
   Array.from(event.changedTouches).forEach(touch => {
-    if (activeTouches.value.has(touch.identifier)) {
-      updateTouch(touch.identifier);
+    if (touch.identifier === movementTouch.value) {
+      updateTouch(touch, 'movement');
+    } else if (touch.identifier === aimTouch.value) {
+      updateTouch(touch, 'aim');
     }
   });
 }
 
 function handleTouchEnd(event) {
   Array.from(event.changedTouches).forEach(touch => {
-    if (activeTouches.value.has(touch.identifier)) {
-      const { control } = activeTouches.value.get(touch.identifier);
-      activeTouches.value.delete(touch.identifier);
-      
-      if (control === 'movement') {
-        movementPos.value = { x: 0, y: 0 };
-        Mobile.movement = { x: 0, y: 0 };
-      } else {
-        aimPos.value = { x: 0, y: 0 };
-        Mobile.aim = { x: 0, y: 0 };
-      }
+    if (touch.identifier === movementTouch.value) {
+      movementTouch.value = null;
+      movementPos.value = { x: 0, y: 0 };
+      Mobile.movement = { x: 0, y: 0 };
+    } else if (touch.identifier === aimTouch.value) {
+      aimTouch.value = null;
+      aimPos.value = { x: 0, y: 0 };
+      Mobile.aim = { x: 0, y: 0 };
     }
   });
 }
 
-function updateTouch(identifier) {
-  const touchData = activeTouches.value.get(identifier);
-  if (!touchData) return;
-
-  const { control, touch } = touchData;
+function updateTouch(touch, control) {
   const outer = control === 'movement' ? movementOuter.value : aimOuter.value;
   const rect = outer.getBoundingClientRect();
   const centerX = rect.left + rect.width / 2;
