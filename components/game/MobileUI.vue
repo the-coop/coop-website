@@ -1,17 +1,17 @@
 <template>
   <div class="ui">
     <div class="outer movement" ref="movementOuter"
-         @touchstart.prevent="e => startDrag('movement', e)"
-         @touchmove.prevent="e => drag('movement', e)"
-         @touchend.prevent="e => endDrag('movement', e)"
-         @touchcancel.prevent="e => endDrag('movement', e)">
+         @touchstart.prevent="handleTouchStart"
+         @touchmove.prevent="handleTouchMove"
+         @touchend.prevent="handleTouchEnd"
+         @touchcancel.prevent="handleTouchEnd">
       <div class="inner" :style="movementTransform"></div>
     </div>
     <div class="outer aim" ref="aimOuter"
-         @touchstart.prevent="e => startDrag('aim', e)"
-         @touchmove.prevent="e => drag('aim', e)"
-         @touchend.prevent="e => endDrag('aim', e)"
-         @touchcancel.prevent="e => endDrag('aim', e)">
+         @touchstart.prevent="handleTouchStart"
+         @touchmove.prevent="handleTouchMove"
+         @touchend.prevent="handleTouchEnd"
+         @touchcancel.prevent="handleTouchEnd">
       <div class="inner" :style="aimTransform"></div>
     </div>
   </div>
@@ -25,23 +25,58 @@ const movementOuter = ref(null);
 const aimOuter = ref(null);
 const movementPos = ref({ x: 0, y: 0 });
 const aimPos = ref({ x: 0, y: 0 });
-const touches = ref({ movement: null, aim: null });
+const activeTouches = ref(new Map()); // Map<identifier, {control, touch}>
 
-function startDrag(control, event) {
-  // Store the touch identifier for this control
-  touches.value[control] = event.touches[0].identifier;
+function getControlFromElement(element) {
+  if (element.classList.contains('movement') || element.closest('.movement')) {
+    return 'movement';
+  }
+  if (element.classList.contains('aim') || element.closest('.aim')) {
+    return 'aim';
+  }
+  return null;
 }
 
-function findTouch(event, controlId) {
-  return Array.from(event.touches).find(
-    touch => touch.identifier === touches.value[controlId]
-  );
+function handleTouchStart(event) {
+  Array.from(event.changedTouches).forEach(touch => {
+    const control = getControlFromElement(event.target);
+    if (control && !Array.from(activeTouches.value.values()).some(t => t.control === control)) {
+      activeTouches.value.set(touch.identifier, { control, touch });
+      updateTouch(touch.identifier);
+    }
+  });
 }
 
-function drag(control, event) {
-  const touch = findTouch(event, control);
-  if (!touch) return;
+function handleTouchMove(event) {
+  Array.from(event.changedTouches).forEach(touch => {
+    if (activeTouches.value.has(touch.identifier)) {
+      updateTouch(touch.identifier);
+    }
+  });
+}
 
+function handleTouchEnd(event) {
+  Array.from(event.changedTouches).forEach(touch => {
+    if (activeTouches.value.has(touch.identifier)) {
+      const { control } = activeTouches.value.get(touch.identifier);
+      activeTouches.value.delete(touch.identifier);
+      
+      if (control === 'movement') {
+        movementPos.value = { x: 0, y: 0 };
+        Mobile.movement = { x: 0, y: 0 };
+      } else {
+        aimPos.value = { x: 0, y: 0 };
+        Mobile.aim = { x: 0, y: 0 };
+      }
+    }
+  });
+}
+
+function updateTouch(identifier) {
+  const touchData = activeTouches.value.get(identifier);
+  if (!touchData) return;
+
+  const { control, touch } = touchData;
   const outer = control === 'movement' ? movementOuter.value : aimOuter.value;
   const rect = outer.getBoundingClientRect();
   const centerX = rect.left + rect.width / 2;
@@ -78,25 +113,6 @@ function drag(control, event) {
       aimPos.value = { x, y };
       Mobile.aim = { x: normalizedX, y: normalizedY };
     }
-  }
-}
-
-function endDrag(control, event) {
-  // Only end if it's the right touch
-  if (event.touches.length === 0 || 
-      !Array.from(event.changedTouches).find(
-        touch => touch.identifier === touches.value[control]
-      )) {
-    return;
-  }
-
-  touches.value[control] = null;
-  if (control === 'movement') {
-    movementPos.value = { x: 0, y: 0 };
-    Mobile.movement = { x: 0, y: 0 };
-  } else {
-    aimPos.value = { x: 0, y: 0 };
-    Mobile.aim = { x: 0, y: 0 };
   }
 }
 
