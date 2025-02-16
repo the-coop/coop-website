@@ -79,12 +79,15 @@ function handleTouchEnd(event) {
 
 function updateTouch(touch, control) {
   const outer = control === 'movement' ? movementOuter.value : aimOuter.value;
+  const pos = control === 'movement' ? movementPos.value : aimPos.value;
   const rect = outer.getBoundingClientRect();
-  const centerX = rect.left + rect.width / 2;
-  const centerY = rect.top + rect.height / 2;
 
-  let x = touch.clientX - centerX;
-  let y = touch.clientY - centerY;
+  // Account for the current translation of the inner circle
+  const centerX = rect.left + rect.width / 2 + pos.x;
+  const centerY = rect.top + rect.height / 2 + pos.y;
+
+  let x = touch.clientX - (rect.left + rect.width / 2);
+  let y = touch.clientY - (rect.top + rect.height / 2);
 
   const radius = rect.width / 2;
   const distance = Math.sqrt(x * x + y * y);
@@ -98,21 +101,18 @@ function updateTouch(touch, control) {
     
     if (control === 'movement') {
       movementPos.value = { x: visualX, y: visualY };
-      Mobile.movement = { x: normalizedX, y: -normalizedY };
+      Mobile.movement = { x: normalizedX, y: normalizedY }; // Removed negative from y
     } else {
       aimPos.value = { x: visualX, y: visualY };
-      Mobile.aim = { x: normalizedX, y: normalizedY };
+      Mobile.aim = { x: -normalizedX, y: -normalizedY }; // Added negatives to both
     }
   } else {
-    const normalizedX = x / radius;
-    const normalizedY = y / radius;
-    
     if (control === 'movement') {
       movementPos.value = { x, y };
-      Mobile.movement = { x: normalizedX, y: -normalizedY };
+      Mobile.movement = { x: x / radius, y: y / radius }; // Removed negative from y
     } else {
       aimPos.value = { x, y };
-      Mobile.aim = { x: normalizedX, y: normalizedY };
+      Mobile.aim = { x: -x / radius, y: -y / radius }; // Added negatives to both
     }
   }
 }
