@@ -1,16 +1,24 @@
 <template>
   <div class="ui">
-    <div class="outer movement" ref="movementOuter">
-      <div class="inner" :style="getTransform(movementPos)"></div>
+    <div class="outer movement" ref="movementOuter"
+         @touchstart.prevent="handleTouchStart"
+         @touchmove.prevent="handleTouchMove"
+         @touchend.prevent="handleTouchEnd"
+         @touchcancel.prevent="handleTouchEnd">
+      <div class="inner" :style="{ transform: `translate(${movementPos.x}px, ${movementPos.y}px)` }"></div>
     </div>
-    <div class="outer aim" ref="aimOuter">
-      <div class="inner" :style="getTransform(aimPos)"></div>
+    <div class="outer aim" ref="aimOuter"
+         @touchstart.prevent="handleTouchStart"
+         @touchmove.prevent="handleTouchMove"
+         @touchend.prevent="handleTouchEnd"
+         @touchcancel.prevent="handleTouchEnd">
+      <div class="inner" :style="{ transform: `translate(${aimPos.x}px, ${aimPos.y}px)` }"></div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import Mobile from '../../lib/game/controllers/inputs/mobile.mjs';
 
 const movementOuter = ref(null);
@@ -20,11 +28,7 @@ const aimPos = ref({ x: 0, y: 0 });
 const movementTouch = ref(null);
 const aimTouch = ref(null);
 
-function getTransform(pos) {
-  return {
-    transform: `translate(${pos.value.x}px, ${pos.value.y}px)`
-  };
-}
+// Remove getTransform function since we're handling transforms directly in template
 
 function getControlFromElement(element) {
   if (element.classList.contains('movement') || element.closest('.movement')) {
