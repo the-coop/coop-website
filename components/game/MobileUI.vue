@@ -1,18 +1,10 @@
 <template>
   <div class="ui">
-    <div class="outer movement" ref="movementOuter"
-         @touchstart.prevent="handleTouchStart"
-         @touchmove.prevent="handleTouchMove"
-         @touchend.prevent="handleTouchEnd"
-         @touchcancel.prevent="handleTouchEnd">
-      <div class="inner" :style="movementTransform"></div>
+    <div class="outer movement" ref="movementOuter">
+      <div class="inner" :style="{ transform: `translate(${movementPos.value.x}px, ${movementPos.value.y}px)` }"></div>
     </div>
-    <div class="outer aim" ref="aimOuter"
-         @touchstart.prevent="handleTouchStart"
-         @touchmove.prevent="handleTouchMove"
-         @touchend.prevent="handleTouchEnd"
-         @touchcancel.prevent="handleTouchEnd">
-      <div class="inner" :style="aimTransform"></div>
+    <div class="outer aim" ref="aimOuter">
+      <div class="inner" :style="{ transform: `translate(${aimPos.value.x}px, ${aimPos.value.y}px)` }"></div>
     </div>
   </div>
 </template>
@@ -79,15 +71,13 @@ function handleTouchEnd(event) {
 
 function updateTouch(touch, control) {
   const outer = control === 'movement' ? movementOuter.value : aimOuter.value;
-  const pos = control === 'movement' ? movementPos.value : aimPos.value;
   const rect = outer.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
 
-  // Account for the current translation of the inner circle
-  const centerX = rect.left + rect.width / 2 + pos.x;
-  const centerY = rect.top + rect.height / 2 + pos.y;
-
-  let x = touch.clientX - (rect.left + rect.width / 2);
-  let y = touch.clientY - (rect.top + rect.height / 2);
+  // Calculate position relative to center of outer circle
+  const x = touch.clientX - centerX;
+  const y = touch.clientY - centerY;
 
   const radius = rect.width / 2;
   const distance = Math.sqrt(x * x + y * y);
@@ -96,23 +86,23 @@ function updateTouch(touch, control) {
     const angle = Math.atan2(y, x);
     const visualX = Math.cos(angle) * radius;
     const visualY = Math.sin(angle) * radius;
-    const normalizedX = x / distance;
-    const normalizedY = y / distance;
+    const normalizedX = Math.cos(angle);
+    const normalizedY = Math.sin(angle);
     
     if (control === 'movement') {
       movementPos.value = { x: visualX, y: visualY };
-      Mobile.movement = { x: normalizedX, y: normalizedY }; // Removed negative from y
+      Mobile.movement = { x: normalizedX, y: normalizedY };
     } else {
       aimPos.value = { x: visualX, y: visualY };
-      Mobile.aim = { x: -normalizedX, y: -normalizedY }; // Added negatives to both
+      Mobile.aim = { x: -normalizedX, y: -normalizedY };
     }
   } else {
     if (control === 'movement') {
       movementPos.value = { x, y };
-      Mobile.movement = { x: x / radius, y: y / radius }; // Removed negative from y
+      Mobile.movement = { x: x / radius, y: y / radius };
     } else {
       aimPos.value = { x, y };
-      Mobile.aim = { x: -x / radius, y: -y / radius }; // Added negatives to both
+      Mobile.aim = { x: -x / radius, y: -y / radius };
     }
   }
 }
@@ -124,16 +114,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   Mobile.cleanup();
 });
-
-const movementTransform = computed(() => ({
-  transform: `translate(calc(${movementPos.value.x}px - 50%), calc(${movementPos.value.y}px - 50%))`,
-  transition: 'transform 0.15s ease-out'
-}));
-
-const aimTransform = computed(() => ({
-  transform: `translate(calc(${aimPos.value.x}px - 50%), calc(${aimPos.value.y}px - 50%))`,
-  transition: 'transform 0.15s ease-out'
-}));
 </script>
 
 <style scoped>
@@ -162,15 +142,15 @@ const aimTransform = computed(() => ({
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
   width: 2.5em;
   height: 2.5em;
+  margin-left: -1.25em;  /* Half of width */
+  margin-top: -1.25em;   /* Half of height */
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.3);
   touch-action: none;
   user-select: none;
   will-change: transform;
-  cursor: grab;
 }
 
 .inner:active {
