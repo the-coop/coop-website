@@ -1,5 +1,5 @@
 <template>
-  <div class="game" @click="requestLock">
+  <div class="game" @click="engage">
     <Start v-if="!started" :started="started" />
     <canvas class="canvas" ref="canvas"></canvas>
     <MobileUI v-if="started" />
@@ -28,7 +28,7 @@
   };
 
   // Remove the start function since we'll merge it into requestLock
-  async function requestLock(ev) {
+  async function engage(ev) {
     // Handle initial game start
     if (!started.value) {
       try {
@@ -42,10 +42,12 @@
         PlayersManager.spawn();
         started.value = true;
 
+        // Attempt full screen on mobile and desktop.
+        await document.documentElement?.requestFullscreen();
+
         // Then handle fullscreen/pointer lock for desktop
         if (!isMobile.value) {
-          await document.documentElement?.requestFullscreen();
-          await new Promise(resolve => setTimeout(resolve, 100));
+          // await new Promise(resolve => setTimeout(resolve, 100));
           await document.body?.requestPointerLock();
         }
       } catch (e) {
