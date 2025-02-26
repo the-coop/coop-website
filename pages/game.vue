@@ -42,9 +42,12 @@
         PlayersManager.spawn();
         started.value = true;
 
-        // Attempt full screen on mobile and desktop.
-        await document.documentElement?.requestFullscreen();
-
+          try {
+            // Attempt full screen on mobile and desktop.
+            await document.documentElement?.requestFullscreen();
+          } catch (e) {
+              console.error('Failed to get full screen:', e);
+          }
         // Then handle fullscreen/pointer lock for desktop
         if (!isMobile.value) {
           // await new Promise(resolve => setTimeout(resolve, 100));
