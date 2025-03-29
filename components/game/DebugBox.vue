@@ -5,7 +5,7 @@
       <h4>Player</h4>
       <div><span>Position:</span> {{ formatVector(player.position) }}</div>
       <div><span>Velocity:</span> {{ formatVector(player.velocity) }} ({{ getSpeed() }})</div>
-      <div><span>Falling:</span> {{ player.falling ? "Yes" : "No" }}</div>
+      <div><span>Falling:</span> <span :class="player.falling ? 'boolean-true' : 'boolean-false'">{{ player.falling ? "Yes" : "No" }}</span></div>
       <div><span>Surface Normal:</span> {{ formatVector(player.surfaceNormal) }}</div>
     </div>
     <div class="debug-section">
@@ -112,5 +112,13 @@ h4 {
 span {
   font-weight: bold;
   margin-right: 5px;
+}
+
+.boolean-true {
+  color: #00ff00; /* Green for true values */
+}
+
+.boolean-false {
+  color: #ff0000; /* Red for false values */
 }
 </style>
