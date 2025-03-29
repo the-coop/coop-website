@@ -23,6 +23,7 @@
   import Mobile from '../lib/game/controllers/inputs/mobile.mjs';
   import ControlManager from '../lib/game/control.mjs';
   import FPSController from '../lib/game/controllers/FPSController.mjs';
+  import VehicleManager from '../lib/game/vehicles.mjs';
 
   // Use the full sized game layout for simplicity/separation.
   definePageMeta({ layout: 'gaming' });
@@ -74,13 +75,7 @@
     // Handle initial game start
     if (!started.value) {
       try {
-        console.log("Starting game, checking vehicles...");
-        // Log the number of vehicles on scene
-        if (window.VehicleManager && window.VehicleManager.vehicles) {
-          console.log(`Found ${window.VehicleManager.vehicles.length} vehicles`);
-        } else {
-          console.log("VehicleManager not accessible for debugging");
-        }
+        console.log("Starting game, checking for vehicles...");
         
         isMobile.value = detectMobile();
         if (isMobile.value) {
@@ -93,8 +88,25 @@
         // Spawn player near second planet where there should be vehicles
         PlayersManager.spawn(true, new Vector3(5000, 120, 0));
         
-        // Switch to FPS controller after spawn using 'change' instead of 'setController'
+        // Switch to FPS controller after spawn
         ControlManager.change(FPSController);
+        
+        // Display vehicle info after a brief delay to ensure everything is loaded
+        if (typeof window !== 'undefined') {
+          setTimeout(() => {
+            const vehicleCount = VehicleManager.vehicles.length;
+            const carCount = VehicleManager.vehicles.filter(v => v && v.userData.type === 'car').length;
+            const airplaneCount = VehicleManager.vehicles.filter(v => v && v.userData.type === 'airplane').length;
+            
+            console.log(`Game world contains ${vehicleCount} vehicles: ${carCount} cars and ${airplaneCount} airplanes`);
+            showNotification(`Game started with ${carCount} cars and ${airplaneCount} airplanes`);
+            
+            // Tell player about view toggle
+            setTimeout(() => {
+              showNotification('Press O to toggle between First and Third Person views');
+            }, 3000);
+          }, 1000);
+        }
         
         started.value = true;
 
