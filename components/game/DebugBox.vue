@@ -1,124 +1,135 @@
 <template>
   <div class="debug-box">
-    <h3>Physics Debug</h3>
     <div class="debug-section">
-      <h4>Player</h4>
-      <div><span>Position:</span> {{ formatVector(player.position) }}</div>
-      <div><span>Velocity:</span> {{ formatVector(player.velocity) }} ({{ getSpeed() }})</div>
-      <div><span>Falling:</span> <span :class="player.falling ? 'boolean-true' : 'boolean-false'">{{ player.falling ? "Yes" : "No" }}</span></div>
-      <div><span>Surface Normal:</span> {{ formatVector(player.surfaceNormal) }}</div>
+      <h3>Player</h3>
+      <p>Position: {{ formatVector(playerPos) }}</p>
+      <p>Velocity: {{ formatVector(playerVel) }}</p>
+      <p>SOI: {{ playerSoi }}</p>
+      <p>Falling: {{ playerFalling }}</p>
     </div>
     <div class="debug-section">
-      <h4>Planet</h4>
-      <div><span>Current SOI:</span> {{ player.soi?.name || "Unknown" }}</div>
-      <div><span>Planet Radius:</span> {{ player.soi?.radius.toFixed(2) || "N/A" }}</div>
-      <div><span>Distance to Center:</span> {{ distanceToPlanet.toFixed(2) }}</div>
-      <div><span>Height Above Surface:</span> {{ surfaceDistance.toFixed(2) }}</div>
-      <div><span>Friction:</span> {{ player.soi?.CoF || "N/A" }}</div>
+      <h3>Vehicles</h3>
+      <p>Total vehicles: {{ vehicleCount }}</p>
+      <p>Nearby vehicle: {{ nearbyVehicle ? 'Yes' : 'No' }}</p>
+      <p v-if="nearbyVehicle">Distance: {{ nearbyDistance.toFixed(2) }}</p>
     </div>
-    <div class="debug-section">
-      <h4>Collisions</h4>
-      <div><span>Last Object:</span> {{ lastCollisionObject }}</div>
-      <div><span>Hit Normal:</span> {{ formatVector(lastCollisionNormal) }}</div>
-      <div><span>Collision Time:</span> {{ lastCollisionTime.toFixed(4) }}</div>
-    </div>
+    <button @click="teleportToNearestVehicle" v-if="vehicleCount > 0">
+      Teleport to Nearest Vehicle
+    </button>
   </div>
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { Vector3 } from 'three';
 import PlayersManager from '../../lib/game/players.mjs';
+import VehicleManager from '../../lib/game/vehicles.mjs';
 
-// Get player data
-const player = computed(() => PlayersManager.self);
+const playerPos = ref(new Vector3());
+const playerVel = ref(new Vector3());
+const playerSoi = ref('None');
+const playerFalling = ref(true);
+const vehicleCount = ref(0);
+const nearbyVehicle = ref(false);
+const nearbyDistance = ref(0);
 
-// Collision tracking
-const lastCollisionObject = ref("None");
-const lastCollisionNormal = ref(null);
-const lastCollisionTime = ref(0);
+// Format Vector3 to readable string
+function formatVector(vector) {
+  if (!vector.value) return 'N/A';
+  return `(${vector.value.x.toFixed(1)}, ${vector.value.y.toFixed(1)}, ${vector.value.z.toFixed(1)})`;
+}
 
-// Watch for changes in player state to detect collisions
-watch(() => player.value?.velocity, (newVal, oldVal) => {
-  if (newVal && oldVal) {
-    // If velocity direction changed significantly, assume collision
-    if (newVal.clone().normalize().dot(oldVal.clone().normalize()) < 0.9) {
-      lastCollisionTime.ref = performance.now() / 1000;
-      // Using surfaceNormal as a proxy for collision normal
-      if (player.value?.surfaceNormal) {
-        lastCollisionNormal.value = player.value.surfaceNormal.clone();
-        lastCollisionObject.value = player.value.soi?.name || "Unknown";
-      }
+// Teleport player to nearest vehicle for testing
+function teleportToNearestVehicle() {
+  if (!VehicleManager.vehicles || VehicleManager.vehicles.length === 0) return;
+  
+  const player = PlayersManager.self;
+  if (!player) return;
+  
+  let closestVehicle = null;
+  let closestDist = Infinity;
+  
+  // Find closest vehicle
+  for (const vehicle of VehicleManager.vehicles) {
+    const dist = player.position.distanceTo(vehicle.mesh.position);
+    if (dist < closestDist) {
+      closestDist = dist;
+      closestVehicle = vehicle;
     }
   }
-}, { deep: true });
+  
+  if (closestVehicle) {
+    // Position player near vehicle
+    const teleportPosition = closestVehicle.mesh.position.clone();
+    teleportPosition.add(new Vector3(5, 5, 5)); // Offset a bit
+    
+    player.position.copy(teleportPosition);
+    player.handle.position.copy(teleportPosition);
+    
+    console.log(`Teleported to vehicle at (${teleportPosition.x.toFixed(1)}, ${teleportPosition.y.toFixed(1)}, ${teleportPosition.z.toFixed(1)})`);
+  }
+}
 
-// Calculate distance to planet's center
-const distanceToPlanet = computed(() => {
-  if (!player.value?.soi?.object?.position || !player.value?.position) return 0;
-  return player.value.position.distanceTo(player.value.soi.object.position);
+// Update debug info periodically
+const interval = setInterval(() => {
+  const player = PlayersManager.self;
+  if (player) {
+    playerPos.value = player.position.clone();
+    playerVel.value = player.velocity.clone();
+    playerSoi.value = player.soi?.name || 'None';
+    playerFalling.value = player.falling;
+  }
+  
+  vehicleCount.value = VehicleManager.vehicles?.length || 0;
+  nearbyVehicle.value = !!VehicleManager.nearbyVehicle;
+  
+  if (VehicleManager.nearbyVehicle && player) {
+    nearbyDistance.value = player.position.distanceTo(VehicleManager.nearbyVehicle.mesh.position);
+  }
+}, 200);
+
+onBeforeUnmount(() => {
+  clearInterval(interval);
 });
-
-// Calculate distance to planet's surface
-const surfaceDistance = computed(() => {
-  if (!player.value?.soi) return 0;
-  return distanceToPlanet.value - player.value.soi.radius;
-});
-
-// Format vector for display
-const formatVector = (vector) => {
-  if (!vector) return "N/A";
-  return `(${vector.x.toFixed(2)}, ${vector.y.toFixed(2)}, ${vector.z.toFixed(2)})`;
-};
-
-// Get current speed
-const getSpeed = () => {
-  if (!player.value?.velocity) return "0.00";
-  return player.value.velocity.length().toFixed(2);
-};
 </script>
 
 <style scoped>
 .debug-box {
-  position: absolute;
+  position: fixed;
   top: 10px;
-  right: 10px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: #00ff00;
+  left: 10px;
   padding: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
   border-radius: 5px;
   font-family: monospace;
-  font-size: 12px;
-  width: 300px;
   z-index: 1000;
-}
-
-h3 {
-  margin: 0 0 10px 0;
-  text-align: center;
-  font-size: 14px;
-}
-
-h4 {
-  margin: 5px 0;
-  font-size: 13px;
+  max-width: 300px;
 }
 
 .debug-section {
   margin-bottom: 10px;
-  padding: 5px;
-  border-top: 1px solid rgba(0, 255, 0, 0.3);
 }
 
-span {
-  font-weight: bold;
-  margin-right: 5px;
+h3 {
+  margin: 0 0 5px 0;
+  font-size: 14px;
+  color: #4CAF50;
 }
 
-.boolean-true {
-  color: #00ff00; /* Green for true values */
+p {
+  margin: 2px 0;
+  font-size: 12px;
 }
 
-.boolean-false {
-  color: #ff0000; /* Red for false values */
+button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  text-align: center;
+  font-size: 12px;
+  border-radius: 3px;
+  cursor: pointer;
 }
 </style>

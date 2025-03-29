@@ -9,6 +9,7 @@
 
 <script setup>
   import { ref, onMounted, onBeforeUnmount } from 'vue';
+  import { Vector3 } from 'three'; // Import Vector3 from three.js
   import Engine from '../lib/game/engine.mjs';
   import Start from '../components/game/Start.vue';
   import MobileUI from '../components/game/MobileUI.vue';
@@ -44,6 +45,14 @@
     // Handle initial game start
     if (!started.value) {
       try {
+        console.log("Starting game, checking vehicles...");
+        // Log the number of vehicles on scene
+        if (window.VehicleManager && window.VehicleManager.vehicles) {
+          console.log(`Found ${window.VehicleManager.vehicles.length} vehicles`);
+        } else {
+          console.log("VehicleManager not accessible for debugging");
+        }
+        
         isMobile.value = detectMobile();
         if (isMobile.value) {
           Mobile.setup();
@@ -51,7 +60,9 @@
 
         // Start the game first
         Engine.resize();
-        PlayersManager.spawn();
+        
+        // Spawn player near second planet where there should be vehicles
+        PlayersManager.spawn(true, new Vector3(5000, 120, 0));
         
         // Switch to FPS controller after spawn using 'change' instead of 'setController'
         ControlManager.change(FPSController);
