@@ -6,12 +6,21 @@
       <p>Velocity: {{ formatVector(playerVel) }}</p>
       <p>SOI: {{ playerSoi }}</p>
       <p>Falling: {{ playerFalling }}</p>
+      <p>In Vehicle: {{ inVehicle ? 'Yes' : 'No' }}</p>
+      <p v-if="inVehicle">Vehicle: {{ vehicleName }}</p>
     </div>
     <div class="debug-section">
       <h3>Vehicles</h3>
       <p>Total vehicles: {{ vehicleCount }}</p>
-      <p>Nearby vehicle: {{ nearbyVehicle ? 'Yes' : 'No' }}</p>
-      <p v-if="nearbyVehicle">Distance: {{ nearbyDistance.toFixed(2) }}</p>
+      <p>Current vehicle: {{ currentVehicle }}</p>
+      
+      <p>Nearby vehicles:</p>
+      <ul v-if="nearbyVehicles.length > 0">
+        <li v-for="(vehicle, index) in nearbyVehicles" :key="index">
+          {{ vehicle.name }} ({{ vehicle.type }}) - {{ vehicle.distance.toFixed(2) }}m
+        </li>
+      </ul>
+      <p v-else>None in range</p>
     </div>
     <button @click="teleportToNearestVehicle" v-if="vehicleCount > 0">
       Teleport to Nearest Vehicle
@@ -30,8 +39,10 @@ const playerVel = ref(new Vector3());
 const playerSoi = ref('None');
 const playerFalling = ref(true);
 const vehicleCount = ref(0);
-const nearbyVehicle = ref(false);
-const nearbyDistance = ref(0);
+const currentVehicle = ref('None');
+const inVehicle = ref(false);
+const vehicleName = ref('');
+const nearbyVehicles = ref([]);
 
 // Format Vector3 to readable string
 function formatVector(vector) {
@@ -51,7 +62,8 @@ function teleportToNearestVehicle() {
   
   // Find closest vehicle
   for (const vehicle of VehicleManager.vehicles) {
-    const dist = player.position.distanceTo(vehicle.mesh.position);
+    if (!vehicle) continue;
+    const dist = player.position.distanceTo(vehicle.position);
     if (dist < closestDist) {
       closestDist = dist;
       closestVehicle = vehicle;
@@ -60,13 +72,17 @@ function teleportToNearestVehicle() {
   
   if (closestVehicle) {
     // Position player near vehicle
-    const teleportPosition = closestVehicle.mesh.position.clone();
+    const teleportPosition = closestVehicle.position.clone();
     teleportPosition.add(new Vector3(5, 5, 5)); // Offset a bit
     
     player.position.copy(teleportPosition);
     player.handle.position.copy(teleportPosition);
     
-    console.log(`Teleported to vehicle at (${teleportPosition.x.toFixed(1)}, ${teleportPosition.y.toFixed(1)}, ${teleportPosition.z.toFixed(1)})`);
+    console.log(`Teleported to ${closestVehicle.userData.name} at (${teleportPosition.x.toFixed(1)}, ${teleportPosition.y.toFixed(1)}, ${teleportPosition.z.toFixed(1)})`);
+    
+    if (typeof window !== 'undefined' && window.gameNotify) {
+      window.gameNotify(`Teleported to ${closestVehicle.userData.name}`);
+    }
   }
 }
 
@@ -80,11 +96,43 @@ const interval = setInterval(() => {
     playerFalling.value = player.falling;
   }
   
+  // Get vehicle information
   vehicleCount.value = VehicleManager.vehicles?.length || 0;
-  nearbyVehicle.value = !!VehicleManager.nearbyVehicle;
   
-  if (VehicleManager.nearbyVehicle && player) {
-    nearbyDistance.value = player.position.distanceTo(VehicleManager.nearbyVehicle.mesh.position);
+  // Check if player is in a vehicle
+  inVehicle.value = !!VehicleManager.currentVehicle;
+  
+  if (inVehicle.value) {
+    const vehicle = VehicleManager.currentVehicle;
+    vehicleName.value = vehicle.userData.name || `${vehicle.userData.type}-unknown`;
+    currentVehicle.value = `${vehicle.userData.name} (${vehicle.userData.type})`;
+  } else {
+    vehicleName.value = '';
+    currentVehicle.value = 'None';
+  }
+  
+  // Find nearby vehicles within 50 units
+  nearbyVehicles.value = [];
+  if (player && VehicleManager.vehicles) {
+    for (const vehicle of VehicleManager.vehicles) {
+      if (!vehicle) continue;
+      
+      const distance = player.position.distanceTo(vehicle.position);
+      if (distance < 100) { // Show vehicles within 100 units
+        nearbyVehicles.value.push({
+          name: vehicle.userData.name || 'Unknown',
+          type: vehicle.userData.type,
+          distance: distance,
+          isOccupied: vehicle.userData.isOccupied
+        });
+      }
+    }
+    
+    // Sort by distance
+    nearbyVehicles.value.sort((a, b) => a.distance - b.distance);
+    
+    // Limit to 5 closest
+    nearbyVehicles.value = nearbyVehicles.value.slice(0, 5);
   }
 }, 200);
 
@@ -105,6 +153,8 @@ onBeforeUnmount(() => {
   font-family: monospace;
   z-index: 1000;
   max-width: 300px;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .debug-section {
@@ -120,6 +170,16 @@ h3 {
 p {
   margin: 2px 0;
   font-size: 12px;
+}
+
+ul {
+  margin: 5px 0;
+  padding-left: 15px;
+}
+
+li {
+  font-size: 11px;
+  margin-bottom: 2px;
 }
 
 button {
