@@ -103,7 +103,7 @@
             
             // Tell player about view toggle
             setTimeout(() => {
-              showNotification('Press O to toggle between First and Third Person views');
+              showNotification('Press O to toggle between camera views (works for players and vehicles)');
             }, 3000);
           }, 1000);
         }
