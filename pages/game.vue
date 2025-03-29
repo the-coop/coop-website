@@ -1,6 +1,6 @@
 <template>
   <div class="game" @click="engage">
-    <Start v-if="!started" :started="started" />
+    <Start v-if="!started" :start="engage" />
     <canvas class="canvas" ref="canvas"></canvas>
     <MobileUI v-if="started" />
     <DebugBox v-if="started && showDebug" />
@@ -15,6 +15,8 @@
   import DebugBox from '../components/game/DebugBox.vue';
   import PlayersManager from '../lib/game/players.mjs';
   import Mobile from '../lib/game/controllers/inputs/mobile.mjs';
+  import ControlManager from '../lib/game/control.mjs';
+  import FPSController from '../lib/game/controllers/FPSController.mjs';
 
   // Use the full sized game layout for simplicity/separation.
   definePageMeta({ layout: 'gaming' });
@@ -37,7 +39,7 @@
     }
   }
 
-  // Remove the start function since we'll merge it into requestLock
+  // Handle game initialization and device-specific setup
   async function engage(ev) {
     // Handle initial game start
     if (!started.value) {
@@ -50,23 +52,27 @@
         // Start the game first
         Engine.resize();
         PlayersManager.spawn();
+        
+        // Switch to FPS controller after spawn using 'change' instead of 'setController'
+        ControlManager.change(FPSController);
+        
         started.value = true;
 
-          try {
-            // Attempt full screen on mobile and desktop.
-            await document.documentElement?.requestFullscreen();
-          } catch (e) {
-              console.error('Failed to get full screen:', e);
-          }
+        try {
+          // Attempt full screen on mobile and desktop.
+          await document.documentElement?.requestFullscreen();
+        } catch (e) {
+          console.error('Failed to get full screen:', e);
+        }
+        
         // Then handle fullscreen/pointer lock for desktop
         if (!isMobile.value) {
           // await new Promise(resolve => setTimeout(resolve, 100));
           await document.body?.requestPointerLock();
         }
-      } catch (e) {
-        console.error('Failed to start game:', e);
+      } catch (error) {
+        console.error('Error starting game:', error);
       }
-      return;
     }
 
     // Handle reapplying lock/fullscreen for desktop
