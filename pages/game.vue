@@ -3,6 +3,7 @@
     <Start v-if="!started" :started="started" />
     <canvas class="canvas" ref="canvas"></canvas>
     <MobileUI v-if="started" />
+    <DebugBox v-if="started && showDebug" />
   </div>
 </template>
 
@@ -11,6 +12,7 @@
   import Engine from '../lib/game/engine.mjs';
   import Start from '../components/game/Start.vue';
   import MobileUI from '../components/game/MobileUI.vue';
+  import DebugBox from '../components/game/DebugBox.vue';
   import PlayersManager from '../lib/game/players.mjs';
   import Mobile from '../lib/game/controllers/inputs/mobile.mjs';
 
@@ -20,12 +22,20 @@
   const started = ref(false);
   const canvas = ref(null);
   const isMobile = ref(false);
+  const showDebug = ref(false);
 
   // Check for mobile device
   function detectMobile() {
     // return 'ontouchstart' in window && window.innerWidth <= 768;
     return window.innerWidth <= 768;
   };
+
+  // Toggle debug display with backtick key
+  function handleKeyDown(event) {
+    if (event.key === '`' || event.key === 'Backquote') {
+      showDebug.value = !showDebug.value;
+    }
+  }
 
   // Remove the start function since we'll merge it into requestLock
   async function engage(ev) {
@@ -77,6 +87,9 @@
   onMounted(() => {   
     // Setup game engine.
     Engine.setup(canvas);
+    
+    // Add keyboard listener for debug toggle
+    window.addEventListener('keydown', handleKeyDown);
   });
 
   // Cleanup engine, fullscreen, inputs and pointer lock.
@@ -84,6 +97,9 @@
     // Remove pointer lock if it was applied.
     if (!isMobile.value)
       document.exitPointerLock();
+
+    // Remove keyboard listener
+    window.removeEventListener('keydown', handleKeyDown);
 
     // Cleanup the entire engine.
     Engine.cleanup();
