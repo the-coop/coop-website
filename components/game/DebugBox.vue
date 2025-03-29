@@ -10,25 +10,51 @@
     </div>
     <div class="debug-section">
       <h4>Planet</h4>
-      <div><span>Current SOI:</span> {{ player.soi?.name || "None" }}</div>
+      <div><span>Current SOI:</span> {{ player.soi?.name || "Unknown" }}</div>
       <div><span>Planet Radius:</span> {{ player.soi?.radius.toFixed(2) || "N/A" }}</div>
       <div><span>Distance to Center:</span> {{ distanceToPlanet.toFixed(2) }}</div>
       <div><span>Height Above Surface:</span> {{ surfaceDistance.toFixed(2) }}</div>
       <div><span>Friction:</span> {{ player.soi?.CoF || "N/A" }}</div>
     </div>
+    <div class="debug-section">
+      <h4>Collisions</h4>
+      <div><span>Last Object:</span> {{ lastCollisionObject }}</div>
+      <div><span>Hit Normal:</span> {{ formatVector(lastCollisionNormal) }}</div>
+      <div><span>Collision Time:</span> {{ lastCollisionTime.toFixed(4) }}</div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import PlayersManager from '../../lib/game/players.mjs';
 
 // Get player data
 const player = computed(() => PlayersManager.self);
 
+// Collision tracking
+const lastCollisionObject = ref("None");
+const lastCollisionNormal = ref(null);
+const lastCollisionTime = ref(0);
+
+// Watch for changes in player state to detect collisions
+watch(() => player.value?.velocity, (newVal, oldVal) => {
+  if (newVal && oldVal) {
+    // If velocity direction changed significantly, assume collision
+    if (newVal.clone().normalize().dot(oldVal.clone().normalize()) < 0.9) {
+      lastCollisionTime.ref = performance.now() / 1000;
+      // Using surfaceNormal as a proxy for collision normal
+      if (player.value?.surfaceNormal) {
+        lastCollisionNormal.value = player.value.surfaceNormal.clone();
+        lastCollisionObject.value = player.value.soi?.name || "Unknown";
+      }
+    }
+  }
+}, { deep: true });
+
 // Calculate distance to planet's center
 const distanceToPlanet = computed(() => {
-  if (!player.value?.soi) return 0;
+  if (!player.value?.soi?.object?.position || !player.value?.position) return 0;
   return player.value.position.distanceTo(player.value.soi.object.position);
 });
 
