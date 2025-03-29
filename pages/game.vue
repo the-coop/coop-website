@@ -4,6 +4,11 @@
     <canvas class="canvas" ref="canvas"></canvas>
     <MobileUI v-if="started" />
     <DebugBox v-if="started && showDebug" />
+    
+    <!-- Add notification component -->
+    <div v-if="notification.show" class="notification">
+      {{ notification.message }}
+    </div>
   </div>
 </template>
 
@@ -26,6 +31,30 @@
   const canvas = ref(null);
   const isMobile = ref(false);
   const showDebug = ref(false);
+  
+  // Add notification state
+  const notification = ref({
+    show: false,
+    message: '',
+    timeout: null
+  });
+
+  // Function to show notifications
+  function showNotification(message, duration = 3000) {
+    // Clear any existing timeout
+    if (notification.value.timeout) {
+      clearTimeout(notification.value.timeout);
+    }
+    
+    // Show new notification
+    notification.value.message = message;
+    notification.value.show = true;
+    
+    // Auto-hide after duration
+    notification.value.timeout = setTimeout(() => {
+      notification.value.show = false;
+    }, duration);
+  }
 
   // Check for mobile device
   function detectMobile() {
@@ -107,6 +136,11 @@
     
     // Add keyboard listener for debug toggle
     window.addEventListener('keydown', handleKeyDown);
+    
+    // Expose notification function to the global scope for other modules to use
+    if (typeof window !== 'undefined') {
+      window.gameNotify = showNotification;
+    }
   });
 
   // Cleanup engine, fullscreen, inputs and pointer lock.
@@ -120,6 +154,16 @@
 
     // Cleanup the entire engine.
     Engine.cleanup();
+    
+    // Remove notification function from global scope
+    if (typeof window !== 'undefined') {
+      window.gameNotify = undefined;
+    }
+    
+    // Clear any pending notification timeout
+    if (notification.value.timeout) {
+      clearTimeout(notification.value.timeout);
+    }
   });
 </script>
 
@@ -133,5 +177,17 @@
     display: block;
     height: 100%;
     width: 100%;
+  }
+  
+  .notification {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.5);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
   }
 </style>
