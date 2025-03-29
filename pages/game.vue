@@ -91,7 +91,7 @@
         // Switch to FPS controller after spawn
         ControlManager.change(FPSController);
         
-        // Display vehicle info after a brief delay to ensure everything is loaded
+        // Display vehicle info and controls help
         if (typeof window !== 'undefined') {
           setTimeout(() => {
             const vehicleCount = VehicleManager.vehicles.length;
@@ -101,9 +101,12 @@
             console.log(`Game world contains ${vehicleCount} vehicles: ${carCount} cars and ${airplaneCount} airplanes`);
             showNotification(`Game started with ${carCount} cars and ${airplaneCount} airplanes`);
             
-            // Tell player about view toggle
+            // Tell player about controls
             setTimeout(() => {
-              showNotification('Press O to toggle between camera views (works for players and vehicles)');
+              showNotification('Press O to toggle between first and third person views (when on foot)');
+              setTimeout(() => {
+                showNotification('Press E to enter/exit vehicles');
+              }, 3000);
             }, 3000);
           }, 1000);
         }
