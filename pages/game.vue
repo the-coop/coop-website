@@ -24,6 +24,7 @@
   import ControlManager from '../lib/game/control.mjs';
   import FPSController from '../lib/game/controllers/FPSController.mjs';
   import VehicleManager from '../lib/game/vehicles.mjs';
+  import ObjectManager from '../lib/game/object.mjs'; // Fixed import path
 
   // Use the full sized game layout for simplicity/separation.
   definePageMeta({ layout: 'gaming' });
@@ -67,6 +68,35 @@
   function handleKeyDown(event) {
     if (event.key === '`' || event.key === 'Backquote') {
       showDebug.value = !showDebug.value;
+      
+      // When turning on debug view, show collision visualization
+      if (showDebug.value && ObjectManager.debugVisualize) {
+        ObjectManager.debugVisualize(true, {
+          showBoxes: true,
+          showNormals: true,
+          boxOpacity: 0.3,
+          normalLength: 2
+        });
+        showNotification("Debug mode activated - collision boxes visible");
+      } else if (ObjectManager.debugVisualize) {
+        ObjectManager.debugVisualize(false);
+      }
+    }
+    
+    // Add C key to show collision info
+    if (event.key === 'c' || event.key === 'C') {
+      if (PlayersManager.self && PlayersManager.self.handle) {
+        // Check collisions with all object types
+        const collisions = ObjectManager.checkAllCollisions(PlayersManager.self.handle);
+        
+        if (collisions.length > 0) {
+          const types = collisions.map(c => c.otherCollidable.type).join(', ');
+          showNotification(`Colliding with: ${types} (${collisions.length} objects)`);
+          console.log("Current collisions:", collisions);
+        } else {
+          showNotification("No collisions detected");
+        }
+      }
     }
   }
 
@@ -106,6 +136,13 @@
               showNotification('Press O to toggle between first and third person views (when on foot)');
               setTimeout(() => {
                 showNotification('Press E to enter/exit vehicles');
+                setTimeout(() => {
+                  showNotification('Press ~ to toggle debug view');
+                  // Enable collision debug visualization
+                  if (ObjectManager.debugVisualize) {
+                    ObjectManager.debugVisualize(true);
+                  }
+                }, 3000);
               }, 3000);
             }, 3000);
           }, 1000);
@@ -113,33 +150,64 @@
         
         started.value = true;
 
+        // CRITICAL FIX: Use try/catch for each permission request separately
         try {
-          // Attempt full screen on mobile and desktop.
-          await document.documentElement?.requestFullscreen();
+          // Only request fullscreen if we're not already in fullscreen
+          if (document.documentElement && !document.fullscreenElement) {
+            // Need to wait for user interaction before requesting permissions
+            console.log("Requesting fullscreen...");
+            await document.documentElement.requestFullscreen().catch(e => {
+              console.warn("Fullscreen request was rejected:", e.message);
+            });
+          }
         } catch (e) {
           console.error('Failed to get full screen:', e);
+          // Continue even if fullscreen fails
         }
         
-        // Then handle fullscreen/pointer lock for desktop
+        // CRITICAL FIX: Then handle pointer lock for desktop as a separate request
         if (!isMobile.value) {
-          // await new Promise(resolve => setTimeout(resolve, 100));
-          await document.body?.requestPointerLock();
+          try {
+            // Short delay before pointer lock request
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            if (document.body && !document.pointerLockElement) {
+              console.log("Requesting pointer lock...");
+              await document.body.requestPointerLock().catch(e => {
+                console.warn("Pointer lock request was rejected:", e.message);
+              });
+            }
+          } catch (e) {
+            console.error('Failed to get pointer lock:', e);
+            // Continue even if pointer lock fails
+          }
         }
       } catch (error) {
         console.error('Error starting game:', error);
       }
     }
 
-    // Handle reapplying lock/fullscreen for desktop
-    if (started.value && !isMobile.value && !document.pointerLockElement) {
+    // Handle reapplying lock/fullscreen for desktop - separate each request
+    if (started.value && !isMobile.value) {
       try {
-        if (!document.fullscreenElement) {
-          await document.documentElement?.requestFullscreen();
-          await new Promise(resolve => setTimeout(resolve, 100));
+        // First try fullscreen if needed
+        if (!document.fullscreenElement && document.documentElement) {
+          await document.documentElement.requestFullscreen().catch(e => {
+            console.warn("Fullscreen re-request was rejected:", e.message);
+          });
+          // Small delay between requests
+          await new Promise(resolve => setTimeout(resolve, 300));
         }
-        await document.body?.requestPointerLock();
+        
+        // Then try pointer lock if needed
+        if (!document.pointerLockElement && document.body) {
+          await document.body.requestPointerLock().catch(e => {
+            console.warn("Pointer lock re-request was rejected:", e.message);
+          });
+        }
       } catch (e) {
         console.error('Failed to enter fullscreen/pointer lock:', e);
+        // Just log the error but continue
       }
     }
   };
