@@ -9,6 +9,11 @@
     <div v-if="notification.show" class="notification">
       {{ notification.message }}
     </div>
+    
+    <!-- Add debug controls -->
+    <div v-if="started" class="debug-controls">
+      <button @click.stop="fixNaNIssues" class="debug-button">Fix NaN Issues</button>
+    </div>
   </div>
 </template>
 
@@ -64,6 +69,58 @@
     return window.innerWidth <= 768;
   };
 
+  // Add debug function to fix NaN issues
+  function fixNaNIssues() {
+    try {
+      console.log("Running NaN cleanup routine");
+      showNotification("Running NaN cleanup routine...");
+      
+      // Reset all OBB visualizers
+      if (ObjectManager.debugVisualize) {
+        // First turn off visualization
+        ObjectManager.debugVisualize(false);
+        
+        // Force all collidable objects to recompute bounds
+        if (ObjectManager.collidableObjects) {
+          console.log(`Fixing ${ObjectManager.collidableObjects.length} collidable objects`);
+          
+          for (const collidable of ObjectManager.collidableObjects) {
+            if (!collidable || !collidable.object) continue;
+            
+            // Reset AABB and OBB
+            const obj = collidable.object;
+            const pos = obj.position.clone();
+            const size = 2; // Default size
+            
+            collidable.aabb.min.set(pos.x - size, pos.y - size, pos.z - size);
+            collidable.aabb.max.set(pos.x + size, pos.y + size, pos.z + size);
+            
+            collidable.obb.center.copy(pos);
+            collidable.obb.halfSize.set(size, size, size);
+            collidable.obb.rotation.identity();
+          }
+          
+          // Now turn visualization back on with fresh buffers
+          setTimeout(() => {
+            if (showDebug.value) {
+              ObjectManager.debugVisualize(true, {
+                showBoxes: true,
+                showOBBs: true,
+                boxOpacity: 0.3
+              });
+              showNotification("NaN issues fixed, collision visualization refreshed");
+            } else {
+              showNotification("NaN issues fixed");
+            }
+          }, 500);
+        }
+      }
+    } catch (e) {
+      console.error("Error fixing NaN issues:", e);
+      showNotification("Error fixing NaN issues: " + e.message);
+    }
+  }
+
   // Toggle debug display with backtick key
   function handleKeyDown(event) {
     if (event.key === '`' || event.key === 'Backquote') {
@@ -81,6 +138,11 @@
       } else if (ObjectManager.debugVisualize) {
         ObjectManager.debugVisualize(false);
       }
+    }
+    
+    // Add B key to fix NaN issues
+    if (event.key === 'b' || event.key === 'B') {
+      fixNaNIssues();
     }
     
     // Add C key to show collision info
@@ -272,5 +334,21 @@
     padding: 10px;
     border-radius: 5px;
     z-index: 1000;
+  }
+  
+  .debug-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+  }
+  
+  .debug-button {
+    background: rgba(255, 0, 0, 0.5);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
   }
 </style>
