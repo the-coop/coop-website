@@ -43,6 +43,11 @@
           <span class="collidable-dist">{{ obj.distance.toFixed(2) }}m</span>
         </div>
       </div>
+
+      <!-- NEW: Added button to toggle collision visualization -->
+      <button @click="toggleCollisionVisualization" :class="{ 'active-button': collisionVisualizationEnabled }">
+        {{ collisionVisualizationEnabled ? 'Hide' : 'Show' }} Collision Boxes
+      </button>
     </div>
     
     <div class="debug-section">
@@ -109,6 +114,9 @@ const nearbyCollidables = ref([]);
 const activeCollisions = ref([]);
 const lastCollisionTime = ref(0);
 const lastCollidedTypes = ref(new Set());
+
+// Add state for collision visualization
+const collisionVisualizationEnabled = ref(false);
 
 // Format Vector3 to readable string - fixed to work correctly
 function formatVector(vector) {
@@ -251,6 +259,16 @@ function checkPlayerCollisions() {
     [];
   
   return collisions;
+}
+
+// Toggle collision visualization
+function toggleCollisionVisualization() {
+  collisionVisualizationEnabled.value = !collisionVisualizationEnabled.value;
+  
+  // Call engine method if it exists
+  if (typeof window !== 'undefined' && window.Engine) {
+    window.Engine.toggleCollisionDebug(collisionVisualizationEnabled.value);
+  }
 }
 
 // Update debug info periodically
@@ -501,6 +519,11 @@ button {
 
 button:hover {
   background-color: #45a049;
+}
+
+.active-button {
+  background-color: #ff6b6b !important; 
+  font-weight: bold;
 }
 
 /* New styles for collision and wall lists */
