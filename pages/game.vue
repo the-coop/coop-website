@@ -74,20 +74,19 @@
 
   // Toggle debug display with backtick key
   function handleKeyDown(event) {
-    if (event.key === '`' || event.key === 'Backquote') {
+    // Toggle debug with backtick key
+    if (event.key === '`' || event.key === '~') {
       showDebug.value = !showDebug.value;
+      console.log(`Debug display ${showDebug.value ? 'enabled' : 'disabled'}`);
       
-      // When turning on debug view, show collision visualization
-      if (showDebug.value && ObjectManager.debugVisualize) {
-        ObjectManager.debugVisualize(true, {
-          showBoxes: true,
-          showNormals: true,
-          boxOpacity: 0.3,
-          normalLength: 2
-        });
-        showNotification("Debug mode activated - collision boxes visible");
-      } else if (ObjectManager.debugVisualize) {
-        ObjectManager.debugVisualize(false);
+      // ADDED: Also toggle collision debugging
+      if (typeof ObjectManager.toggleDebug === 'function') {
+        ObjectManager.toggleDebug(showDebug.value);
+      }
+      
+      // Show debug notification
+      if (showDebug.value) {
+        showNotification('Debug mode enabled', 2000);
       }
     }
     
