@@ -16,15 +16,18 @@
       <p>Active Collisions: {{ activeCollisions.length }}</p>
       <div v-if="activeCollisions.length > 0" class="collision-list">
         <div v-for="(collision, index) in activeCollisions" :key="index" class="collision-item">
-          <span class="collision-type">{{ collision.type }}</span>
+          <span :class="{'collision-type': true, 'wall-collision': collision.type === 'wall'}">
+            {{ collision.type }}
+          </span>
           <span class="collision-dist">{{ collision.distance.toFixed(2) }}m</span>
         </div>
       </div>
       
       <p>Nearby walls: {{ nearbyWalls.length }}</p>
       <div v-if="nearbyWalls.length > 0" class="wall-list">
-        <div v-for="(wall, index) in nearbyWalls" :key="index" class="wall-item">
-          <span>{{ wall.name }}</span>
+        <div v-for="(wall, index) in nearbyWalls" :key="index" 
+             :class="{'wall-item': true, 'wall-very-close': wall.distance < 3}">
+          <span>{{ wall.name || 'Wall' + index }}</span>
           <span class="wall-dist">{{ wall.distance.toFixed(2) }}m</span>
         </div>
       </div>
@@ -296,7 +299,7 @@ const interval = setInterval(() => {
       const currentCollisions = [];
       
       // Method 1: Use ObjectManager's checkAllCollisions if available
-      if (ObjectManager.checkAllCollisions && player.handle) {
+      if (ObjectManager.checkAllCollisions && player && player.handle) {
         try {
           const collisions = ObjectManager.checkAllCollisions(player.handle);
           if (collisions && collisions.length > 0) {
@@ -306,8 +309,14 @@ const interval = setInterval(() => {
                   type: collision.otherCollidable.type,
                   distance: collision.distance || 0,
                   object: collision.otherCollidable.object,
+                  isWall: collision.otherCollidable.type === 'wall',
                   time: Date.now()
                 });
+                
+                // Highlight wall collisions in console for debugging
+                if (collision.otherCollidable.type === 'wall') {
+                  console.log(`ACTIVE WALL COLLISION at distance ${collision.distance.toFixed(2)}m`);
+                }
               }
             });
             
@@ -507,5 +516,15 @@ button:hover {
 
 .collision-dist, .wall-dist, .collidable-dist {
   color: #aaa;
+}
+
+.wall-collision {
+  color: #ff0000 !important; /* Bright red for wall collisions */
+  font-weight: bold;
+}
+
+.wall-very-close {
+  background-color: rgba(255, 0, 0, 0.3);
+  border-radius: 3px;
 }
 </style>
