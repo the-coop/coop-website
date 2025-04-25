@@ -10,7 +10,12 @@
       {{ notification.message }}
     </div>
     
-
+    <!-- Add debug controls for collision testing -->
+    <div v-if="started" class="debug-controls">
+      <button @click="toggleCollisionBoxes" class="debug-button">
+        {{ showCollisionBoxes ? 'Hide' : 'Show' }} Collision Boxes
+      </button>
+    </div>
   </div>
 </template>
 
@@ -35,6 +40,7 @@
   const canvas = ref(null);
   const isMobile = ref(false);
   const showDebug = ref(false);
+  const showCollisionBoxes = ref(false);
   
   // Add notification state
   const notification = ref({
@@ -98,6 +104,31 @@
         } else {
           showNotification("No collisions detected");
         }
+      }
+    }
+    
+    // Add B key to toggle collision box visibility
+    if (event.key === 'b' || event.key === 'B') {
+      toggleCollisionBoxes();
+    }
+  }
+  
+  // Function to toggle collision boxes for debugging
+  function toggleCollisionBoxes() {
+    showCollisionBoxes.value = !showCollisionBoxes.value;
+    
+    if (ObjectManager && ObjectManager.debugVisualize) {
+      if (showCollisionBoxes.value) {
+        ObjectManager.debugVisualize(true, {
+          showBoxes: true,
+          showOBBs: true,  // Show oriented bounding boxes
+          boxOpacity: 0.3,
+          normalLength: 0  // Don't show normals by default
+        });
+        showNotification("Collision boxes visible - Press C to check collisions");
+      } else {
+        ObjectManager.debugVisualize(false);
+        showNotification("Collision boxes hidden");
       }
     }
   }
