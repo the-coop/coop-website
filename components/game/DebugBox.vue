@@ -10,7 +10,7 @@
       <p v-if="inVehicle">Vehicle: {{ vehicleName }}</p>
     </div>
     
-    <!-- New Collisions & Walls section -->
+    <!-- Enhanced Collisions & Walls section -->
     <div class="debug-section">
       <h3>Collisions & Walls</h3>
       <p>Active Collisions: {{ activeCollisions.length }}</p>
@@ -20,6 +20,10 @@
             {{ collision.type }}
           </span>
           <span class="collision-dist">{{ collision.distance.toFixed(2) }}m</span>
+          <!-- Add collision normal display if available -->
+          <span v-if="collision.normal" class="collision-normal">
+            N:({{ formatNormal(collision.normal) }})
+          </span>
         </div>
       </div>
       
@@ -110,6 +114,12 @@ const lastCollidedTypes = ref(new Set());
 function formatVector(vector) {
   if (!vector || !vector.x) return 'N/A';
   return `(${vector.x.toFixed(1)}, ${vector.y.toFixed(1)}, ${vector.z.toFixed(1)})`;
+}
+
+// Format normal vector to short readable string
+function formatNormal(normal) {
+  if (!normal) return 'N/A';
+  return `${normal.x.toFixed(1)},${normal.y.toFixed(1)},${normal.z.toFixed(1)}`;
 }
 
 // Teleport player to nearest vehicle for testing
@@ -310,12 +320,13 @@ const interval = setInterval(() => {
                   distance: collision.distance || 0,
                   object: collision.otherCollidable.object,
                   isWall: collision.otherCollidable.type === 'wall',
+                  normal: collision.normal, // Capture normal vector for display
                   time: Date.now()
                 });
                 
                 // Highlight wall collisions in console for debugging
                 if (collision.otherCollidable.type === 'wall') {
-                  console.log(`ACTIVE WALL COLLISION at distance ${collision.distance.toFixed(2)}m`);
+                  console.log(`ACTIVE WALL COLLISION at distance ${collision.distance.toFixed(2)}m, normal: ${formatNormal(collision.normal)}`);
                 }
               }
             });
@@ -526,5 +537,11 @@ button:hover {
 .wall-very-close {
   background-color: rgba(255, 0, 0, 0.3);
   border-radius: 3px;
+}
+
+.collision-normal {
+  color: #66ccff;
+  font-size: 10px;
+  margin-left: 4px;
 }
 </style>
