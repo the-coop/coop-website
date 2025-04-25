@@ -172,9 +172,9 @@
                 setTimeout(() => {
                   showNotification('Press ~ to toggle debug view');
                   // Enable collision debug visualization
-                  if (ObjectManager.debugVisualize) {
-                    ObjectManager.debugVisualize(true);
-                  }
+                  // if (ObjectManager.debugVisualize) {
+                  //   ObjectManager.debugVisualize(true);
+                  // }
                 }, 3000);
               }, 3000);
             }, 3000);
