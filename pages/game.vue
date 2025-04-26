@@ -135,16 +135,13 @@
     
     // Keep B key logic but make it respect debug mode
     if (event.key === 'b' || event.key === 'B') {
-      // Only toggle collision boxes separately if debug mode is off
-      // Otherwise it's already handled by debug mode
-      if (!showDebug.value) {
-        toggleCollisionBoxes();
-      } else {
-        // When in debug mode, B key can toggle additional collision details
-        if (Engine.toggleCollisionDetails) {
-          Engine.toggleCollisionDetails();
-          showNotification("Collision details toggled");
-        }
+      // Toggle detailed collision visualization
+      toggleCollisionBoxes();
+      
+      // When in debug mode, B toggles additional collision details
+      if (showDebug.value && Engine.toggleCollisionDetails) {
+        Engine.toggleCollisionDetails();
+        showNotification("Toggled detailed collision visualization");
       }
     }
   }
@@ -207,18 +204,31 @@
   function toggleCollisionBoxes() {
     showCollisionBoxes.value = !showCollisionBoxes.value;
     
-    if (ObjectManager && ObjectManager.debugVisualize) {
+    if (ObjectManager && typeof ObjectManager.debugVisualize === 'function') {
       if (showCollisionBoxes.value) {
+        // IMPROVED: Show both boxes and normals
         ObjectManager.debugVisualize(true, {
           showBoxes: true,
-          showOBBs: true,  // Show oriented bounding boxes
-          boxOpacity: 0.3,
-          normalLength: 0  // Don't show normals by default
+          showOBBs: true,   // Show oriented bounding boxes
+          showNormals: true, // Show surface normals
+          boxOpacity: 0.5,
+          normalLength: 3    // Longer normals for better visibility
         });
-        showNotification("Collision boxes visible - Press C to check collisions");
+        showNotification("Enhanced collision visualization enabled - showing boxes and normals");
+        
+        // Also enable Engine's collision visualization for active collisions
+        if (Engine && Engine.toggleCollisionDebug) {
+          Engine.toggleCollisionDebug(true);
+          Engine.toggleCollisionDetails(true);
+        }
       } else {
         ObjectManager.debugVisualize(false);
-        showNotification("Collision boxes hidden");
+        showNotification("Collision visualization disabled");
+        
+        // Disable Engine's collision visualization too
+        if (Engine && Engine.toggleCollisionDebug) {
+          Engine.toggleCollisionDebug(false);
+        }
       }
     }
   }
