@@ -79,18 +79,40 @@
       showDebug.value = !showDebug.value;
       console.log(`Debug display ${showDebug.value ? 'enabled' : 'disabled'}`);
       
-      // ADDED: Also toggle collision debugging
-      if (typeof ObjectManager.toggleDebug === 'function') {
-        ObjectManager.toggleDebug(showDebug.value);
-      }
-      
-      // Show debug notification
+      // ENHANCED: Toggle both debug info and collision visualization
       if (showDebug.value) {
-        showNotification('Debug mode enabled', 2000);
+        // Enable debugging in ObjectManager
+        if (typeof ObjectManager.toggleDebug === 'function') {
+          ObjectManager.toggleDebug(true);
+        }
+        
+        // Enable collision box visualization in Engine
+        if (Engine.toggleCollisionDebug) {
+          Engine.toggleCollisionDebug(true);
+        }
+        
+        // Show collision info in UI
+        updateCollisionInfoDisplay();
+        
+        showNotification('Enhanced debug mode enabled - shows collision info', 3000);
+      } else {
+        // Disable all debug visualizations
+        if (typeof ObjectManager.toggleDebug === 'function') {
+          ObjectManager.toggleDebug(false);
+        }
+        
+        if (Engine.toggleCollisionDebug) {
+          Engine.toggleCollisionDebug(false);
+        }
+        
+        // Clear collision info display
+        if (window.clearCollisionInfo) {
+          window.clearCollisionInfo();
+        }
       }
     }
     
-    // Add C key to show collision info
+    // Keep existing C key for on-demand collision checking
     if (event.key === 'c' || event.key === 'C') {
       if (PlayersManager.self && PlayersManager.self.handle) {
         // Check collisions with all object types
@@ -100,18 +122,87 @@
           const types = collisions.map(c => c.otherCollidable.type).join(', ');
           showNotification(`Colliding with: ${types} (${collisions.length} objects)`);
           console.log("Current collisions:", collisions);
+          
+          // Update collision display if debug is active
+          if (showDebug.value) {
+            updateCollisionInfoDisplay();
+          }
         } else {
           showNotification("No collisions detected");
         }
       }
     }
     
-    // Add B key to toggle collision box visibility
+    // Keep B key logic but make it respect debug mode
     if (event.key === 'b' || event.key === 'B') {
-      toggleCollisionBoxes();
+      // Only toggle collision boxes separately if debug mode is off
+      // Otherwise it's already handled by debug mode
+      if (!showDebug.value) {
+        toggleCollisionBoxes();
+      } else {
+        // When in debug mode, B key can toggle additional collision details
+        if (Engine.toggleCollisionDetails) {
+          Engine.toggleCollisionDetails();
+          showNotification("Collision details toggled");
+        }
+      }
     }
   }
   
+  // New function to update collision information display
+  function updateCollisionInfoDisplay() {
+    if (!PlayersManager.self) return;
+    
+    try {
+      // Get current collision state
+      const activeCollisions = PlayersManager.self.activeCollisions || [];
+      const lastCollisions = PlayersManager.self._lastCollisions || [];
+      
+      // Get all unique collisions (combining active and recent)
+      const allCollisions = [...activeCollisions];
+      
+      // Add unique recent collisions
+      lastCollisions.forEach(rc => {
+        if (!allCollisions.some(ac => ac.normal === rc.normal && ac.time === rc.time)) {
+          allCollisions.push(rc);
+        }
+      });
+      
+      // Get collision counts
+      const activeCount = PlayersManager.self.currentlyColliding ? 
+                         activeCollisions.length : 0;
+      
+      // Generate collision display data
+      if (activeCount > 0 || lastCollisions.length > 0) {
+        // Get the most recent collision
+        const mostRecent = allCollisions.sort((a, b) => b.time - a.time)[0];
+        
+        if (mostRecent && mostRecent.object) {
+          const objectType = mostRecent.object.userData?.type || 
+                           mostRecent.object.name || 
+                           'unknown';
+                           
+          const distance = mostRecent.position ? 
+                         PlayersManager.self.position.distanceTo(mostRecent.position).toFixed(2) + 'm' : 
+                         'unknown';
+                         
+          const normal = mostRecent.normal ? 
+                       `N:(${mostRecent.normal.x.toFixed(1)},${mostRecent.normal.y.toFixed(1)},${mostRecent.normal.z.toFixed(1)})` : 
+                       'unknown';
+          
+          // Update collision UI through window function if available
+          if (window.updateCollisionInfo) {
+            window.updateCollisionInfo(objectType, distance, mostRecent.normal, activeCount > 0);
+          }
+        }
+      } else if (window.clearCollisionInfo) {
+        window.clearCollisionInfo();
+      }
+    } catch (err) {
+      console.error("Error updating collision display:", err);
+    }
+  }
+
   // Function to toggle collision boxes for debugging
   function toggleCollisionBoxes() {
     showCollisionBoxes.value = !showCollisionBoxes.value;
@@ -255,7 +346,80 @@
     // Expose notification function to the global scope for other modules to use
     if (typeof window !== 'undefined') {
       window.gameNotify = showNotification;
+      
+      // ADDED: Create collision info display handler
+      window.updateCollisionInfo = function(objectType, distance, normal, activeCollision = false) {
+        // Create or get collision info container
+        let container = document.getElementById('collision-info');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'collision-info';
+          container.style.position = 'absolute';
+          container.style.top = '10px';
+          container.style.right = '10px';
+          container.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+          container.style.color = 'white';
+          container.style.padding = '10px';
+          container.style.fontFamily = 'monospace';
+          container.style.fontSize = '12px';
+          container.style.borderRadius = '5px';
+          container.style.zIndex = 1000;
+          document.body.appendChild(container);
+        }
+        
+        // Update collision info
+        if (activeCollision || objectType) {
+          let html = `<div style="color: ${activeCollision ? '#ff5555' : '#55ff55'}">Collisions & Walls</div>`;
+          html += `<div>Active Collisions: ${PlayersManager.self?.activeCollisions?.length || 0}</div><br>`;
+          
+          if (objectType) {
+            html += `<div>${objectType}</div>`;
+            
+            if (distance) {
+              html += `<div>${distance}</div>`;
+            }
+            
+            if (normal) {
+              html += `<div>N:(${normal.x.toFixed(1)},${normal.y.toFixed(1)},${normal.z.toFixed(1)})</div>`;
+            }
+          }
+          
+          container.innerHTML = html;
+          container.style.display = 'block';
+          
+          // Auto-hide after 5 seconds if not updated
+          if (window._collisionInfoTimeout) {
+            clearTimeout(window._collisionInfoTimeout);
+          }
+          
+          window._collisionInfoTimeout = setTimeout(() => {
+            container.style.display = 'none';
+          }, 5000);
+        } else {
+          container.style.display = 'none';
+        }
+      };
+      
+      // Add clear collision info function
+      window.clearCollisionInfo = function() {
+        const container = document.getElementById('collision-info');
+        if (container) {
+          container.style.display = 'none';
+        }
+      };
     }
+    
+    // Set up regular updates for collision info when debug is enabled
+    const collisionUpdateInterval = setInterval(() => {
+      if (showDebug.value && PlayersManager.self) {
+        updateCollisionInfoDisplay();
+      }
+    }, 500); // Update every half second
+    
+    // Clean up interval on component unmount
+    onBeforeUnmount(() => {
+      clearInterval(collisionUpdateInterval);
+    });
   });
 
   // Cleanup engine, fullscreen, inputs and pointer lock.
