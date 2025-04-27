@@ -249,7 +249,7 @@
         Engine.resize();
         
         // Spawn player near second planet where there should be vehicles
-        PlayersManager.spawn(true, new Vector3(5000, 120, 0));
+        PlayersManager.spawn(true, new Vector3(5000, 220, 200));
         
         // Switch to FPS controller after spawn
         ControlManager.change(FPSController);
