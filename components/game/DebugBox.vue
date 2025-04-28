@@ -33,6 +33,24 @@
       <span>Collision Objects:</span>
       <span>{{ collisionCount }}</span>
     </div>
+    
+    <!-- New section for nearby vehicles -->
+    <div class="debug-section">
+      <h4>Nearby Vehicles</h4>
+      <div v-if="nearbyVehicles.length === 0" class="vehicle-row">
+        <span>No vehicles nearby</span>
+      </div>
+      <div v-for="(vehicle, index) in nearbyVehicles" :key="index" class="vehicle-row">
+        <span>{{ vehicle.name }} ({{ formatDistance(vehicle.distance) }}m)</span>
+        <span :class="vehicle.isOccupied ? 'status-bad' : 'status-good'">
+          {{ vehicle.isOccupied ? 'Occupied' : 'Available' }}
+        </span>
+      </div>
+      <div class="vehicle-row" v-if="currentVehicle">
+        <span><strong>Current Vehicle:</strong> {{ currentVehicle }}</span>
+      </div>
+    </div>
+    
     <button @click="toggleCollisionDebug">
       {{ showCollisionDebug ? 'Hide Collision Debug' : 'Show Collision Debug' }}
     </button>
@@ -58,10 +76,19 @@ const isColliding = ref(false);
 const collisionCount = ref(0);
 const showCollisionDebug = ref(false);
 
+// New ref for nearby vehicles
+const nearbyVehicles = ref([]);
+const currentVehicle = ref(null);
+
 // Format vector to readable string
 const formatVector = (vec) => {
   if (!vec) return 'N/A';
   return `${vec.x.toFixed(2)}, ${vec.y.toFixed(2)}, ${vec.z.toFixed(2)}`;
+};
+
+// Format distance to show only 2 decimal places
+const formatDistance = (distance) => {
+  return distance.toFixed(2);
 };
 
 // Toggle collision debug visualization
@@ -90,6 +117,27 @@ const updateDebugInfo = () => {
   // Update collision info
   isColliding.value = PlayersManager.self.currentlyColliding || false;
   collisionCount.value = ObjectManager.collidableObjects.length || 0;
+  
+  // Find and sort nearby vehicles
+  if (PlayersManager.self && PlayersManager.self.position) {
+    const vehicles = VehicleManager.vehicles
+      .filter(v => v && v.position)
+      .map(v => ({
+        name: v.name || `${v.userData?.type || 'Unknown'} Vehicle`,
+        type: v.userData?.type || 'Unknown',
+        distance: PlayersManager.self.position.distanceTo(v.position),
+        isOccupied: v.userData?.isOccupied || false
+      }))
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 5); // Show only the 5 closest vehicles
+    
+    nearbyVehicles.value = vehicles;
+    
+    // Update current vehicle info
+    currentVehicle.value = VehicleManager.currentVehicle ? 
+      `${VehicleManager.currentVehicle.name || VehicleManager.currentVehicle.userData?.type || 'Unknown'}` : 
+      null;
+  }
   
   // Check for all collisions with player's handle for debugging
   if (PlayersManager.self.handle && PlayersManager.self.collidable) {
@@ -142,10 +190,26 @@ h3 {
   font-size: 1.2em;
 }
 
-.debug-row {
+/* Add styling for the new section */
+.debug-section {
+  margin-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 5px;
+}
+
+h4 {
+  margin: 5px 0;
+  font-size: 1em;
+}
+
+.debug-row, .vehicle-row {
   display: flex;
   justify-content: space-between;
   margin-bottom: 5px;
+}
+
+.vehicle-row {
+  font-size: 0.9em;
 }
 
 .status-good {
