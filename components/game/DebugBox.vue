@@ -126,12 +126,27 @@ const updateDebugInfo = () => {
         name: v.name || `${v.userData?.type || 'Unknown'} Vehicle`,
         type: v.userData?.type || 'Unknown',
         distance: PlayersManager.self.position.distanceTo(v.position),
-        isOccupied: v.userData?.isOccupied || false
-      }))
-      .sort((a, b) => a.distance - b.distance)
-      .slice(0, 5); // Show only the 5 closest vehicles
+        isOccupied: v.userData?.isOccupied || false,
+        id: v.userData?.id || v.uuid // Use userData.id first, then fall back to uuid
+      }));
     
-    nearbyVehicles.value = vehicles;
+    // MODIFIED: Only filter for UI display purposes - no cleanup needed
+    const filteredVehicles = [];
+    const seen = new Set();
+    
+    vehicles.forEach(vehicle => {
+      // Use the vehicle's ID or full name as the unique key
+      const key = vehicle.id || vehicle.name;
+      if (!seen.has(key)) {
+        seen.add(key);
+        filteredVehicles.push(vehicle);
+      }
+    });
+
+    // Sort and limit to 5 closest
+    nearbyVehicles.value = filteredVehicles
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 5);
     
     // Update current vehicle info
     currentVehicle.value = VehicleManager.currentVehicle ? 
