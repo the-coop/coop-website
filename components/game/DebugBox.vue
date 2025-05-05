@@ -42,12 +42,16 @@
       </div>
       <div v-for="(vehicle, index) in nearbyVehicles" :key="index" class="vehicle-row">
         <span>{{ vehicle.name }} ({{ formatDistance(vehicle.distance) }}m)</span>
-        <span :class="vehicle.isOccupied ? 'status-bad' : 'status-good'">
-          {{ vehicle.isOccupied ? 'Occupied' : 'Available' }}
+        <span>
+          <span :class="vehicle.isOccupied ? 'status-bad' : 'status-good'">
+            {{ vehicle.isOccupied ? 'Occupied' : 'Available' }}
+          </span>
+          <span v-if="vehicle.falling" class="status-warn"> - Falling</span>
         </span>
       </div>
       <div class="vehicle-row" v-if="currentVehicle">
         <span><strong>Current Vehicle:</strong> {{ currentVehicle }}</span>
+        <span v-if="currentVehicleFalling" class="status-warn">Falling</span>
       </div>
     </div>
     
@@ -79,6 +83,9 @@ const showCollisionDebug = ref(false);
 // New ref for nearby vehicles
 const nearbyVehicles = ref([]);
 const currentVehicle = ref(null);
+
+// Add new ref for current vehicle falling status
+const currentVehicleFalling = ref(false);
 
 // Format vector to readable string
 const formatVector = (vec) => {
@@ -127,6 +134,7 @@ const updateDebugInfo = () => {
         type: v.userData?.type || 'Unknown',
         distance: PlayersManager.self.position.distanceTo(v.position),
         isOccupied: v.userData?.isOccupied || false,
+        falling: v.userData?.falling || false, // Add falling property
         id: v.userData?.id || v.uuid // Use userData.id first, then fall back to uuid
       }));
     
@@ -149,9 +157,14 @@ const updateDebugInfo = () => {
       .slice(0, 5);
     
     // Update current vehicle info
-    currentVehicle.value = VehicleManager.currentVehicle ? 
-      `${VehicleManager.currentVehicle.name || VehicleManager.currentVehicle.userData?.type || 'Unknown'}` : 
-      null;
+    if (VehicleManager.currentVehicle) {
+      currentVehicle.value = VehicleManager.currentVehicle.name || 
+        VehicleManager.currentVehicle.userData?.type || 'Unknown';
+      currentVehicleFalling.value = VehicleManager.currentVehicle.userData?.falling || false;
+    } else {
+      currentVehicle.value = null;
+      currentVehicleFalling.value = false;
+    }
   }
   
   // Check for all collisions with player's handle for debugging
@@ -233,6 +246,10 @@ h4 {
 
 .status-bad {
   color: #FF004C;
+}
+
+.status-warn {
+  color: #FFCC00;
 }
 
 button {
