@@ -9,13 +9,6 @@
     <div v-if="notification.show" class="notification">
       {{ notification.message }}
     </div>
-    
-    <!-- Add debug controls for collision testing -->
-    <div v-if="started" class="debug-controls">
-      <button @click="toggleCollisionBoxes" class="debug-button">
-        {{ showCollisionBoxes ? 'Hide' : 'Show' }} Collision Boxes
-      </button>
-    </div>
   </div>
 </template>
 
@@ -40,7 +33,6 @@
   const canvas = ref(null);
   const isMobile = ref(false);
   const showDebug = ref(false);
-  const showCollisionBoxes = ref(false);
   
   // Add notification state
   const notification = ref({
@@ -79,22 +71,27 @@
       showDebug.value = !showDebug.value;
       console.log(`Debug display ${showDebug.value ? 'enabled' : 'disabled'}`);
       
-      // ENHANCED: Toggle both debug info and collision visualization
+      // ENHANCED: Always show collision visualization with debug
       if (showDebug.value) {
         // Enable debugging in ObjectManager
         if (typeof ObjectManager.toggleDebug === 'function') {
           ObjectManager.toggleDebug(true);
         }
         
-        // Enable collision box visualization in Engine
+        // Enable collision box visualization in Engine with extra visibility for normals
         if (Engine.toggleCollisionDebug) {
           Engine.toggleCollisionDebug(true);
+          
+          // ADDED: Always show collision details
+          if (Engine.toggleCollisionDetails) {
+            Engine.toggleCollisionDetails(true);
+          }
         }
         
         // Show collision info in UI
         updateCollisionInfoDisplay();
         
-        showNotification('Enhanced debug mode enabled - shows collision info', 3000);
+        showNotification('Debug mode enabled with collision visualization', 3000);
       } else {
         // Disable all debug visualizations
         if (typeof ObjectManager.toggleDebug === 'function') {
@@ -133,11 +130,8 @@
       }
     }
     
-    // Keep B key logic but make it respect debug mode
+    // MODIFIED: B key now just toggles additional collision visualization details
     if (event.key === 'b' || event.key === 'B') {
-      // Toggle detailed collision visualization
-      toggleCollisionBoxes();
-      
       // When in debug mode, B toggles additional collision details
       if (showDebug.value && Engine.toggleCollisionDetails) {
         Engine.toggleCollisionDetails();
@@ -197,39 +191,6 @@
       }
     } catch (err) {
       console.error("Error updating collision display:", err);
-    }
-  }
-
-  // Function to toggle collision boxes for debugging
-  function toggleCollisionBoxes() {
-    showCollisionBoxes.value = !showCollisionBoxes.value;
-    
-    if (ObjectManager && typeof ObjectManager.debugVisualize === 'function') {
-      if (showCollisionBoxes.value) {
-        // IMPROVED: Show both boxes and normals
-        ObjectManager.debugVisualize(true, {
-          showBoxes: true,
-          showOBBs: true,   // Show oriented bounding boxes
-          showNormals: true, // Show surface normals
-          boxOpacity: 0.5,
-          normalLength: 3    // Longer normals for better visibility
-        });
-        showNotification("Enhanced collision visualization enabled - showing boxes and normals");
-        
-        // Also enable Engine's collision visualization for active collisions
-        if (Engine && Engine.toggleCollisionDebug) {
-          Engine.toggleCollisionDebug(true);
-          Engine.toggleCollisionDetails(true);
-        }
-      } else {
-        ObjectManager.debugVisualize(false);
-        showNotification("Collision visualization disabled");
-        
-        // Disable Engine's collision visualization too
-        if (Engine && Engine.toggleCollisionDebug) {
-          Engine.toggleCollisionDebug(false);
-        }
-      }
     }
   }
 
@@ -352,6 +313,32 @@
     
     // Add keyboard listener for debug toggle
     window.addEventListener('keydown', handleKeyDown);
+    
+    // CRITICAL FIX: Always enable debug visualization
+    if (Engine && typeof Engine.toggleCollisionDebug === 'function') {
+      Engine.toggleCollisionDebug(true);
+      
+      // Make sure collision details are shown
+      if (Engine.toggleCollisionDetails) {
+        Engine.toggleCollisionDetails(true);
+      }
+    }
+    
+    // CRITICAL FIX: Enable debug in ObjectManager
+    if (window.ObjectManager) {
+      window.ObjectManager._debugEnabled = true;
+      window.ObjectManager._debugSettings = {
+        showBoxes: true,
+        showNormals: true,
+        normalLength: 5.0,  // Longer arrows for better visibility
+        boxOpacity: 0.6     // More visible boxes
+      };
+      
+      // Force visualization if method exists
+      if (typeof window.ObjectManager.debugVisualize === 'function') {
+        window.ObjectManager.debugVisualize(true, window.ObjectManager._debugSettings);
+      }
+    }
     
     // Expose notification function to the global scope for other modules to use
     if (typeof window !== 'undefined') {
@@ -478,21 +465,5 @@
     padding: 10px;
     border-radius: 5px;
     z-index: 1000;
-  }
-  
-  .debug-controls {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 1000;
-  }
-  
-  .debug-button {
-    background: rgba(255, 0, 0, 0.5);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 10px;
-    cursor: pointer;
   }
 </style>

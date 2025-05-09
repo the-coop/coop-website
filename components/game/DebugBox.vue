@@ -54,10 +54,6 @@
         <span v-if="currentVehicleFalling" class="status-warn">Falling</span>
       </div>
     </div>
-    
-    <button @click="toggleCollisionDebug">
-      {{ showCollisionDebug ? 'Hide Collision Debug' : 'Show Collision Debug' }}
-    </button>
   </div>
 </template>
 
@@ -66,7 +62,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { Vector3 } from 'three';
 import PlayersManager from '../../lib/game/players.mjs';
 import VehicleManager from '../../lib/game/vehicles.mjs';
-import ObjectManager from '../../lib/game/object.mjs'; // Added import for ObjectManager
+import ObjectManager from '../../lib/game/object.mjs';
 import Engine from '../../lib/game/engine.mjs';
 
 const playerPos = ref(new Vector3());
@@ -78,7 +74,6 @@ const carCount = ref(0);
 const airplaneCount = ref(0);
 const isColliding = ref(false);
 const collisionCount = ref(0);
-const showCollisionDebug = ref(false);
 
 // New ref for nearby vehicles
 const nearbyVehicles = ref([]);
@@ -96,14 +91,6 @@ const formatVector = (vec) => {
 // Format distance to show only 2 decimal places
 const formatDistance = (distance) => {
   return distance.toFixed(2);
-};
-
-// Toggle collision debug visualization
-const toggleCollisionDebug = () => {
-  showCollisionDebug.value = !showCollisionDebug.value;
-  if (Engine && Engine.toggleCollisionDebug) {
-    Engine.toggleCollisionDebug(showCollisionDebug.value);
-  }
 };
 
 // Update debug info every 100ms
@@ -175,8 +162,8 @@ const updateDebugInfo = () => {
       console.log(`Detected ${collisions.length} collisions in debug check`);
       isColliding.value = true;
       
-      // Update collision visuals if debug mode is active
-      if (showCollisionDebug.value && !PlayersManager.self.currentlyColliding) {
+      // Update collision visuals - always enabled when debug is active
+      if (!PlayersManager.self.currentlyColliding) {
         console.log("Collision detected in debug but not in physics system");
       }
     }
@@ -187,11 +174,21 @@ let debugInterval;
 
 onMounted(() => {
   debugInterval = setInterval(updateDebugInfo, 100);
+  
+  // ADDED: Always enable collision debug when component mounts
+  if (Engine && Engine.toggleCollisionDebug) {
+    Engine.toggleCollisionDebug(true);
+    
+    // Make sure details are on too
+    if (Engine.toggleCollisionDetails) {
+      Engine.toggleCollisionDetails(true);
+    }
+  }
 });
 
 onBeforeUnmount(() => {
   clearInterval(debugInterval);
-  // Make sure to disable collision debug when component unmounts
+  // Still disable collision debug when component unmounts
   if (Engine && Engine.toggleCollisionDebug) {
     Engine.toggleCollisionDebug(false);
   }
@@ -250,20 +247,5 @@ h4 {
 
 .status-warn {
   color: #FFCC00;
-}
-
-button {
-  margin-top: 10px;
-  width: 100%;
-  padding: 5px;
-  background-color: #333;
-  color: white;
-  border: 1px solid #666;
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #555;
 }
 </style>
