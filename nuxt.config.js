@@ -16,8 +16,9 @@ export default defineNuxtConfig({
   nitro: {
     devProxy: {
       '/ws': {
-        target: 'ws://localhost:3000',
-        ws: true
+        target: 'ws://localhost:8080/ws',
+        ws: true,
+        changeOrigin: true
       }
     }
   }

@@ -17,6 +17,7 @@
       <div>Facing: {{ playerFacing.x.toFixed(2) }}, {{ playerFacing.y.toFixed(2) }}, {{ playerFacing.z.toFixed(2) }}</div>
       <div>Ping: {{ ping }}ms</div>
       <div>Players: {{ Object.keys(serverPlayers).length }}</div>
+      <div>Prediction Error: {{ predictionError.toFixed(2) }}</div>
     </div>
   </div>
 </template>
@@ -45,6 +46,10 @@ const serverPlayers = reactive({});
 const inputSequence = ref(0);
 const pendingInputs = ref([]);
 const otherPlayerMeshes = reactive({});
+
+// Add prediction-related variables
+const predictionError = ref(0);
+const lastServerUpdate = ref(null);
 
 // Refs for DOM elements
 const gameCanvas = ref(null);
@@ -410,6 +415,8 @@ const connectToServer = () => {
     const config = useRuntimeConfig();
     const wsUrl = config.public.wsUrl;
     
+    console.log('Connecting to WebSocket server at:', wsUrl);
+    
     ws.value = new WebSocket(wsUrl);
     connectionStatus.value = 'connecting...';
     
@@ -478,13 +485,14 @@ const handleServerMessage = (message) => {
 
 // Apply server state with client-side prediction
 const applyServerState = (state) => {
-  if (!state.players) return;
+  if (!state) return;
   
+  // The Rust server sends state directly as a HashMap<Uuid, PlayerState>
   // Update server players state
-  Object.assign(serverPlayers, state.players);
+  Object.assign(serverPlayers, state);
   
   // Update other players
-  Object.entries(state.players).forEach(([id, playerData]) => {
+  Object.entries(state).forEach(([id, playerData]) => {
     if (id !== playerId.value) {
       updateOtherPlayer(id, playerData);
     } else if (playerBody.value) {
@@ -495,7 +503,7 @@ const applyServerState = (state) => {
   
   // Remove players that are no longer in the state
   Object.keys(otherPlayerMeshes).forEach(id => {
-    if (!state.players[id]) {
+    if (!state[id]) {
       removeOtherPlayer(id);
     }
   });
@@ -503,7 +511,25 @@ const applyServerState = (state) => {
 
 // Reconcile local player position with server state
 const reconcilePlayerPosition = (serverData) => {
-  if (!playerBody.value || !pendingInputs.value.length) return;
+  if (!playerBody.value) return;
+  
+  // Store last server update
+  lastServerUpdate.value = {
+    position: serverData.position,
+    velocity: serverData.velocity,
+    rotation: serverData.rotation,
+    sequence: serverData.inputSequence,
+    timestamp: Date.now()
+  };
+  
+  // Calculate prediction error
+  const currentPos = playerBody.value.translation();
+  const serverPos = new THREE.Vector3(
+    serverData.position[0],
+    serverData.position[1],
+    serverData.position[2]
+  );
+  predictionError.value = currentPos.distanceTo(serverPos);
   
   // Find the input that matches the server's acknowledged sequence
   const ackIndex = pendingInputs.value.findIndex(
@@ -512,76 +538,140 @@ const reconcilePlayerPosition = (serverData) => {
   
   if (ackIndex >= 0) {
     // Remove acknowledged inputs
-    pendingInputs.value.splice(0, ackIndex + 1);
+    const acknowledgedInputs = pendingInputs.value.splice(0, ackIndex + 1);
     
-    // Apply server position as base
-    playerBody.value.setTranslation({
-      x: serverData.position.x,
-      y: serverData.position.y,
-      z: serverData.position.z
-    });
-    
-    // Re-apply unacknowledged inputs (client-side prediction)
-    pendingInputs.value.forEach(input => {
-      // Apply the input locally again
-      // This is simplified - you'd want to match the server's physics exactly
-    });
+    // Only reconcile if prediction error is significant
+    if (predictionError.value > 0.1) {
+      console.log('Reconciling position - error:', predictionError.value);
+      
+      // Apply server position and velocity
+      playerBody.value.setTranslation({
+        x: serverData.position[0],
+        y: serverData.position[1],
+        z: serverData.position[2]
+      });
+      
+      playerBody.value.setLinvel({
+        x: serverData.velocity[0],
+        y: serverData.velocity[1],
+        z: serverData.velocity[2]
+      });
+      
+      playerBody.value.setRotation({
+        x: serverData.rotation[0],
+        y: serverData.rotation[1],
+        z: serverData.rotation[2],
+        w: serverData.rotation[3]
+      });
+      
+      // Re-apply unacknowledged inputs for client-side prediction
+      pendingInputs.value.forEach(input => {
+        applyInputLocally(input.input, input.deltaTime);
+      });
+    }
   }
 };
 
-// Update other player visual representation
-const updateOtherPlayer = (id, playerData) => {
-  if (!scene.value) return;
+// Apply input locally for client-side prediction
+const applyInputLocally = (input, deltaTime) => {
+  if (!playerBody.value) return;
   
-  let mesh = otherPlayerMeshes[id];
+  // This mirrors the server's physics calculation
+  const velocity = playerBody.value.linvel();
+  const playerTranslation = playerBody.value.translation();
+  const playerPos = new THREE.Vector3(playerTranslation.x, playerTranslation.y, playerTranslation.z);
   
-  // Create mesh if it doesn't exist
-  if (!mesh) {
-    const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 8, 8);
-    const material = new THREE.MeshStandardMaterial({
-      color: 0x00ff00,
-      transparent: true,
-      opacity: 0.7
-    });
-    
-    mesh = new THREE.Mesh(geometry, material);
-    scene.value.add(mesh);
-    otherPlayerMeshes[id] = mesh;
+  // Calculate planet-centered gravity
+  const gravityDir = new THREE.Vector3()
+    .subVectors(gravity.center, playerPos)
+    .normalize();
+  
+  const gravityStrength = gravity.strength;
+  const gravityForce = gravityDir.clone().multiplyScalar(gravityStrength * deltaTime);
+  
+  // Calculate movement
+  let moveForward = 0;
+  let moveRight = 0;
+  
+  if (input.forward) moveForward += 1;
+  if (input.backward) moveForward -= 1;
+  if (input.left) moveRight -= 1;
+  if (input.right) moveRight += 1;
+  
+  const moveLength = Math.sqrt(moveForward * moveForward + moveRight * moveRight);
+  if (moveLength > 0) {
+    moveForward /= moveLength;
+    moveRight /= moveLength;
   }
   
-  // Update position with interpolation
-  mesh.position.lerp(
-    new THREE.Vector3(
-      playerData.position.x,
-      playerData.position.y,
-      playerData.position.z
-    ),
-    0.3 // Interpolation factor
+  const speed = input.run ? runSpeed : walkSpeed;
+  moveForward *= speed;
+  moveRight *= speed;
+  
+  // Get movement direction
+  const playerQuat = new THREE.Quaternion(
+    playerBody.value.rotation().x,
+    playerBody.value.rotation().y,
+    playerBody.value.rotation().z,
+    playerBody.value.rotation().w
   );
   
-  // Update rotation
-  mesh.quaternion.slerp(
-    new THREE.Quaternion(
-      playerData.rotation.x,
-      playerData.rotation.y,
-      playerData.rotation.z,
-      playerData.rotation.w
-    ),
-    0.3
-  );
-};
-
-// Remove other player mesh
-const removeOtherPlayer = (id) => {
-  const mesh = otherPlayerMeshes[id];
-  if (mesh) {
-    scene.value.remove(mesh);
-    delete otherPlayerMeshes[id];
+  let forward = new THREE.Vector3(0, 0, -1).applyQuaternion(playerQuat);
+  let right = new THREE.Vector3(1, 0, 0).applyQuaternion(playerQuat);
+  
+  if (isGrounded.value && lastGroundNormal.value) {
+    forward.projectOnPlane(lastGroundNormal.value).normalize();
+    right.projectOnPlane(lastGroundNormal.value).normalize();
   }
-  delete serverPlayers[id];
+  
+  const moveDir = new THREE.Vector3();
+  moveDir.addScaledVector(forward, moveForward);
+  moveDir.addScaledVector(right, moveRight);
+  
+  // Apply forces
+  let newVelX = velocity.x + gravityForce.x;
+  let newVelY = velocity.y + gravityForce.y;
+  let newVelZ = velocity.z + gravityForce.z;
+  
+  if (isGrounded.value) {
+    const groundAccel = 100.0;
+    newVelX += moveDir.x * groundAccel * deltaTime;
+    newVelY += moveDir.y * groundAccel * deltaTime;
+    newVelZ += moveDir.z * groundAccel * deltaTime;
+    
+    if (moveLength === 0) {
+      newVelX *= 0.8;
+      newVelY *= 0.95;
+      newVelZ *= 0.8;
+    }
+  } else {
+    const airControl = 1.0;
+    newVelX += moveDir.x * airControl * deltaTime;
+    newVelY += moveDir.y * airControl * deltaTime;
+    newVelZ += moveDir.z * airControl * deltaTime;
+    
+    newVelX *= 0.95;
+    newVelY *= 0.98;
+    newVelZ *= 0.95;
+  }
+  
+  // Handle jump
+  if (input.jump && isGrounded.value) {
+    const jumpVector = gravityDir.clone().multiplyScalar(-jumpForce);
+    newVelX += jumpVector.x;
+    newVelY += jumpVector.y;
+    newVelZ += jumpVector.z;
+  }
+  
+  // Update velocity
+  playerBody.value.setLinvel({
+    x: newVelX,
+    y: newVelY,
+    z: newVelZ
+  });
 };
 
-// Send input to server
+// Send input to server with timestamp
 const sendInputToServer = () => {
   if (!ws.value || ws.value.readyState !== WebSocket.OPEN || !started.value) return;
   
@@ -597,13 +687,19 @@ const sendInputToServer = () => {
   };
   
   const sequence = ++inputSequence.value;
+  const timestamp = Date.now();
+  const deltaTime = 1.0 / 60.0; // Assuming 60Hz
   
   // Store input for reconciliation
   pendingInputs.value.push({
     input,
     sequence,
-    timestamp: Date.now()
+    timestamp,
+    deltaTime
   });
+  
+  // Apply input locally immediately (client-side prediction)
+  applyInputLocally(input, deltaTime);
   
   // Send to server
   ws.value.send(JSON.stringify({
@@ -611,108 +707,87 @@ const sendInputToServer = () => {
     input,
     sequence
   }));
-};
-
-// Modify startGame to connect to server
-const startGame = async () => {
-  try {
-    console.log("Starting game...");
-    
-    // Make sure RAPIER is properly initialized before proceeding
-    if (!RAPIER.World) {
-      console.log("Rapier not fully initialized, initializing now...");
-      try {
-        await RAPIER.init({
-          locateFile: (path) => {
-            return `https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.11.2/${path}`;
-          }
-        });
-        console.log("Rapier initialized successfully");
-      } catch (rapierError) {
-        console.error("Failed to initialize Rapier:", rapierError);
-        errorMessage.value = "Failed to initialize physics engine. Please refresh.";
-      }
-    }
-    
-    // Check if physics world exists, if not create it properly
-    if (!physicsWorld.value && RAPIER.World) {
-      console.log("Creating physics world");
-      try {
-        // Create with standard gravity first
-        const gravityVec = { x: 0, y: 0, z: 0 };
-        physicsWorld.value = new RAPIER.World(gravityVec);
-        console.log("Physics world created successfully");
-        
-        // Create necessary game objects if they don't exist
-        if (!platform.value) createPlatform();
-        if (!player.value) createPlayer();
-      } catch (worldError) {
-        console.error("Error creating physics world:", worldError);
-        errorMessage.value = "Error creating physics world: " + worldError.message;
-        return; // Don't proceed if we can't create the physics world
-      }
-    }
-    
-    // Check if game canvas is available
-    if (!gameCanvas.value) {
-      errorMessage.value = "Game canvas not found";
-      console.error(errorMessage.value);
-      return;
-    }
-    
-    // Set started state
-    started.value = true;
-
-    // Connect to server
-    connectToServer();
-    
-    // Start sending inputs at 60Hz
-    setInterval(sendInputToServer, 1000 / 60);
-    
-    // Try to request pointer lock
-    gameCanvas.value.requestPointerLock();
-      
-    // Add event listener for pointer lock errors
-    document.addEventListener('pointerlockerror', (e) => {
-      console.warn('Pointer lock error, continuing without mouse control:', e);
-      // Continue with game anyway
-      if (!clock.running) {
-        clock.start();
-        animate();
-      }
-    }, { once: true });
-    
-    // Always start the animation loop regardless of pointer lock status
-    if (!clock.running) {
-      clock.start();
-      console.log("Starting animation loop");
-      animate();
-    }
-  } catch (e) {
-    errorMessage.value = "Error starting game: " + e.message;
-    console.error("Error starting game:", e);
-  }
-};
-
-// Add collision event handling after createPlayer function
-const setupCollisionHandling = () => {
-  if (!physicsWorld.value) return;
   
-  try {
-    // Set up collision event handling
-    physicsWorld.value.eventQueue = new RAPIER.EventQueue(true);
-    
-    console.log("Collision event handling set up successfully");
-    
-    // Also set up contact force events for additional detection
-    physicsWorld.value.contactForceEventQueue = new RAPIER.EventQueue(true);
-    
-  } catch (e) {
-    console.error("Error setting up collision handling:", e);
-  }
+  // Clean up old pending inputs (older than 2 seconds)
+  const cutoffTime = timestamp - 2000;
+  pendingInputs.value = pendingInputs.value.filter(
+    pendingInput => pendingInput.timestamp > cutoffTime
+  );
 };
 
-// Modify the animate function to include better collision processing
+// Update other player visual representation with interpolation
+const updateOtherPlayer = (id, playerData) => {
+  if (!scene.value) return;
+  
+  let mesh = otherPlayerMeshes[id];
+  
+  // Create mesh if it doesn't exist
+  if (!mesh) {
+    const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 8, 8);
+    const material = new THREE.MeshStandardMaterial({
+      color: 0x00ff00,
+      transparent: true,
+      opacity: 0.7
+    });
+    
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    scene.value.add(mesh);
+    otherPlayerMeshes[id] = mesh;
+    
+    // Store interpolation data
+    mesh.userData.interpolation = {
+      fromPos: new THREE.Vector3(),
+      toPos: new THREE.Vector3(),
+      fromRot: new THREE.Quaternion(),
+      toRot: new THREE.Quaternion(),
+      startTime: Date.now(),
+      duration: 100 // Interpolate over 100ms
+    };
+  }
+  
+  // Update interpolation targets
+  const interp = mesh.userData.interpolation;
+  interp.fromPos.copy(mesh.position);
+  interp.fromRot.copy(mesh.quaternion);
+  interp.toPos.set(
+    playerData.position[0],
+    playerData.position[1],
+    playerData.position[2]
+  );
+  interp.toRot.set(
+    playerData.rotation[0],
+    playerData.rotation[1],
+    playerData.rotation[2],
+    playerData.rotation[3]
+  );
+  interp.startTime = Date.now();
+};
+
+// Add interpolation update to animate function
+const updateOtherPlayersInterpolation = () => {
+  const now = Date.now();
+  
+  Object.values(otherPlayerMeshes).forEach(mesh => {
+    if (!mesh.userData.interpolation) return;
+    
+    const interp = mesh.userData.interpolation;
+    const elapsed = now - interp.startTime;
+    const t = Math.min(elapsed / interp.duration, 1.0);
+    
+    // Smooth interpolation using easing
+    const easedT = t * t * (3.0 - 2.0 * t); // smoothstep
+    
+    // Interpolate position
+    mesh.position.lerpVectors(interp.fromPos, interp.toPos, easedT);
+    
+    // Interpolate rotation
+    mesh.quaternion.slerpQuaternions(interp.fromRot, interp.toRot, easedT);
+  });
+};
+
+// Modify the animate function to include interpolation
 const animate = () => {
   if (!started.value) return;
   
@@ -1183,9 +1258,6 @@ const createPushableRock = (position, scale = 1.0) => {
     return null;
   }
 };
-
-// Add missing player collider handle to debugInfo initialization
-debugInfo.playerColliderHandle = null;
 
 // Rewrite the createPlayer function to use dynamic body with rotation locks
 const createPlayer = () => {
@@ -1776,7 +1848,7 @@ const handleAllMovement = (deltaTime) => {
       // Apply ground friction when not moving
       if (moveLength === 0) {
         newVelX *= 0.8;
-        newVelY *= 0.95; // Less friction on Y to allow sliding on slopes
+        newVelY *= 0.95;
         newVelZ *= 0.8;
       }
       
@@ -1963,7 +2035,8 @@ const createPlatform = () => {
       rampDepth / 2
     )
     .setFriction(0.7)  // Back to original value
-    .setRestitution(0.1);  // Back to original value
+       .setRestitution(0.1);  // Back to original value
+    
     
     const rampCollider = physicsWorld.value.createCollider(rampColliderDesc, rampBody);
     
@@ -2282,6 +2355,62 @@ const updateRayVisualizations = (leftFoot, rightFoot, centerFoot, rayDirection, 
     console.error("Error updating ray visualizations:", e);
   }
 };
+
+// Add the missing setupCollisionHandling function
+const setupCollisionHandling = () => {
+  if (!physicsWorld.value) {
+    console.error("Physics world not initialized for collision handling");
+    return;
+  }
+  
+  try {
+    console.log("Setting up collision event handling");
+    
+    // Enable collision events for the physics world
+    physicsWorld.value.eventQueue = new RAPIER.EventQueue(true);
+    
+    console.log("Collision handling setup complete");
+  } catch (e) {
+    console.error("Error setting up collision handling:", e);
+  }
+};
+
+// Update the startGame function to connect to server when starting
+const startGame = () => {
+  if (!physicsWorld.value) {
+    errorMessage.value = "Physics engine not initialized. Please refresh the page.";
+    return;
+  }
+  
+  try {
+    gameCanvas.value.requestPointerLock();
+    started.value = true;
+    
+    // Connect to server when game starts
+    connectToServer();
+    
+    // Start sending inputs to server at fixed rate
+    setInterval(() => {
+      sendInputToServer();
+    }, 1000 / 60); // 60Hz input rate
+    
+    // Start animation loop
+    animate();
+  } catch (e) {
+    console.error("Error starting game:", e);
+    errorMessage.value = "Failed to start game: " + e.message;
+  }
+};
+
+// Update the removeOtherPlayer function
+const removeOtherPlayer = (id) => {
+  const mesh = otherPlayerMeshes[id];
+  if (mesh) {
+    scene.value.remove(mesh);
+    delete otherPlayerMeshes[id];
+  }
+  delete serverPlayers[id];
+};
 </script>
 
 <style>
@@ -2341,8 +2470,9 @@ html, body {
   font-family: monospace;
   font-size: 14px;
   background-color: rgba(0, 0, 0, 0.5);
-  padding: 5px;
+  padding: 10px;
   border-radius: 4px;
+  line-height: 1.4;
 }
 
 .error-message {
