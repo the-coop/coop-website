@@ -413,7 +413,7 @@ const connectToServer = () => {
   try {
     // Use runtime config to get WebSocket URL
     const config = useRuntimeConfig();
-    const wsUrl = config.public.wsUrl;
+    const wsUrl = config.public.wsUrl || 'ws://localhost:8080/ws';
     
     console.log('Connecting to WebSocket server at:', wsUrl);
     

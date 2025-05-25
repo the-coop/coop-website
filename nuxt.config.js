@@ -15,11 +15,16 @@ export default defineNuxtConfig({
   },
   nitro: {
     devProxy: {
-      '/ws': {
+      '/api/ws': {
         target: 'ws://localhost:8080/ws',
         ws: true,
         changeOrigin: true
       }
+    }
+  },
+  vite: {
+    define: {
+      global: 'globalThis'
     }
   }
 })
