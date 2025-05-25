@@ -1,20 +1,11 @@
 export default defineNuxtConfig({
-  head: {
-    link: [
-      {
-        rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Protest+Strike:wght@400&display=swap'
-      },
-      {
-        rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap'
-      },
-      {
-        rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Teko:wght@400;700&display=swap'
-      }
-    ]
-  },
-
-  compatibilityDate: '2024-10-14'
-});
+  ssr: false,
+  app: {
+    head: {
+      title: 'FPS with Spherical Gravity',
+      meta: [
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' }
+      ]
+    }
+  }
+})

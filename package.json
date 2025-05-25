@@ -1,20 +1,19 @@
 {
-  "name": "coop-website",
+  "name": "conquestv2-web",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "preview": "nuxt preview"
   },
   "dependencies": {
-    "coop-shared": "git+https://github.com/the-coop/coop-shared.git#0471a5b7883b5a5c2055144b42977cb7e9b9c676",
-    "nuxt": "latest",
-    "three": "latest",
-    "vue": "latest",
-    "vue-router": "latest"
+    "@dimforge/rapier3d-compat": "^0.16.2",
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "nuxt": "^3.9.0"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
