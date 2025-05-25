@@ -6,12 +6,17 @@
       <button @click="startGame" class="start-button">Start Game</button>
     </div>
     <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+    <div v-if="connectionStatus !== 'connected'" class="connection-status">
+      {{ connectionStatus }}
+    </div>
     <div class="debug-info" v-if="started">
       <div>Grounded: {{ isGrounded }}</div>
       <div>Position: {{ playerPosition.x.toFixed(2) }}, {{ playerPosition.y.toFixed(2) }}, {{ playerPosition.z.toFixed(2) }}</div>
       <div>Moving: {{ isMoving }}</div>
       <div>Speed: {{ currentSpeed.toFixed(2) }}</div>
       <div>Facing: {{ playerFacing.x.toFixed(2) }}, {{ playerFacing.y.toFixed(2) }}, {{ playerFacing.z.toFixed(2) }}</div>
+      <div>Ping: {{ ping }}ms</div>
+      <div>Players: {{ Object.keys(serverPlayers).length }}</div>
     </div>
   </div>
 </template>
@@ -30,6 +35,16 @@ const leftFootPos = shallowRef(new THREE.Vector3());
 const rightFootPos = shallowRef(new THREE.Vector3());
 const centerFootPos = shallowRef(new THREE.Vector3());
 const collisionPoints = shallowRef([]);
+
+// WebSocket connection variables
+const ws = shallowRef(null);
+const connectionStatus = ref('disconnected');
+const ping = ref(0);
+const playerId = ref(null);
+const serverPlayers = reactive({});
+const inputSequence = ref(0);
+const pendingInputs = ref([]);
+const otherPlayerMeshes = reactive({});
 
 // Refs for DOM elements
 const gameCanvas = ref(null);
@@ -388,7 +403,217 @@ const onKeyUp = (event) => {
   }
 };
 
-// Modify the startGame function to handle physics initialization more carefully
+// Connect to WebSocket server
+const connectToServer = () => {
+  try {
+    // Use runtime config to get WebSocket URL
+    const config = useRuntimeConfig();
+    const wsUrl = config.public.wsUrl;
+    
+    ws.value = new WebSocket(wsUrl);
+    connectionStatus.value = 'connecting...';
+    
+    ws.value.onopen = () => {
+      console.log('Connected to server');
+      connectionStatus.value = 'connected';
+      
+      // Start ping interval
+      setInterval(() => {
+        if (ws.value && ws.value.readyState === WebSocket.OPEN) {
+          const startTime = Date.now();
+          ws.value.send(JSON.stringify({ type: 'ping' }));
+        }
+      }, 1000);
+    };
+    
+    ws.value.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        handleServerMessage(message);
+      } catch (e) {
+        console.error('Error parsing server message:', e);
+      }
+    };
+    
+    ws.value.onclose = () => {
+      connectionStatus.value = 'disconnected';
+      console.log('Disconnected from server');
+      
+      // Try to reconnect after 3 seconds
+      setTimeout(connectToServer, 3000);
+    };
+    
+    ws.value.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      connectionStatus.value = 'error';
+    };
+  } catch (e) {
+    console.error('Error connecting to server:', e);
+    errorMessage.value = 'Failed to connect to server: ' + e.message;
+  }
+};
+
+// Handle messages from server
+const handleServerMessage = (message) => {
+  switch (message.type) {
+    case 'init':
+      playerId.value = message.playerId;
+      console.log('Initialized as player:', playerId.value);
+      applyServerState(message.state);
+      break;
+      
+    case 'state':
+      applyServerState(message.state);
+      break;
+      
+    case 'playerLeft':
+      removeOtherPlayer(message.playerId);
+      break;
+      
+    case 'pong':
+      ping.value = Date.now() - message.timestamp;
+      break;
+  }
+};
+
+// Apply server state with client-side prediction
+const applyServerState = (state) => {
+  if (!state.players) return;
+  
+  // Update server players state
+  Object.assign(serverPlayers, state.players);
+  
+  // Update other players
+  Object.entries(state.players).forEach(([id, playerData]) => {
+    if (id !== playerId.value) {
+      updateOtherPlayer(id, playerData);
+    } else if (playerBody.value) {
+      // Reconcile own player position with server
+      reconcilePlayerPosition(playerData);
+    }
+  });
+  
+  // Remove players that are no longer in the state
+  Object.keys(otherPlayerMeshes).forEach(id => {
+    if (!state.players[id]) {
+      removeOtherPlayer(id);
+    }
+  });
+};
+
+// Reconcile local player position with server state
+const reconcilePlayerPosition = (serverData) => {
+  if (!playerBody.value || !pendingInputs.value.length) return;
+  
+  // Find the input that matches the server's acknowledged sequence
+  const ackIndex = pendingInputs.value.findIndex(
+    input => input.sequence === serverData.inputSequence
+  );
+  
+  if (ackIndex >= 0) {
+    // Remove acknowledged inputs
+    pendingInputs.value.splice(0, ackIndex + 1);
+    
+    // Apply server position as base
+    playerBody.value.setTranslation({
+      x: serverData.position.x,
+      y: serverData.position.y,
+      z: serverData.position.z
+    });
+    
+    // Re-apply unacknowledged inputs (client-side prediction)
+    pendingInputs.value.forEach(input => {
+      // Apply the input locally again
+      // This is simplified - you'd want to match the server's physics exactly
+    });
+  }
+};
+
+// Update other player visual representation
+const updateOtherPlayer = (id, playerData) => {
+  if (!scene.value) return;
+  
+  let mesh = otherPlayerMeshes[id];
+  
+  // Create mesh if it doesn't exist
+  if (!mesh) {
+    const geometry = new THREE.CapsuleGeometry(0.4, 1.0, 8, 8);
+    const material = new THREE.MeshStandardMaterial({
+      color: 0x00ff00,
+      transparent: true,
+      opacity: 0.7
+    });
+    
+    mesh = new THREE.Mesh(geometry, material);
+    scene.value.add(mesh);
+    otherPlayerMeshes[id] = mesh;
+  }
+  
+  // Update position with interpolation
+  mesh.position.lerp(
+    new THREE.Vector3(
+      playerData.position.x,
+      playerData.position.y,
+      playerData.position.z
+    ),
+    0.3 // Interpolation factor
+  );
+  
+  // Update rotation
+  mesh.quaternion.slerp(
+    new THREE.Quaternion(
+      playerData.rotation.x,
+      playerData.rotation.y,
+      playerData.rotation.z,
+      playerData.rotation.w
+    ),
+    0.3
+  );
+};
+
+// Remove other player mesh
+const removeOtherPlayer = (id) => {
+  const mesh = otherPlayerMeshes[id];
+  if (mesh) {
+    scene.value.remove(mesh);
+    delete otherPlayerMeshes[id];
+  }
+  delete serverPlayers[id];
+};
+
+// Send input to server
+const sendInputToServer = () => {
+  if (!ws.value || ws.value.readyState !== WebSocket.OPEN || !started.value) return;
+  
+  const input = {
+    forward: keys.forward,
+    backward: keys.backward,
+    left: keys.left,
+    right: keys.right,
+    jump: keys.jump,
+    run: keys.run,
+    yaw: cameraRotation.value.y,
+    pitch: cameraRotation.value.x
+  };
+  
+  const sequence = ++inputSequence.value;
+  
+  // Store input for reconciliation
+  pendingInputs.value.push({
+    input,
+    sequence,
+    timestamp: Date.now()
+  });
+  
+  // Send to server
+  ws.value.send(JSON.stringify({
+    type: 'input',
+    input,
+    sequence
+  }));
+};
+
+// Modify startGame to connect to server
 const startGame = async () => {
   try {
     console.log("Starting game...");
@@ -438,6 +663,12 @@ const startGame = async () => {
     // Set started state
     started.value = true;
 
+    // Connect to server
+    connectToServer();
+    
+    // Start sending inputs at 60Hz
+    setInterval(sendInputToServer, 1000 / 60);
+    
     // Try to request pointer lock
     gameCanvas.value.requestPointerLock();
       
@@ -2128,5 +2359,17 @@ html, body {
   max-width: 80%;
   text-align: center;
   z-index: 1000;
+}
+
+.connection-status {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: white;
+  font-family: monospace;
+  font-size: 14px;
+  background-color: rgba(200, 0, 0, 0.7);
+  padding: 5px 10px;
+  border-radius: 4px;
 }
 </style>
