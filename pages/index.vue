@@ -27,7 +27,7 @@ import { ref, reactive, shallowRef, onMounted, onBeforeUnmount } from 'vue';
 import * as THREE from 'three';
 import { SceneManager } from '@/lib/scene';
 import { PhysicsManager } from '@/lib/physics';
-import { FPSController } from '@/lib/fpscontroller';
+import { FPSController } from '@/lib/FPSController'; // Fix import path
 import { NetworkManager } from '@/lib/network';
 import { PLAYER_CONFIG, NETWORK_CONFIG, parsePlayerState } from '@/lib/players';
 
@@ -40,6 +40,7 @@ const started = ref(false);
 const errorMessage = ref('');
 const frameCount = ref(0);
 const serverPlayers = reactive({});
+const serverDynamicObjects = reactive({});
 
 // Player state for UI
 const playerPosition = ref(new THREE.Vector3());
@@ -168,6 +169,13 @@ const setupNetworkHandlers = () => {
         }
       });
     }
+    
+    // Handle dynamic objects
+    if (message.dynamicObjects) {
+      Object.entries(message.dynamicObjects).forEach(([id, objData]) => {
+        sceneManager.value.createOrUpdateDynamicObject(id, objData, worldOriginOffset.value);
+      });
+    }
   };
   
   networkManager.value.onStateUpdate = (message) => {
@@ -183,6 +191,22 @@ const setupNetworkHandlers = () => {
         fpsController.value.reconcileWithServer(parsedData, worldOriginOffset.value);
       }
     });
+    
+    // Update dynamic objects
+    if (message.dynamicObjects) {
+      Object.assign(serverDynamicObjects, message.dynamicObjects);
+      Object.entries(message.dynamicObjects).forEach(([id, objData]) => {
+        sceneManager.value.createOrUpdateDynamicObject(id, objData, worldOriginOffset.value);
+      });
+      
+      // Remove objects that no longer exist
+      Object.keys(sceneManager.value?.dynamicObjects || {}).forEach(id => {
+        if (!message.dynamicObjects[id]) {
+          sceneManager.value.removeDynamicObject(id);
+          delete serverDynamicObjects[id];
+        }
+      });
+    }
     
     // Remove players that left
     Object.keys(sceneManager.value?.otherPlayerMeshes || {}).forEach(id => {
