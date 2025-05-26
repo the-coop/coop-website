@@ -466,11 +466,21 @@ const handleServerMessage = (message) => {
     case 'init':
       playerId.value = message.playerId;
       console.log('Initialized as player:', playerId.value);
-      applyServerState(message.state);
+      console.log('Initial state received:', message.state);
+      // Process initial state to create other players
+      if (message.state) {
+        Object.entries(message.state).forEach(([id, playerData]) => {
+          if (id !== playerId.value) {
+            console.log('Creating initial player:', id, playerData);
+            updateOtherPlayer(id, playerData);
+          }
+        });
+      }
       break;
       
     case 'state':
-      applyServerState(message.state);
+      // The state message contains the state object
+      applyServerState(message);
       break;
       
     case 'playerLeft':
@@ -487,12 +497,14 @@ const handleServerMessage = (message) => {
 const applyServerState = (state) => {
   if (!state) return;
   
-  // The Rust server sends state directly as a HashMap<Uuid, PlayerState>
+  // Check if state is wrapped in a 'state' property (from ServerMessage::State)
+  const actualState = state.state || state;
+  
   // Update server players state
-  Object.assign(serverPlayers, state);
+  Object.assign(serverPlayers, actualState);
   
   // Update other players
-  Object.entries(state).forEach(([id, playerData]) => {
+  Object.entries(actualState).forEach(([id, playerData]) => {
     if (id !== playerId.value) {
       updateOtherPlayer(id, playerData);
     } else if (playerBody.value) {
@@ -503,7 +515,7 @@ const applyServerState = (state) => {
   
   // Remove players that are no longer in the state
   Object.keys(otherPlayerMeshes).forEach(id => {
-    if (!state[id]) {
+    if (!actualState[id]) {
       removeOtherPlayer(id);
     }
   });
@@ -675,6 +687,40 @@ const applyInputLocally = (input, deltaTime) => {
 const sendInputToServer = () => {
   if (!ws.value || ws.value.readyState !== WebSocket.OPEN || !started.value) return;
   
+  const playerPos = playerBody.value ? playerBody.value.translation() : { x: 0, y: 0, z: 0 };
+  
+  // Check if we need to shift the world origin
+  const localPos = new THREE.Vector3(playerPos.x, playerPos.y, playerPos.z);
+  if (localPos.length() > ORIGIN_SHIFT_THRESHOLD) {
+    console.log('Shifting world origin by', localPos);
+    worldOriginOffset.value.add(localPos);
+    
+    // Reset local player position to origin
+    if (playerBody.value) {
+      playerBody.value.setTranslation({ x: 0, y: 0, z: 0 });
+    }
+    
+    // Adjust all other players' visual positions
+    Object.entries(otherPlayerMeshes).forEach(([id, mesh]) => {
+      mesh.position.sub(localPos);
+    });
+    
+    // Adjust all physics objects
+    if (scene.value) {
+      scene.value.traverse((child) => {
+        if (child.isMesh && child.userData.physicsBody && child !== player.value) {
+          const body = child.userData.physicsBody;
+          const pos = body.translation();
+          body.setTranslation({
+            x: pos.x - localPos.x,
+            y: pos.y - localPos.y,
+            z: pos.z - localPos.z
+          });
+        }
+      });
+    }
+  }
+  
   const input = {
     forward: keys.forward,
     backward: keys.backward,
@@ -683,7 +729,17 @@ const sendInputToServer = () => {
     jump: keys.jump,
     run: keys.run,
     yaw: cameraRotation.value.y,
-    pitch: cameraRotation.value.x
+    pitch: cameraRotation.value.x,
+    world_position: [
+      playerPos.x + worldOriginOffset.value.x,
+      playerPos.y + worldOriginOffset.value.y,
+      playerPos.z + worldOriginOffset.value.z
+    ],
+    world_origin: [
+      worldOriginOffset.value.x,
+      worldOriginOffset.value.y,
+      worldOriginOffset.value.z
+    ]
   };
   
   const sequence = ++inputSequence.value;
@@ -715,7 +771,7 @@ const sendInputToServer = () => {
   );
 };
 
-// Update other player visual representation with interpolation
+// Update other player visual representation with interpolation and floating origin
 const updateOtherPlayer = (id, playerData) => {
   if (!scene.value) return;
   
@@ -745,17 +801,25 @@ const updateOtherPlayer = (id, playerData) => {
       startTime: Date.now(),
       duration: 100 // Interpolate over 100ms
     };
+    
+    console.log('Created mesh for player:', id);
   }
+  
+  // Convert world position to local position using floating origin
+  const worldPos = new THREE.Vector3(
+    playerData.position[0],
+    playerData.position[1],
+    playerData.position[2]
+  );
+  
+  // Subtract our world origin offset to get relative position
+  const localPos = worldPos.sub(worldOriginOffset.value);
   
   // Update interpolation targets
   const interp = mesh.userData.interpolation;
   interp.fromPos.copy(mesh.position);
   interp.fromRot.copy(mesh.quaternion);
-  interp.toPos.set(
-    playerData.position[0],
-    playerData.position[1],
-    playerData.position[2]
-  );
+  interp.toPos.copy(localPos);
   interp.toRot.set(
     playerData.rotation[0],
     playerData.rotation[1],
@@ -763,6 +827,8 @@ const updateOtherPlayer = (id, playerData) => {
     playerData.rotation[3]
   );
   interp.startTime = Date.now();
+  
+  console.log(`Player ${id} at world pos [${playerData.position.join(', ')}], local pos [${localPos.x.toFixed(1)}, ${localPos.y.toFixed(1)}, ${localPos.z.toFixed(1)}]`);
 };
 
 // Add interpolation update to animate function
@@ -859,6 +925,9 @@ const animate = () => {
         2.0  // Shorter rays for grounding
       );
     }
+    
+    // Update other players' interpolation - ADD THIS LINE
+    updateOtherPlayersInterpolation();
     
     // Update camera if detached
     if (isCameraDetached.value) {
@@ -2411,6 +2480,10 @@ const removeOtherPlayer = (id) => {
   }
   delete serverPlayers[id];
 };
+
+// Add floating origin variables near other state variables (after line ~24)
+const worldOriginOffset = shallowRef(new THREE.Vector3(0, 0, 0));
+const ORIGIN_SHIFT_THRESHOLD = 1000; // Shift origin when player is 1000 units from origin
 </script>
 
 <style>
