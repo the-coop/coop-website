@@ -23,12 +23,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, shallowRef, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, reactive, shallowRef, onMounted, onBeforeUnmount, nextTick, computed } from 'vue';
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { createPlanet, createPlatform, createPushableRock, updateDynamicObjects } from '~/lib/scene.js';
 import { createPlayer, createRayVisualizations, updateRayVisualizations, setupCollisionHandling } from '~/lib/players.js';
 import { processCollisionEvents, checkGrounded, alignPlayerToSurface, handleAllMovement, updatePlayerTransform, applyInputLocally } from '~/lib/physics.js';
+import { fpsController, projectVectorOntoPlane } from '~/lib/FPSController.js';
 
 // Make sure rayDir exists globally first thing
 window.rayDir = new THREE.Vector3(0, -1, 0);
@@ -66,7 +67,7 @@ const playerPosition = ref(new THREE.Vector3());
 const playerFacing = ref(new THREE.Vector3(0, 0, -1)); // Add player facing direction
 const isMoving = ref(false);
 const currentSpeed = ref(0);
-const isCameraDetached = ref(false);
+const isCameraDetached = computed(() => fpsController.isCameraDetached);
 const errorMessage = ref(''); // Add error message state
 const lastPlayerPosition = shallowRef(null); // Add this declaration
 const positionStuckFrames = ref(0); // Add this declaration
@@ -175,240 +176,61 @@ const getGroundNormal = () => {
 
 // Define the onResize function earlier in the file, before onMounted
 const onResize = () => {
-  if (!camera.value || !renderer.value) return;
-  
-  // Update camera aspect ratio
-  camera.value.aspect = window.innerWidth / window.innerHeight;
-  camera.value.updateProjectionMatrix();
-  
-  // Resize renderer
-  renderer.value.setSize(window.innerWidth, window.innerHeight);
+  fpsController.handleResize(camera.value, renderer.value);
 };
 
 // Fix the onMouseMove function to handle player rotation when grounded and full 3D rotation when airborne
 const onMouseMove = (event) => {
-  if (!started.value || document.pointerLockElement !== gameCanvas.value) return;
-  
-  const lookSensitivity = 0.001;
-  const yawSensitivity = 0.002;
-  
-  try {
-    if (isGrounded.value && playerBody.value) {
-      // When grounded, only allow camera pitch and player yaw
-      
-      // Update camera pitch with limits (always affects camera)
-      cameraRotation.value.x -= event.movementY * lookSensitivity;
-      cameraRotation.value.x = Math.max(
-        -Math.PI / 2 + 0.01, 
-        Math.min(Math.PI / 2 - 0.01, cameraRotation.value.x)
-      );
-      
-      // Rotate the player body for yaw instead of camera
-      const currentPlayerQuat = new THREE.Quaternion(
-        playerBody.value.rotation().x,
-        playerBody.value.rotation().y,
-        playerBody.value.rotation().z,
-        playerBody.value.rotation().w
-      );
-      
-      // Create yaw rotation around the up vector (surface normal)
-      let upVector = new THREE.Vector3(0, 1, 0); // Default up
-      if (lastGroundNormal.value) {
-        upVector = lastGroundNormal.value.clone();
-      }
-      
-      const yawDelta = -event.movementX * yawSensitivity;
-      const yawQuat = new THREE.Quaternion().setFromAxisAngle(upVector, yawDelta);
-      
-      // Apply yaw rotation to player body
-      currentPlayerQuat.premultiply(yawQuat);
-      
-      // Update player body rotation
-      playerBody.value.setRotation({
-        x: currentPlayerQuat.x,
-        y: currentPlayerQuat.y,
-        z: currentPlayerQuat.z,
-        w: currentPlayerQuat.w
-      });
-      
-      // Keep camera yaw at 0 since player body is now handling the yaw
-      cameraRotation.value.y = 0;
-    } else {
-      // When airborne, rotate the entire player capsule with mouse movement
-      if (playerBody.value) {
-        const currentPlayerQuat = new THREE.Quaternion(
-          playerBody.value.rotation().x,
-          playerBody.value.rotation().y,
-          playerBody.value.rotation().z,
-          playerBody.value.rotation().w
-        );
-        
-        // Create pitch rotation around local right axis
-        const localRight = new THREE.Vector3(1, 0, 0).applyQuaternion(currentPlayerQuat);
-        const pitchDelta = -event.movementY * lookSensitivity;
-        const pitchQuat = new THREE.Quaternion().setFromAxisAngle(localRight, pitchDelta);
-        
-        // Create yaw rotation around local up axis
-        const localUp = new THREE.Vector3(0, 1, 0).applyQuaternion(currentPlayerQuat);
-        const yawDelta = -event.movementX * yawSensitivity;
-        const yawQuat = new THREE.Quaternion().setFromAxisAngle(localUp, yawDelta);
-        
-        // Apply both rotations to player body
-        currentPlayerQuat.premultiply(pitchQuat);
-        currentPlayerQuat.premultiply(yawQuat);
-        
-        // Update player body rotation
-        playerBody.value.setRotation({
-          x: currentPlayerQuat.x,
-          y: currentPlayerQuat.y,
-          z: currentPlayerQuat.z,
-          w: currentPlayerQuat.w
-        });
-        
-        // Keep camera rotation at 0 since player body handles all rotation
-        cameraRotation.value.x = 0;
-        cameraRotation.value.y = 0;
-      }
-    }
-  } catch (e) {
-    console.error("Error in mouse move:", e);
-  }
+  fpsController.handleMouseMove(
+    event,
+    started.value,
+    gameCanvas.value,
+    isGrounded.value,
+    playerBody.value,
+    cameraRotation.value,
+    lastGroundNormal.value
+  );
 };
 
 // Add missing onPointerLockChange function before onMounted
 const onPointerLockChange = () => {
-  if (document.pointerLockElement !== gameCanvas.value) {
-    // Pointer lock was exited
-    keys.forward = false;
-    keys.backward = false;
-    keys.left = false;
-    keys.right = false;
-    keys.jump = false;
-    keys.run = false;
-  }
+  fpsController.handlePointerLockChange(gameCanvas.value, keys);
 };
 
 // Update resetCameraForAirborne function to properly handle transition
 const resetCameraForAirborne = () => {
-  // When transitioning from grounded to airborne, transfer camera pitch to player rotation
-  if (player.value && playerBody.value && wasGrounded.value && !isGrounded.value) {
-    console.log("Transitioning to airborne - transferring camera rotation to player body");
-    
-    // Get current player quaternion
-    const currentPlayerQuat = new THREE.Quaternion(
-      playerBody.value.rotation().x,
-      playerBody.value.rotation().y,
-      playerBody.value.rotation().z,
-      playerBody.value.rotation().w
-    );
-    
-    // Apply current camera pitch to player rotation around local right axis
-    if (Math.abs(cameraRotation.value.x) > 0.01) {
-      const localRight = new THREE.Vector3(1, 0, 0).applyQuaternion(currentPlayerQuat);
-      const pitchQuat = new THREE.Quaternion().setFromAxisAngle(localRight, cameraRotation.value.x);
-      
-      currentPlayerQuat.premultiply(pitchQuat);
-      
-      // Update player body with new rotation
-      playerBody.value.setRotation({
-        x: currentPlayerQuat.x,
-        y: currentPlayerQuat.y,
-        z: currentPlayerQuat.z,
-        w: currentPlayerQuat.w
-      });
-    }
-    
-    // Reset camera rotation since player body now handles all rotation
-    cameraRotation.value.x = 0;
-    cameraRotation.value.y = 0;
-    cameraRotation.value.z = 0;
-    
-    // Unlock rotations for airborne movement
-    // Note: We can't change the locked rotations flag after creation, 
-    // but we can manually control rotation through setRotation
-  }
-};
-
-// Add missing projectVectorOntoPlane function
-const projectVectorOntoPlane = (vector, planeNormal) => {
-  const dot = vector.dot(planeNormal);
-  return vector.clone().sub(planeNormal.clone().multiplyScalar(dot));
+  fpsController.resetCameraForAirborne(
+    player.value,
+    playerBody.value,
+    wasGrounded.value,
+    isGrounded.value,
+    cameraRotation.value
+  );
 };
 
 // Add onKeyDown and onKeyUp functions before onMounted
 const onKeyDown = (event) => {
-  if (!started.value) return;
-  
-  switch (event.code) {
-    case 'KeyW':
-    case 'ArrowUp':
-      keys.forward = true;
-      break;
-    case 'KeyS':
-    case 'ArrowDown':
-      keys.backward = true;
-      break;
-    case 'KeyA':
-    case 'ArrowLeft':
-      keys.left = true;
-      break;
-    case 'KeyD':
-    case 'ArrowRight':
-      keys.right = true;
-      break;
-    case 'KeyQ': // Add Q key for roll left when airborne
-      keys.rollLeft = true;
-      break;
-    case 'KeyE': // Add E key for roll right when airborne
-      keys.rollRight = true;
-      break;
-    case 'Space':
-      if (isGrounded.value) {
-        keys.jump = true;
-      }
-      break;
-    case 'ShiftLeft':
-      keys.run = true;
-      break;
-    case 'KeyO': // Add 'o' key handler
-      toggleCameraAttachment();
-      break;
-  }
+  fpsController.handleKeyDown(event, started.value, keys, isGrounded.value);
 };
 
 const onKeyUp = (event) => {
-  if (!started.value) return;
-  
-  switch (event.code) {
-    case 'KeyW':
-    case 'ArrowUp':
-      keys.forward = false;
-      break;
-    case 'KeyS':
-    case 'ArrowDown':
-      keys.backward = false;
-      break;
-    case 'KeyA':
-    case 'ArrowLeft':
-      keys.left = false;
-      break;
-    case 'KeyD':
-    case 'ArrowRight':
-      keys.right = false;
-      break;
-    case 'KeyQ': // Add Q key release
-      keys.rollLeft = false;
-      break;
-    case 'KeyE': // Add E key release
-      keys.rollRight = false;
-      break;
-    case 'Space':
-      keys.jump = false;
-      break;
-    case 'ShiftLeft':
-      keys.run = false;
-      break;
+  fpsController.handleKeyUp(event, started.value, keys);
+};
+
+// Add toggleCameraAttachment function
+const toggleCameraAttachment = () => {
+  if (!fpsController.isCameraDetached && camera.value) {
+    // Store current camera position when detaching
+    fpsController.detachedCamera.position.copy(camera.value.position);
+    fpsController.detachedCamera.rotation.copy(camera.value.rotation);
   }
+  fpsController.toggleCameraAttachment();
+};
+
+// Add updateDetachedCamera function
+const updateDetachedCamera = () => {
+  const deltaTime = clock.getDelta();
+  fpsController.updateDetachedCamera(camera.value, keys, deltaTime);
 };
 
 // Connect to WebSocket server
@@ -783,7 +605,7 @@ const updateOtherPlayersInterpolation = () => {
   });
 };
 
-// Modify the animate function to use imported physics functions
+// Modify the animate function to use the controller for roll input
 const animate = () => {
   if (!started.value) return;
   
@@ -832,6 +654,9 @@ const animate = () => {
     }
     
     frameCount.value++;
+    
+    // Handle roll input using controller
+    fpsController.handleRollInput(keys, playerBody.value, isGrounded.value, deltaTime);
     
     // Update physics and player - IMPORTANT: Order matters!
     // Check grounded using imported function
