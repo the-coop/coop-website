@@ -177,27 +177,47 @@ const setupNetworkHandlers = () => {
             worldOriginOffset.value.copy(serverOrigin);
           }
           
+          // IMMEDIATELY create the other player at their current position
           sceneManager.value.updateOtherPlayer(id, playerData, worldOriginOffset.value);
+          console.log(`Created other player ${id} during init`);
         } else {
-          // Handle our own player's initial state
+          // Handle our own player's initial state reconciliation
           const serverOrigin = new THREE.Vector3(...parsedData.worldOrigin);
           if (!worldOriginOffset.value.equals(serverOrigin)) {
             console.log('Setting our world origin from server:', serverOrigin);
             worldOriginOffset.value.copy(serverOrigin);
           }
           
-          // If we have a different world origin, we need to adjust our local position
-          if (fpsController.value?.playerBody && serverOrigin.length() > 0) {
+          // Reconcile our own position with server
+          if (fpsController.value?.playerBody && parsedData.position) {
             const serverWorldPos = new THREE.Vector3(...parsedData.position);
             const localPos = serverWorldPos.clone().sub(serverOrigin);
             
-            console.log('Adjusting our position - server world pos:', serverWorldPos, 'local pos:', localPos);
+            console.log('Reconciling our position during init - server world pos:', serverWorldPos, 'local pos:', localPos);
             
             fpsController.value.playerBody.setTranslation({
               x: localPos.x,
               y: localPos.y,
               z: localPos.z
             });
+            
+            // Also set velocity and rotation if provided
+            if (parsedData.velocity) {
+              fpsController.value.playerBody.setLinvel({
+                x: parsedData.velocity[0],
+                y: parsedData.velocity[1],
+                z: parsedData.velocity[2]
+              });
+            }
+            
+            if (parsedData.rotation) {
+              fpsController.value.playerBody.setRotation({
+                x: parsedData.rotation[0],
+                y: parsedData.rotation[1],
+                z: parsedData.rotation[2],
+                w: parsedData.rotation[3]
+              });
+            }
           }
         }
       });
