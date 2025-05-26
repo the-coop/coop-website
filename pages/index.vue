@@ -104,6 +104,9 @@ const onAnimationFrame = (deltaTime) => {
   try {
     frameCount.value++;
     
+    // Apply gravity to all dynamic objects including other players
+    physicsManager.value.applyGravityToScene(sceneManager.value.scene, deltaTime);
+    
     // Step physics
     physicsManager.value.step();
     
