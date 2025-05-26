@@ -162,10 +162,43 @@ const setupNetworkHandlers = () => {
   if (!networkManager.value) return;
   
   networkManager.value.onInit = (message) => {
+    console.log('Received init message with state:', message.state);
+    
     if (message.state) {
       Object.entries(message.state).forEach(([id, playerData]) => {
+        const parsedData = parsePlayerState(playerData);
+        console.log(`Init player ${id} at world pos: [${parsedData.position[0].toFixed(1)}, ${parsedData.position[1].toFixed(1)}, ${parsedData.position[2].toFixed(1)}], origin: [${parsedData.worldOrigin[0].toFixed(1)}, ${parsedData.worldOrigin[1].toFixed(1)}, ${parsedData.worldOrigin[2].toFixed(1)}]`);
+        
         if (id !== networkManager.value.playerId) {
+          // Handle world origin offset for other players
+          const serverOrigin = new THREE.Vector3(...parsedData.worldOrigin);
+          if (!worldOriginOffset.value.equals(serverOrigin)) {
+            console.log('Setting initial world origin from server:', serverOrigin);
+            worldOriginOffset.value.copy(serverOrigin);
+          }
+          
           sceneManager.value.updateOtherPlayer(id, playerData, worldOriginOffset.value);
+        } else {
+          // Handle our own player's initial state
+          const serverOrigin = new THREE.Vector3(...parsedData.worldOrigin);
+          if (!worldOriginOffset.value.equals(serverOrigin)) {
+            console.log('Setting our world origin from server:', serverOrigin);
+            worldOriginOffset.value.copy(serverOrigin);
+          }
+          
+          // If we have a different world origin, we need to adjust our local position
+          if (fpsController.value?.playerBody && serverOrigin.length() > 0) {
+            const serverWorldPos = new THREE.Vector3(...parsedData.position);
+            const localPos = serverWorldPos.clone().sub(serverOrigin);
+            
+            console.log('Adjusting our position - server world pos:', serverWorldPos, 'local pos:', localPos);
+            
+            fpsController.value.playerBody.setTranslation({
+              x: localPos.x,
+              y: localPos.y,
+              z: localPos.z
+            });
+          }
         }
       });
     }
