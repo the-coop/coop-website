@@ -535,7 +535,12 @@ const reconcilePlayerPosition = (serverData) => {
   };
   
   // Calculate prediction error
-  const currentPos = playerBody.value.translation();
+  const currentPosRapier = playerBody.value.translation();
+  const currentPos = new THREE.Vector3(
+    currentPosRapier.x,
+    currentPosRapier.y,
+    currentPosRapier.z
+  );
   const serverPos = new THREE.Vector3(
     serverData.position[0],
     serverData.position[1],
