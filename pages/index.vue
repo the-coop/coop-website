@@ -525,6 +525,44 @@ const applyServerState = (state) => {
 const reconcilePlayerPosition = (serverData) => {
   if (!playerBody.value) return;
   
+  // Update our world origin to match server
+  const serverOrigin = new THREE.Vector3(
+    serverData.worldOrigin[0],
+    serverData.worldOrigin[1],
+    serverData.worldOrigin[2]
+  );
+  
+  // Check if server shifted the origin
+  if (!worldOriginOffset.value.equals(serverOrigin)) {
+    console.log('Server shifted origin from', worldOriginOffset.value, 'to', serverOrigin);
+    
+    // Calculate the shift amount
+    const shift = serverOrigin.clone().sub(worldOriginOffset.value);
+    
+    // Update our world origin
+    worldOriginOffset.value.copy(serverOrigin);
+    
+    // Adjust all other players' visual positions by the shift
+    Object.entries(otherPlayerMeshes).forEach(([id, mesh]) => {
+      mesh.position.sub(shift);
+    });
+    
+    // Adjust all physics objects
+    if (scene.value) {
+      scene.value.traverse((child) => {
+        if (child.isMesh && child.userData.physicsBody && child !== player.value) {
+          const body = child.userData.physicsBody;
+          const pos = body.translation();
+          body.setTranslation({
+            x: pos.x - shift.x,
+            y: pos.y - shift.y,
+            z: pos.z - shift.z
+          });
+        }
+      });
+    }
+  }
+  
   // Store last server update
   lastServerUpdate.value = {
     position: serverData.position,
@@ -541,12 +579,16 @@ const reconcilePlayerPosition = (serverData) => {
     currentPosRapier.y,
     currentPosRapier.z
   );
-  const serverPos = new THREE.Vector3(
+  
+  // Server sends world position, we need to convert to local
+  const serverWorldPos = new THREE.Vector3(
     serverData.position[0],
     serverData.position[1],
     serverData.position[2]
   );
-  predictionError.value = currentPos.distanceTo(serverPos);
+  const serverLocalPos = serverWorldPos.sub(worldOriginOffset.value);
+  
+  predictionError.value = currentPos.distanceTo(serverLocalPos);
   
   // Find the input that matches the server's acknowledged sequence
   const ackIndex = pendingInputs.value.findIndex(
@@ -561,11 +603,11 @@ const reconcilePlayerPosition = (serverData) => {
     if (predictionError.value > 0.1) {
       console.log('Reconciling position - error:', predictionError.value);
       
-      // Apply server position and velocity
+      // Apply server position (already converted to local)
       playerBody.value.setTranslation({
-        x: serverData.position[0],
-        y: serverData.position[1],
-        z: serverData.position[2]
+        x: serverLocalPos.x,
+        y: serverLocalPos.y,
+        z: serverLocalPos.z
       });
       
       playerBody.value.setLinvel({
@@ -589,142 +631,14 @@ const reconcilePlayerPosition = (serverData) => {
   }
 };
 
-// Apply input locally for client-side prediction
-const applyInputLocally = (input, deltaTime) => {
-  if (!playerBody.value) return;
-  
-  // This mirrors the server's physics calculation
-  const velocity = playerBody.value.linvel();
-  const playerTranslation = playerBody.value.translation();
-  const playerPos = new THREE.Vector3(playerTranslation.x, playerTranslation.y, playerTranslation.z);
-  
-  // Calculate planet-centered gravity
-  const gravityDir = new THREE.Vector3()
-    .subVectors(gravity.center, playerPos)
-    .normalize();
-  
-  const gravityStrength = gravity.strength;
-  const gravityForce = gravityDir.clone().multiplyScalar(gravityStrength * deltaTime);
-  
-  // Calculate movement
-  let moveForward = 0;
-  let moveRight = 0;
-  
-  if (input.forward) moveForward += 1;
-  if (input.backward) moveForward -= 1;
-  if (input.left) moveRight -= 1;
-  if (input.right) moveRight += 1;
-  
-  const moveLength = Math.sqrt(moveForward * moveForward + moveRight * moveRight);
-  if (moveLength > 0) {
-    moveForward /= moveLength;
-    moveRight /= moveLength;
-  }
-  
-  const speed = input.run ? runSpeed : walkSpeed;
-  moveForward *= speed;
-  moveRight *= speed;
-  
-  // Get movement direction
-  const playerQuat = new THREE.Quaternion(
-    playerBody.value.rotation().x,
-    playerBody.value.rotation().y,
-    playerBody.value.rotation().z,
-    playerBody.value.rotation().w
-  );
-  
-  let forward = new THREE.Vector3(0, 0, -1).applyQuaternion(playerQuat);
-  let right = new THREE.Vector3(1, 0, 0).applyQuaternion(playerQuat);
-  
-  if (isGrounded.value && lastGroundNormal.value) {
-    forward.projectOnPlane(lastGroundNormal.value).normalize();
-    right.projectOnPlane(lastGroundNormal.value).normalize();
-  }
-  
-  const moveDir = new THREE.Vector3();
-  moveDir.addScaledVector(forward, moveForward);
-  moveDir.addScaledVector(right, moveRight);
-  
-  // Apply forces
-  let newVelX = velocity.x + gravityForce.x;
-  let newVelY = velocity.y + gravityForce.y;
-  let newVelZ = velocity.z + gravityForce.z;
-  
-  if (isGrounded.value) {
-    const groundAccel = 100.0;
-    newVelX += moveDir.x * groundAccel * deltaTime;
-    newVelY += moveDir.y * groundAccel * deltaTime;
-    newVelZ += moveDir.z * groundAccel * deltaTime;
-    
-    if (moveLength === 0) {
-      newVelX *= 0.8;
-      newVelY *= 0.95;
-      newVelZ *= 0.8;
-    }
-  } else {
-    const airControl = 1.0;
-    newVelX += moveDir.x * airControl * deltaTime;
-    newVelY += moveDir.y * airControl * deltaTime;
-    newVelZ += moveDir.z * airControl * deltaTime;
-    
-    newVelX *= 0.95;
-    newVelY *= 0.98;
-    newVelZ *= 0.95;
-  }
-  
-  // Handle jump
-  if (input.jump && isGrounded.value) {
-    const jumpVector = gravityDir.clone().multiplyScalar(-jumpForce);
-    newVelX += jumpVector.x;
-    newVelY += jumpVector.y;
-    newVelZ += jumpVector.z;
-  }
-  
-  // Update velocity
-  playerBody.value.setLinvel({
-    x: newVelX,
-    y: newVelY,
-    z: newVelZ
-  });
-};
-
 // Send input to server with timestamp
 const sendInputToServer = () => {
   if (!ws.value || ws.value.readyState !== WebSocket.OPEN || !started.value) return;
   
   const playerPos = playerBody.value ? playerBody.value.translation() : { x: 0, y: 0, z: 0 };
   
-  // Check if we need to shift the world origin
-  const localPos = new THREE.Vector3(playerPos.x, playerPos.y, playerPos.z);
-  if (localPos.length() > ORIGIN_SHIFT_THRESHOLD) {
-    console.log('Shifting world origin by', localPos);
-    worldOriginOffset.value.add(localPos);
-    
-    // Reset local player position to origin
-    if (playerBody.value) {
-      playerBody.value.setTranslation({ x: 0, y: 0, z: 0 });
-    }
-    
-    // Adjust all other players' visual positions
-    Object.entries(otherPlayerMeshes).forEach(([id, mesh]) => {
-      mesh.position.sub(localPos);
-    });
-    
-    // Adjust all physics objects
-    if (scene.value) {
-      scene.value.traverse((child) => {
-        if (child.isMesh && child.userData.physicsBody && child !== player.value) {
-          const body = child.userData.physicsBody;
-          const pos = body.translation();
-          body.setTranslation({
-            x: pos.x - localPos.x,
-            y: pos.y - localPos.y,
-            z: pos.z - localPos.z
-          });
-        }
-      });
-    }
-  }
+  // Don't shift origin on client - let server handle it
+  // Remove the client-side origin shifting logic
   
   const input = {
     forward: keys.forward,
@@ -810,21 +724,29 @@ const updateOtherPlayer = (id, playerData) => {
     console.log('Created mesh for player:', id);
   }
   
-  // Convert world position to local position using floating origin
+  // Server sends world position, convert to local position
   const worldPos = new THREE.Vector3(
     playerData.position[0],
     playerData.position[1],
     playerData.position[2]
   );
   
-  // Subtract our world origin offset to get relative position
-  const localPos = worldPos.sub(worldOriginOffset.value);
+  // Get the other player's world origin from server data
+  const otherPlayerOrigin = new THREE.Vector3(
+    playerData.worldOrigin[0],
+    playerData.worldOrigin[1],
+    playerData.worldOrigin[2]
+  );
+  
+  // Calculate relative position: other player's world position relative to our world origin
+  // This accounts for both players potentially having different origins
+  const relativePos = worldPos.clone().sub(worldOriginOffset.value);
   
   // Update interpolation targets
   const interp = mesh.userData.interpolation;
   interp.fromPos.copy(mesh.position);
   interp.fromRot.copy(mesh.quaternion);
-  interp.toPos.copy(localPos);
+  interp.toPos.copy(relativePos);
   interp.toRot.set(
     playerData.rotation[0],
     playerData.rotation[1],
@@ -833,7 +755,7 @@ const updateOtherPlayer = (id, playerData) => {
   );
   interp.startTime = Date.now();
   
-  console.log(`Player ${id} at world pos [${playerData.position.join(', ')}], local pos [${localPos.x.toFixed(1)}, ${localPos.y.toFixed(1)}, ${localPos.z.toFixed(1)}]`);
+  console.log(`Player ${id} at world pos [${playerData.position.join(', ')}], origin [${playerData.worldOrigin.join(', ')}], relative pos [${relativePos.x.toFixed(1)}, ${relativePos.y.toFixed(1)}, ${relativePos.z.toFixed(1)}]`);
 };
 
 // Add interpolation update to animate function
