@@ -295,7 +295,10 @@ const sendInputToServer = () => {
   const playerState = fpsController.value.getPlayerState();
   if (!playerState) return;
   
+  // Generate input with current movement state
   const input = fpsController.value.generateInput();
+  
+  // Always include current world position and origin
   input.world_position = playerState.position;
   input.world_origin = [
     worldOriginOffset.value.x,
@@ -306,10 +309,23 @@ const sendInputToServer = () => {
   const sequence = ++fpsController.value.inputSequence;
   const deltaTime = 1.0 / 60.0;
   
+  // Add to pending inputs for prediction
   fpsController.value.addPendingInput(input, sequence, deltaTime);
   
+  // Send to server and clean up old inputs
   if (networkManager.value.sendInput(input, sequence)) {
-    fpsController.value.cleanupOldInputs(NETWORK_CONFIG.PENDING_INPUT_TIMEOUT);
+    fpsController.value.cleanupOldInputs(2000); // 2 second timeout
+    
+    // Log input sending for debugging (occasionally)
+    if (sequence % 60 === 0 && (input.forward || input.backward || input.left || input.right)) {
+      console.log('Sent input sequence', sequence, '- movement keys active:', {
+        forward: input.forward,
+        backward: input.backward,
+        left: input.left,
+        right: input.right,
+        yaw: input.yaw.toFixed(2)
+      });
+    }
   }
 };
 
