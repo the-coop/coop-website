@@ -63,10 +63,11 @@ const initializeGame = async () => {
     
     await sceneManager.value.initializeGame(physicsManager.value, gameCanvas.value);
     
+    // Create FPS controller but DON'T create player yet
     fpsController.value = new FPSController(physicsManager.value, sceneManager.value);
-    fpsController.value.createPlayer(0, PLAYER_CONFIG.SPAWN_HEIGHT, 0);
     
     // DON'T connect to network here - wait for startGame
+    // DON'T create player here - wait for startGame
     return true;
   } catch (e) {
     console.error("Error initializing game:", e);
@@ -78,8 +79,12 @@ const initializeGame = async () => {
 // Start game
 const startGame = () => {
   if (gameCanvas.value && fpsController.value) {
+    // Request pointer lock first
     gameCanvas.value.requestPointerLock();
     started.value = true;
+    
+    // NOW create the player when game actually starts
+    fpsController.value.createPlayer(0, PLAYER_CONFIG.SPAWN_HEIGHT, 0);
     
     // Initialize network manager ONLY when actually starting
     if (!networkManager.value) {
@@ -89,7 +94,7 @@ const startGame = () => {
       const config = useRuntimeConfig();
       const wsUrl = config.public.wsUrl || 'ws://localhost:8080/ws';
       
-      console.log('Connecting to server after game start');
+      console.log('Connecting to server after game start and player creation');
       networkManager.value.connect(wsUrl).catch(e => {
         errorMessage.value = "Failed to connect to server: " + e.message;
       });
@@ -113,7 +118,7 @@ const onAnimationFrame = (deltaTime) => {
     // Apply gravity to all dynamic objects INCLUDING other players BEFORE physics step
     physicsManager.value.applyGravityToScene(sceneManager.value.scene, deltaTime);
     
-    // Step physics - this moves all physics bodies
+    // Step physics - this moves all physics bodies including other players
     physicsManager.value.step();
     
     // Process collision events
@@ -128,8 +133,8 @@ const onAnimationFrame = (deltaTime) => {
     // Update player transform
     fpsController.value.updatePlayerTransform();
     
-    // Update dynamic objects INCLUDING other players interpolation
-    // This MUST be called every frame to update other player positions
+    // Update dynamic objects - this syncs visuals to physics for ALL objects
+    // This is where other players' visual positions get updated from their physics bodies
     sceneManager.value.updateDynamicObjects(
       sceneManager.value.movingPlatform?.userData?.physicsBody
     );
@@ -166,7 +171,9 @@ const onAnimationFrame = (deltaTime) => {
       if (otherPlayerCount > 0) {
         console.log(`Frame ${frameCount.value}: ${otherPlayerCount} other players in scene`);
         Object.entries(sceneManager.value.otherPlayerMeshes).forEach(([id, mesh]) => {
-          console.log(`  Player ${id}: pos [${mesh.position.x.toFixed(1)}, ${mesh.position.y.toFixed(1)}, ${mesh.position.z.toFixed(1)}]`);
+          const body = mesh.userData.physicsBody;
+          const velocity = body ? body.linvel() : { x: 0, y: 0, z: 0 };
+          console.log(`  Player ${id}: visual pos [${mesh.position.x.toFixed(1)}, ${mesh.position.y.toFixed(1)}, ${mesh.position.z.toFixed(1)}], physics vel [${velocity.x.toFixed(1)}, ${velocity.y.toFixed(1)}, ${velocity.z.toFixed(1)}]`);
         });
       }
     }
@@ -247,6 +254,12 @@ const setupNetworkHandlers = () => {
   };
   
   networkManager.value.onStateUpdate = (message) => {
+    // CRITICAL: Ignore state updates until we have our player ID and are initialized
+    if (!networkManager.value.playerId || !networkManager.value.initialized) {
+      console.log('Ignoring state update - not initialized yet');
+      return;
+    }
+    
     const actualState = message.state || message;
     
     // Only log if we have other players
