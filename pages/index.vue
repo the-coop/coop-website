@@ -154,7 +154,8 @@ const connectToServer = () => {
       };
       
       ws.onPlayerJoin = (playerId, position) => {
-        console.log(`Player joined: ${playerId}`);
+        console.log(`Player joined: ${playerId}`, position);
+        // Convert position object to THREE.Vector3
         const pos = new THREE.Vector3(position.x, position.y, position.z);
         playerManager.value.addPlayer(playerId, pos);
         updatePlayerCount();
