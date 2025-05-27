@@ -123,7 +123,7 @@ const onAnimationFrame = (deltaTime) => {
     // Update player transform
     fpsController.value.updatePlayerTransform();
     
-    // Update dynamic objects
+    // Update dynamic objects INCLUDING other players interpolation
     sceneManager.value.updateDynamicObjects(
       sceneManager.value.movingPlatform?.userData?.physicsBody
     );
@@ -139,9 +139,6 @@ const onAnimationFrame = (deltaTime) => {
       fpsController.value.rightFootHit,
       fpsController.value.centerFootHit
     );
-    
-    // Update other players interpolation
-    sceneManager.value.updateOtherPlayersInterpolation();
     
     // Update detached camera if needed
     if (fpsController.value.isCameraDetached) {
@@ -234,6 +231,10 @@ const setupNetworkHandlers = () => {
   networkManager.value.onStateUpdate = (message) => {
     const actualState = message.state || message;
     Object.assign(serverPlayers, actualState);
+    
+    // Log state update to verify it's being received
+    const playerCount = Object.keys(actualState).length;
+    console.log(`Received state update with ${playerCount} players`);
     
     Object.entries(actualState).forEach(([id, playerData]) => {
       if (id !== networkManager.value.playerId) {
