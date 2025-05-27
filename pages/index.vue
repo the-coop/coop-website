@@ -96,17 +96,18 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style>
-html, body {
+<style scoped>
+:global(html), :global(body) {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  height: 100%;
 }
 
 .game-container {
   position: relative;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100dvh;
   overflow: hidden;
 }
 
