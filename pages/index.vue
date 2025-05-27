@@ -7,26 +7,44 @@
     </div>
     <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
     <div class="debug-info" v-if="started && showDebug">
-      <div>Grounded: {{ game?.debugInfo.isGrounded }}</div>
-      <div>Position: {{ formatVector(game?.debugInfo.position) }}</div>
-      <div>Moving: {{ game?.debugInfo.isMoving }}</div>
-      <div>Speed: {{ game?.debugInfo.currentSpeed?.toFixed(2) }}</div>
-      <div>Facing: {{ formatVector(game?.debugInfo.facing) }}</div>
+      <div>Grounded: {{ debugInfo.isGrounded }}</div>
+      <div>Position: {{ formatVector(debugInfo.position) }}</div>
+      <div>Moving: {{ debugInfo.isMoving }}</div>
+      <div>Speed: {{ debugInfo.currentSpeed?.toFixed(2) }}</div>
+      <div>Facing: {{ formatVector(debugInfo.facing) }}</div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { Game } from '../lib/Game.js';
+import { ref, onMounted, onBeforeUnmount, reactive, shallowRef, markRaw } from 'vue';
+import * as THREE from 'three';
+import RAPIER from '@dimforge/rapier3d-compat';
+import { PhysicsManager } from '../lib/physics.js';
+import { SceneManager } from '../lib/scene.js';
+import { FPSController } from '../lib/fpsController.js';
 
 // Refs
 const gameCanvas = ref(null);
-const game = ref(null);
 const loading = ref(true);
 const started = ref(false);
 const errorMessage = ref('');
 const showDebug = ref(true);
+
+// Game state - use shallowRef to prevent deep reactivity
+const physics = shallowRef(null);
+const scene = shallowRef(null);
+const player = shallowRef(null);
+const clock = shallowRef(null);
+const frameCount = ref(0);
+
+const debugInfo = reactive({
+  isGrounded: false,
+  position: new THREE.Vector3(),
+  isMoving: false,
+  currentSpeed: 0,
+  facing: new THREE.Vector3(0, 0, -1)
+});
 
 // Format vector for display
 const formatVector = (vec) => {
@@ -34,17 +52,118 @@ const formatVector = (vec) => {
   return `${vec.x.toFixed(2)}, ${vec.y.toFixed(2)}, ${vec.z.toFixed(2)}`;
 };
 
+// Initialize game
+const initGame = async () => {
+  try {
+    console.log("Initializing game...");
+    
+    // Initialize physics
+    const physicsManager = new PhysicsManager();
+    await physicsManager.init();
+    physics.value = markRaw(physicsManager);
+    
+    // Initialize scene
+    const sceneManager = new SceneManager(physics.value);
+    sceneManager.init(gameCanvas.value);
+    scene.value = markRaw(sceneManager);
+    
+    // Create world
+    scene.value.createPlanet();
+    scene.value.createPlatform();
+    
+    // Create player
+    const fpsController = new FPSController(scene.value, physics.value);
+    fpsController.create();
+    player.value = markRaw(fpsController);
+    
+    // Setup clock
+    clock.value = markRaw(new THREE.Clock());
+    
+    loading.value = false;
+    console.log("Game initialized successfully");
+    
+    return true;
+  } catch (error) {
+    console.error("Failed to initialize game:", error);
+    loading.value = false;
+    throw error;
+  }
+};
+
+// Animation loop
+const animate = () => {
+  if (!started.value) return;
+  
+  requestAnimationFrame(animate);
+  
+  const deltaTime = Math.min(clock.value.getDelta(), 0.1);
+  
+  // Step physics
+  physics.value.step();
+  
+  // Process collision events
+  if (player.value) {
+    physics.value.processCollisionEvents(player.value.colliderHandle, (handle, started) => {
+      // Collision callback if needed
+    });
+  }
+  
+  // Apply gravity to all dynamic bodies
+  applyGlobalGravity(deltaTime);
+  
+  // Update player
+  if (player.value) {
+    player.value.update(deltaTime);
+    
+    // Update debug info
+    debugInfo.isGrounded = player.value.isGrounded;
+    debugInfo.position.copy(player.value.getPosition());
+    debugInfo.facing.copy(player.value.getFacing());
+    debugInfo.currentSpeed = player.value.getSpeed();
+    debugInfo.isMoving = player.value.keys.forward || player.value.keys.backward || 
+                        player.value.keys.left || player.value.keys.right;
+  }
+  
+  // Update scene dynamic objects
+  scene.value.updateDynamicObjects();
+  
+  // Render
+  scene.value.render();
+  
+  frameCount.value++;
+};
+
+// Apply gravity to all bodies
+const applyGlobalGravity = (deltaTime) => {
+  if (!scene.value?.scene) return;
+  
+  // Apply gravity to player
+  if (player.value && player.value.body) {
+    physics.value.applyGravityToBody(player.value.body, deltaTime);
+  }
+  
+  // Apply gravity to all dynamic objects
+  scene.value.scene.traverse((child) => {
+    if (child.isMesh && child.userData.physicsBody) {
+      physics.value.applyGravityToBody(child.userData.physicsBody, deltaTime);
+    }
+  });
+};
+
 // Start the game
 const startGame = async () => {
   try {
-    if (!game.value) {
+    if (!scene.value) {
       errorMessage.value = "Game not initialized";
       return;
     }
     
     started.value = true;
-    game.value.start();
-    game.value.requestPointerLock();
+    clock.value.start();
+    animate();
+    requestPointerLock();
+    
+    console.log("Game started");
     
     // Add error handler for pointer lock
     document.addEventListener('pointerlockerror', (e) => {
@@ -57,12 +176,135 @@ const startGame = async () => {
   }
 };
 
+// Request pointer lock
+const requestPointerLock = () => {
+  if (scene.value?.renderer) {
+    scene.value.renderer.domElement.requestPointerLock();
+  }
+};
+
+// Input handlers
+const onKeyDown = (event) => {
+  if (!started.value || !player.value) return;
+  
+  switch (event.code) {
+    case 'KeyW':
+    case 'ArrowUp':
+      player.value.keys.forward = true;
+      break;
+    case 'KeyS':
+    case 'ArrowDown':
+      player.value.keys.backward = true;
+      break;
+    case 'KeyA':
+    case 'ArrowLeft':
+      player.value.keys.left = true;
+      break;
+    case 'KeyD':
+    case 'ArrowRight':
+      player.value.keys.right = true;
+      break;
+    case 'KeyQ':
+      player.value.keys.rollLeft = true;
+      break;
+    case 'KeyE':
+      player.value.keys.rollRight = true;
+      break;
+    case 'Space':
+      if (player.value.isGrounded) {
+        player.value.keys.jump = true;
+      }
+      break;
+    case 'ShiftLeft':
+      player.value.keys.run = true;
+      break;
+    case 'KeyO':
+      player.value.toggleCamera();
+      break;
+  }
+};
+
+const onKeyUp = (event) => {
+  if (!started.value || !player.value) return;
+  
+  switch (event.code) {
+    case 'KeyW':
+    case 'ArrowUp':
+      player.value.keys.forward = false;
+      break;
+    case 'KeyS':
+    case 'ArrowDown':
+      player.value.keys.backward = false;
+      break;
+    case 'KeyA':
+    case 'ArrowLeft':
+      player.value.keys.left = false;
+      break;
+    case 'KeyD':
+    case 'ArrowRight':
+      player.value.keys.right = false;
+      break;
+    case 'KeyQ':
+      player.value.keys.rollLeft = false;
+      break;
+    case 'KeyE':
+      player.value.keys.rollRight = false;
+      break;
+    case 'Space':
+      player.value.keys.jump = false;
+      break;
+    case 'ShiftLeft':
+      player.value.keys.run = false;
+      break;
+  }
+};
+
+const onMouseMove = (event) => {
+  if (!started.value || !player.value) return;
+  if (document.pointerLockElement !== scene.value?.renderer?.domElement) return;
+  
+  player.value.handleMouseMove(event);
+};
+
+const onPointerLockChange = () => {
+  if (document.pointerLockElement !== scene.value?.renderer?.domElement) {
+    // Reset all keys when pointer lock is lost
+    if (player.value) {
+      Object.keys(player.value.keys).forEach(key => {
+        player.value.keys[key] = false;
+      });
+    }
+  }
+};
+
+// Handle resize events
+const handleResize = () => {
+  if (scene.value) {
+    scene.value.onResize();
+  }
+  
+  // Remove inline styles from canvas to let CSS take over
+  const canvas = gameCanvas.value?.querySelector('canvas');
+  if (canvas) {
+    canvas.style.width = '';
+    canvas.style.height = '';
+  }
+};
+
+// Handle pointer lock changes with delay
+const handlePointerLockChange = () => {
+  onPointerLockChange();
+  handleResize();
+  // Add multiple delayed calls to handle Safari's async viewport updates
+  setTimeout(handleResize, 50);
+  setTimeout(handleResize, 150);
+  setTimeout(handleResize, 300);
+};
+
 // Initialize game on mount
 onMounted(async () => {
   try {
     console.log("Initializing game...");
-    
-    game.value = new Game();
     
     // Initialize with timeout
     const initTimeout = setTimeout(() => {
@@ -73,12 +315,19 @@ onMounted(async () => {
       }
     }, 8000);
     
-    await game.value.init(gameCanvas.value);
+    await initGame();
     
     clearTimeout(initTimeout);
-    loading.value = false;
     
     console.log("Game ready to start");
+    
+    // Setup event listeners
+    window.addEventListener('resize', handleResize);
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('pointerlockchange', handlePointerLockChange);
+    document.addEventListener('webkitpointerlockchange', handlePointerLockChange);
     
   } catch (e) {
     console.error("Failed to initialize game:", e);
@@ -89,10 +338,15 @@ onMounted(async () => {
 
 // Cleanup on unmount
 onBeforeUnmount(() => {
-  if (game.value) {
-    game.value.destroy();
-    game.value = null;
-  }
+  started.value = false;
+  
+  // Remove event listeners
+  window.removeEventListener('resize', handleResize);
+  document.removeEventListener('keydown', onKeyDown);
+  document.removeEventListener('keyup', onKeyUp);
+  document.removeEventListener('mousemove', onMouseMove);
+  document.removeEventListener('pointerlockchange', handlePointerLockChange);
+  document.removeEventListener('webkitpointerlockchange', handlePointerLockChange);
 });
 </script>
 
@@ -102,18 +356,38 @@ onBeforeUnmount(() => {
   padding: 0;
   overflow: hidden;
   height: 100%;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
 }
 
 .game-container {
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 100dvh;
+  height: 100%;
   overflow: hidden;
+  background-color: #111122;
 }
 
 .game-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+  background-color: #111122;
+}
+
+.game-canvas :deep(canvas) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .loading-screen, .start-screen {
