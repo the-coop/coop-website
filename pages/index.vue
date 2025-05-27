@@ -127,6 +127,10 @@ const createLocalPlayer = (spawnPosition) => {
   fpsController.create(new THREE.Vector3(0, 0, 0));
   player.value = markRaw(fpsController);
   
+  // Offset all scene objects to be relative to the player's origin
+  const negOffset = spawnPos.clone().multiplyScalar(-1);
+  recenterSceneObjects(negOffset);
+  
   console.log("Local player created with origin at:", localOrigin.value);
 };
 
@@ -272,27 +276,78 @@ const sendPlayerState = () => {
 
 // Recenter all scene objects when origin changes
 const recenterSceneObjects = (offset) => {
-  // Move all scene objects by negative offset
-  const negOffset = offset.clone().multiplyScalar(-1);
+  // Move all scene objects by the offset
   
   // Update planet
   if (scene.value.objects.planet) {
-    scene.value.objects.planet.position.add(negOffset);
-    // Update physics body if needed
+    scene.value.objects.planet.position.add(offset);
+    // Update physics body position if it has one
+    if (scene.value.objects.planetBody) {
+      const currentPos = scene.value.objects.planetBody.translation();
+      scene.value.objects.planetBody.setTranslation({
+        x: currentPos.x + offset.x,
+        y: currentPos.y + offset.y,
+        z: currentPos.z + offset.z
+      });
+    }
   }
   
   // Update platforms
   if (scene.value.objects.platform) {
-    scene.value.objects.platform.position.add(negOffset);
+    scene.value.objects.platform.position.add(offset);
+    // Update platform physics body if needed
+    if (scene.value.objects.platformBody) {
+      const currentPos = scene.value.objects.platformBody.translation();
+      scene.value.objects.platformBody.setTranslation({
+        x: currentPos.x + offset.x,
+        y: currentPos.y + offset.y,
+        z: currentPos.z + offset.z
+      });
+    }
   }
+  
+  // Update moving platform
+  if (scene.value.objects.movingPlatform) {
+    scene.value.objects.movingPlatform.position.add(offset);
+    // Update the initial position stored in userData
+    if (scene.value.objects.movingPlatform.userData) {
+      scene.value.objects.movingPlatform.userData.initialX += offset.x;
+    }
+    // Update physics body
+    if (scene.value.objects.movingPlatformBody) {
+      const currentPos = scene.value.objects.movingPlatformBody.translation();
+      scene.value.objects.movingPlatformBody.setTranslation({
+        x: currentPos.x + offset.x,
+        y: currentPos.y + offset.y,
+        z: currentPos.z + offset.z
+      });
+    }
+  }
+  
+  // Update all other scene objects (walls, ramps, rocks, etc.)
+  scene.value.scene.traverse((child) => {
+    if (child.isMesh && child.userData.physicsBody && child !== player.value?.mesh) {
+      // Update mesh position
+      child.position.add(offset);
+      
+      // Update physics body
+      const body = child.userData.physicsBody;
+      const currentPos = body.translation();
+      body.setTranslation({
+        x: currentPos.x + offset.x,
+        y: currentPos.y + offset.y,
+        z: currentPos.z + offset.z
+      });
+    }
+  });
   
   // Update all remote players
   if (playerManager.value) {
-    playerManager.value.offsetAllPlayers(negOffset);
+    playerManager.value.offsetAllPlayers(offset);
   }
   
   // Update physics gravity center
-  physics.value.gravity.center.add(negOffset);
+  physics.value.gravity.center.add(offset);
 };
 
 // Animation loop
