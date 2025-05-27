@@ -87,12 +87,7 @@ const initGame = async () => {
     scene.value.createPlanet();
     scene.value.createPlatform();
     
-    // Create player
-    const fpsController = new FPSController(scene.value, physics.value);
-    fpsController.create();
-    player.value = markRaw(fpsController);
-    
-    // Create player manager
+    // Create player manager (but not the local player yet)
     const manager = new PlayerManager(scene.value, physics.value);
     playerManager.value = markRaw(manager);
     
@@ -110,60 +105,86 @@ const initGame = async () => {
   }
 };
 
+// Create player with spawn position from server
+const createLocalPlayer = (spawnPosition) => {
+  console.log("Creating local player at:", spawnPosition);
+  
+  const spawnPos = new THREE.Vector3(
+    spawnPosition.x,
+    spawnPosition.y,
+    spawnPosition.z
+  );
+  
+  // Create player
+  const fpsController = new FPSController(scene.value, physics.value);
+  fpsController.create(spawnPos);
+  player.value = markRaw(fpsController);
+  
+  console.log("Local player created");
+};
+
 // Connect to WebSocket server
-const connectToServer = async () => {
-  try {
-    console.log("Connecting to multiplayer server...");
-    
-    const ws = new WebSocketManager(wsUrl);
-    wsManager.value = markRaw(ws);
-    
-    // Setup WebSocket callbacks
-    ws.onConnected = () => {
-      debugInfo.connected = true;
-      console.log("Connected to multiplayer server");
-    };
-    
-    ws.onDisconnected = () => {
-      debugInfo.connected = false;
-      console.log("Disconnected from multiplayer server");
-    };
-    
-    ws.onPlayerJoin = (playerId, position) => {
-      console.log(`Player joined: ${playerId}`);
-      const pos = new THREE.Vector3(position.x, position.y, position.z);
-      playerManager.value.addPlayer(playerId, pos);
-      updatePlayerCount();
-    };
-    
-    ws.onPlayerLeave = (playerId) => {
-      console.log(`Player left: ${playerId}`);
-      playerManager.value.removePlayer(playerId);
-      updatePlayerCount();
-    };
-    
-    ws.onPlayerUpdate = (playerId, state) => {
-      playerManager.value.updatePlayer(playerId, state);
-    };
-    
-    ws.onError = (error) => {
-      console.error("WebSocket error:", error);
-      errorMessage.value = "Connection error: " + error.message;
-    };
-    
-    // Connect to server
-    await ws.connect();
-    
-    // Set local player ID in player manager
-    if (ws.playerId) {
-      playerManager.value.setLocalPlayerId(ws.playerId);
+const connectToServer = () => {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log("Connecting to multiplayer server...");
+      
+      const ws = new WebSocketManager(wsUrl);
+      wsManager.value = markRaw(ws);
+      
+      // Setup WebSocket callbacks
+      ws.onConnected = () => {
+        debugInfo.connected = true;
+        console.log("Connected to multiplayer server");
+      };
+      
+      ws.onWelcome = (playerId, spawnPosition) => {
+        console.log("Welcome received with spawn position:", spawnPosition);
+        // Set local player ID in player manager
+        playerManager.value.setLocalPlayerId(playerId);
+        // Create local player with server-provided spawn position
+        createLocalPlayer(spawnPosition);
+        updatePlayerCount();
+        resolve();
+      };
+      
+      ws.onDisconnected = () => {
+        debugInfo.connected = false;
+        console.log("Disconnected from multiplayer server");
+      };
+      
+      ws.onPlayerJoin = (playerId, position) => {
+        console.log(`Player joined: ${playerId}`);
+        const pos = new THREE.Vector3(position.x, position.y, position.z);
+        playerManager.value.addPlayer(playerId, pos);
+        updatePlayerCount();
+      };
+      
+      ws.onPlayerLeave = (playerId) => {
+        console.log(`Player left: ${playerId}`);
+        playerManager.value.removePlayer(playerId);
+        updatePlayerCount();
+      };
+      
+      ws.onPlayerUpdate = (playerId, state) => {
+        playerManager.value.updatePlayer(playerId, state);
+      };
+      
+      ws.onError = (error) => {
+        console.error("WebSocket error:", error);
+        errorMessage.value = "Connection error: " + (error.message || "Unknown error");
+        reject(error);
+      };
+      
+      // Connect to server
+      ws.connect().catch(reject);
+      
+    } catch (error) {
+      console.error("Failed to connect to server:", error);
+      errorMessage.value = "Failed to connect to multiplayer server";
+      reject(error);
     }
-    
-  } catch (error) {
-    console.error("Failed to connect to server:", error);
-    errorMessage.value = "Failed to connect to multiplayer server";
-    // Continue in single player mode
-  }
+  });
 };
 
 // Update player count
@@ -269,8 +290,22 @@ const startGame = async () => {
       return;
     }
     
-    // Connect to server
-    await connectToServer();
+    // Connect to server and wait for spawn position
+    try {
+      await connectToServer();
+    } catch (error) {
+      console.error("Network connection failed, starting in single player mode");
+      // Fallback to single player mode
+      createLocalPlayer(new THREE.Vector3(0, 35, 0));
+    }
+    
+    // Wait a bit to ensure player is created
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    if (!player.value) {
+      errorMessage.value = "Failed to create player";
+      return;
+    }
     
     started.value = true;
     clock.value.start();
