@@ -233,14 +233,25 @@ const connectToServer = () => {
         console.log(`Dynamic object spawned: ${objectId}`, data);
         
         if (data.type === 'rock') {
-          // Spawn rock at the given position (already relative to our origin)
-          const pos = new THREE.Vector3(data.position.x, data.position.y, data.position.z);
-          scene.value.spawnMultiplayerRock(objectId, pos);
+          // Queue rock spawning for next frame when physics isn't stepping
+          const spawnRock = () => {
+            if (isPhysicsStepping) {
+              // Try again next frame
+              requestAnimationFrame(spawnRock);
+              return;
+            }
+            
+            // Spawn rock at the given position (already relative to our origin)
+            const pos = new THREE.Vector3(data.position.x, data.position.y, data.position.z);
+            const rock = scene.value.spawnMultiplayerRock(objectId, pos);
+            
+            // Set initial rotation if provided and rock was created
+            if (rock && data.rotation) {
+              scene.value.updateDynamicObject(objectId, { rotation: data.rotation });
+            }
+          };
           
-          // Set initial rotation if provided
-          if (data.rotation) {
-            scene.value.updateDynamicObject(objectId, { rotation: data.rotation });
-          }
+          requestAnimationFrame(spawnRock);
         }
       };
       
@@ -479,6 +490,9 @@ const recenterSceneObjects = (offset) => {
   physics.value.gravity.center.add(offset);
 };
 
+// Add physics stepping flag
+let isPhysicsStepping = false;
+
 // Animation loop
 const animate = () => {
   if (!started.value) return;
@@ -487,21 +501,30 @@ const animate = () => {
   
   const deltaTime = Math.min(clock.value.getDelta(), 0.1);
   
-  // Step physics
-  physics.value.step();
+  // Step physics with flag to prevent concurrent access
+  if (!isPhysicsStepping) {
+    isPhysicsStepping = true;
+    try {
+      physics.value.step();
+    } finally {
+      isPhysicsStepping = false;
+    }
+  }
   
   // Process collision events
-  if (player.value) {
+  if (player.value && !isPhysicsStepping) {
     physics.value.processCollisionEvents(player.value.colliderHandle, (handle, started) => {
       // Collision callback if needed
     });
   }
   
   // Apply gravity to all dynamic bodies
-  applyGlobalGravity(deltaTime);
+  if (!isPhysicsStepping) {
+    applyGlobalGravity(deltaTime);
+  }
   
   // Update player
-  if (player.value) {
+  if (player.value && !isPhysicsStepping) {
     player.value.update(deltaTime);
     
     // Update debug info
@@ -516,13 +539,18 @@ const animate = () => {
     sendPlayerState();
   }
   
+  // Remove dynamic object state sending - server controls them
+  // sendDynamicObjectStates();
+  
   // Update remote players
-  if (playerManager.value) {
+  if (playerManager.value && !isPhysicsStepping) {
     playerManager.value.update(deltaTime);
   }
   
   // Update scene dynamic objects
-  scene.value.updateDynamicObjects();
+  if (!isPhysicsStepping) {
+    scene.value.updateDynamicObjects();
+  }
   
   // Render
   scene.value.render();
@@ -637,8 +665,9 @@ const onKeyUp = (event) => {
   }
 };
 
+// Modified mouse handler to check physics stepping
 const onMouseMove = (event) => {
-  if (!started.value || !player.value) return;
+  if (!started.value || !player.value || isPhysicsStepping) return;
   if (document.pointerLockElement !== scene.value?.renderer?.domElement) return;
   
   player.value.handleMouseMove(event);
