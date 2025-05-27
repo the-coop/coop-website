@@ -155,6 +155,11 @@ const onAnimationFrame = (deltaTime) => {
     playerPosition.value.copy(fpsController.value.playerPosition);
     playerFacing.value.copy(fpsController.value.playerFacing);
     
+    // Clean up stale players every 5 seconds
+    if (frameCount.value % 300 === 0) {
+      cleanupStalePlayers();
+    }
+    
     // Debug log other player positions every second
     if (frameCount.value % 60 === 0) {
       const otherPlayerCount = Object.keys(sceneManager.value.otherPlayerMeshes).length;
@@ -171,6 +176,23 @@ const onAnimationFrame = (deltaTime) => {
   }
 };
 
+// Add cleanup function for stale players
+const cleanupStalePlayers = () => {
+  const now = Date.now();
+  const staleTimeout = 10000; // 10 seconds
+  
+  Object.entries(sceneManager.value.otherPlayerMeshes).forEach(([playerId, mesh]) => {
+    const lastUpdate = mesh.userData.lastServerUpdate || 0;
+    const timeSinceUpdate = now - lastUpdate;
+    
+    // If player hasn't been updated in 10 seconds and isn't in server state, remove them
+    if (timeSinceUpdate > staleTimeout && !serverPlayers[playerId]) {
+      console.log(`Removing stale player ${playerId} - no updates for ${timeSinceUpdate}ms`);
+      sceneManager.value.removeOtherPlayer(playerId);
+    }
+  });
+};
+
 // Setup network event handlers
 const setupNetworkHandlers = () => {
   if (!networkManager.value) return;
@@ -178,69 +200,41 @@ const setupNetworkHandlers = () => {
   networkManager.value.onInit = (message) => {
     console.log('Received init message with player ID:', message.playerId, 'and state:', Object.keys(message.state || {}));
     
+    // Store our player ID immediately BEFORE processing state
+    networkManager.value.playerId = message.playerId;
+    const ourPlayerId = message.playerId;
+    
     if (message.state) {
       Object.entries(message.state).forEach(([id, playerData]) => {
         const parsedData = parsePlayerState(playerData);
         
-        // Skip if this is our own player ID
-        if (id === message.playerId || id === networkManager.value.playerId) {
-          console.log('Skipping our own player in init state:', id);
-          
-          // Handle our own player's initial state reconciliation
-          const serverOrigin = new THREE.Vector3(...parsedData.worldOrigin);
-          if (!worldOriginOffset.value.equals(serverOrigin)) {
-            console.log('Setting our world origin from server:', serverOrigin);
-            worldOriginOffset.value.copy(serverOrigin);
-          }
-          
-          // Reconcile our own position with server
-          if (fpsController.value?.playerBody && parsedData.position) {
-            const serverWorldPos = new THREE.Vector3(...parsedData.position);
-            const localPos = serverWorldPos.clone().sub(serverOrigin);
-            
-            console.log('Reconciling our position during init - server world pos:', serverWorldPos, 'local pos:', localPos);
-            
-            fpsController.value.playerBody.setTranslation({
-              x: localPos.x,
-              y: localPos.y,
-              z: localPos.z
-            });
-            
-            // Also set velocity and rotation if provided
-            if (parsedData.velocity) {
-              fpsController.value.playerBody.setLinvel({
-                x: parsedData.velocity[0],
-                y: parsedData.velocity[1],
-                z: parsedData.velocity[2]
-              });
-            }
-            
-            if (parsedData.rotation) {
-              fpsController.value.playerBody.setRotation({
-                x: parsedData.rotation[0],
-                y: parsedData.rotation[1],
-                z: parsedData.rotation[2],
-                w: parsedData.rotation[3]
-              });
-            }
-          }
-        } else {
-          // This is another player
-          console.log(`Init other player ${id} at world pos: [${parsedData.position[0].toFixed(1)}, ${parsedData.position[1].toFixed(1)}, ${parsedData.position[2].toFixed(1)}]`);
-          
-          // Handle world origin offset for other players
-          const serverOrigin = new THREE.Vector3(...parsedData.worldOrigin);
-          if (!worldOriginOffset.value.equals(serverOrigin) && worldOriginOffset.value.length() === 0) {
-            console.log('Setting initial world origin from other player:', serverOrigin);
-            worldOriginOffset.value.copy(serverOrigin);
-          }
-          
-          // Create the other player
-          sceneManager.value.updateOtherPlayer(id, playerData, worldOriginOffset.value);
-          serverPlayers[id] = playerData;
-          console.log(`Created other player ${id} during init`);
+        // Double-check we're not creating ourselves
+        if (id === ourPlayerId || id === networkManager.value.playerId) {
+          console.warn('Init message incorrectly contains our own player data, skipping:', id);
+          return;
         }
+        
+        // This is another player
+        console.log(`Init other player ${id} at world pos: [${parsedData.position[0].toFixed(1)}, ${parsedData.position[1].toFixed(1)}, ${parsedData.position[2].toFixed(1)}]`);
+        
+        // Handle world origin offset for other players
+        const serverOrigin = new THREE.Vector3(...parsedData.worldOrigin);
+        if (!worldOriginOffset.value.equals(serverOrigin) && worldOriginOffset.value.length() === 0) {
+          console.log('Setting initial world origin from other player:', serverOrigin);
+          worldOriginOffset.value.copy(serverOrigin);
+        }
+        
+        // Create the other player
+        sceneManager.value.updateOtherPlayer(id, playerData, worldOriginOffset.value);
+        serverPlayers[id] = playerData;
+        console.log(`Created other player ${id} during init`);
       });
+    }
+    
+    // Handle our own initial world origin
+    if (!worldOriginOffset.value || worldOriginOffset.value.length() === 0) {
+      console.log('Setting default world origin for first player');
+      worldOriginOffset.value.set(0, 0, 0);
     }
     
     // Handle dynamic objects
