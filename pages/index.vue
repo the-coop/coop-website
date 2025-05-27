@@ -105,6 +105,10 @@ const initGame = async () => {
   }
 };
 
+// Add floating origin state
+const localOrigin = shallowRef(new THREE.Vector3(0, 0, 0));
+const ORIGIN_THRESHOLD = 1000; // Recenter when 1km from origin
+
 // Create player with spawn position from server
 const createLocalPlayer = (spawnPosition) => {
   console.log("Creating local player at:", spawnPosition);
@@ -115,12 +119,15 @@ const createLocalPlayer = (spawnPosition) => {
     spawnPosition.z
   );
   
-  // Create player
+  // Set initial local origin at spawn position
+  localOrigin.value = spawnPos.clone();
+  
+  // Create player at origin (0,0,0) in local space
   const fpsController = new FPSController(scene.value, physics.value);
-  fpsController.create(spawnPos);
+  fpsController.create(new THREE.Vector3(0, 0, 0));
   player.value = markRaw(fpsController);
   
-  console.log("Local player created");
+  console.log("Local player created with origin at:", localOrigin.value);
 };
 
 // Connect to WebSocket server
@@ -168,8 +175,20 @@ const connectToServer = () => {
         }, 3000);
       };
       
+      ws.onOriginUpdate = (origin) => {
+        console.log("Origin updated to:", origin);
+        // Server has recentered our origin
+        localOrigin.value.set(origin.x, origin.y, origin.z);
+        
+        // Update all remote player positions relative to new origin
+        if (playerManager.value) {
+          playerManager.value.updateAllPositionsForNewOrigin();
+        }
+      };
+      
       ws.onPlayerJoin = (playerId, position) => {
         console.log(`Player joined: ${playerId}`, position);
+        // Position is already relative to our origin from server
         const pos = new THREE.Vector3(position.x, position.y, position.z);
         playerManager.value.addPlayer(playerId, pos);
         updatePlayerCount();
@@ -216,17 +235,64 @@ const sendPlayerState = () => {
   
   lastNetworkUpdate = currentTime;
   
-  // Get player state
+  // Get player state in local coordinates
   const position = player.value.body.translation();
   const rotation = player.value.body.rotation();
   const velocity = player.value.body.linvel();
   
-  // Send to server
-  wsManager.value.sendPlayerState(
-    { x: position.x, y: position.y, z: position.z },
-    { x: rotation.x, y: rotation.y, z: rotation.z, w: rotation.w },
-    { x: velocity.x, y: velocity.y, z: velocity.z }
-  );
+  // Check if we need to recenter local origin
+  const localPos = new THREE.Vector3(position.x, position.y, position.z);
+  if (localPos.length() > ORIGIN_THRESHOLD) {
+    console.log("Recentering local origin, distance:", localPos.length());
+    
+    // Update local origin
+    localOrigin.value.add(localPos);
+    
+    // Reset player to origin
+    player.value.body.setTranslation({ x: 0, y: 0, z: 0 });
+    
+    // Update all scene objects to be relative to new origin
+    recenterSceneObjects(localPos);
+    
+    // Send position as (0,0,0) since we just recentered
+    wsManager.value.sendPlayerState(
+      { x: 0, y: 0, z: 0 },
+      { x: rotation.x, y: rotation.y, z: rotation.z, w: rotation.w },
+      { x: velocity.x, y: velocity.y, z: velocity.z }
+    );
+  } else {
+    // Send normal position update
+    wsManager.value.sendPlayerState(
+      { x: position.x, y: position.y, z: position.z },
+      { x: rotation.x, y: rotation.y, z: rotation.z, w: rotation.w },
+      { x: velocity.x, y: velocity.y, z: velocity.z }
+    );
+  }
+};
+
+// Recenter all scene objects when origin changes
+const recenterSceneObjects = (offset) => {
+  // Move all scene objects by negative offset
+  const negOffset = offset.clone().multiplyScalar(-1);
+  
+  // Update planet
+  if (scene.value.objects.planet) {
+    scene.value.objects.planet.position.add(negOffset);
+    // Update physics body if needed
+  }
+  
+  // Update platforms
+  if (scene.value.objects.platform) {
+    scene.value.objects.platform.position.add(negOffset);
+  }
+  
+  // Update all remote players
+  if (playerManager.value) {
+    playerManager.value.offsetAllPlayers(negOffset);
+  }
+  
+  // Update physics gravity center
+  physics.value.gravity.center.add(negOffset);
 };
 
 // Animation loop
