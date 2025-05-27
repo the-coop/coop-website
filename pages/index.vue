@@ -66,6 +66,7 @@ const initializeGame = async () => {
     fpsController.value = new FPSController(physicsManager.value, sceneManager.value);
     fpsController.value.createPlayer(0, PLAYER_CONFIG.SPAWN_HEIGHT, 0);
     
+    // DON'T connect to network here - wait for startGame
     return true;
   } catch (e) {
     console.error("Error initializing game:", e);
@@ -80,18 +81,22 @@ const startGame = () => {
     gameCanvas.value.requestPointerLock();
     started.value = true;
     
-    // Initialize network manager
-    networkManager.value = new NetworkManager();
-    setupNetworkHandlers();
-    
-    const config = useRuntimeConfig();
-    const wsUrl = config.public.wsUrl || 'ws://localhost:8080/ws';
-    networkManager.value.connect(wsUrl).catch(e => {
-      errorMessage.value = "Failed to connect to server: " + e.message;
-    });
-    
-    // Start sending inputs
-    setInterval(sendInputToServer, 1000 / NETWORK_CONFIG.INPUT_RATE);
+    // Initialize network manager ONLY when actually starting
+    if (!networkManager.value) {
+      networkManager.value = new NetworkManager();
+      setupNetworkHandlers();
+      
+      const config = useRuntimeConfig();
+      const wsUrl = config.public.wsUrl || 'ws://localhost:8080/ws';
+      
+      console.log('Connecting to server after game start');
+      networkManager.value.connect(wsUrl).catch(e => {
+        errorMessage.value = "Failed to connect to server: " + e.message;
+      });
+      
+      // Start sending inputs only after connection
+      setInterval(sendInputToServer, 1000 / NETWORK_CONFIG.INPUT_RATE);
+    }
     
     // Start animation loop
     sceneManager.value.startAnimationLoop(physicsManager.value, fpsController.value, onAnimationFrame);
@@ -105,10 +110,10 @@ const onAnimationFrame = (deltaTime) => {
   try {
     frameCount.value++;
     
-    // Apply gravity to all dynamic objects including other players
+    // Apply gravity to all dynamic objects INCLUDING other players BEFORE physics step
     physicsManager.value.applyGravityToScene(sceneManager.value.scene, deltaTime);
     
-    // Step physics
+    // Step physics - this moves all physics bodies
     physicsManager.value.step();
     
     // Process collision events
@@ -117,13 +122,14 @@ const onAnimationFrame = (deltaTime) => {
     // Check grounded state
     fpsController.value.checkGrounded(frameCount.value);
     
-    // Handle movement
+    // Handle movement for local player
     fpsController.value.handleAllMovement(deltaTime, frameCount.value);
     
     // Update player transform
     fpsController.value.updatePlayerTransform();
     
     // Update dynamic objects INCLUDING other players interpolation
+    // This MUST be called every frame to update other player positions
     sceneManager.value.updateDynamicObjects(
       sceneManager.value.movingPlatform?.userData?.physicsBody
     );
@@ -148,6 +154,17 @@ const onAnimationFrame = (deltaTime) => {
     // Update UI state
     playerPosition.value.copy(fpsController.value.playerPosition);
     playerFacing.value.copy(fpsController.value.playerFacing);
+    
+    // Debug log other player positions every second
+    if (frameCount.value % 60 === 0) {
+      const otherPlayerCount = Object.keys(sceneManager.value.otherPlayerMeshes).length;
+      if (otherPlayerCount > 0) {
+        console.log(`Frame ${frameCount.value}: ${otherPlayerCount} other players in scene`);
+        Object.entries(sceneManager.value.otherPlayerMeshes).forEach(([id, mesh]) => {
+          console.log(`  Player ${id}: pos [${mesh.position.x.toFixed(1)}, ${mesh.position.y.toFixed(1)}, ${mesh.position.z.toFixed(1)}]`);
+        });
+      }
+    }
   } catch (e) {
     errorMessage.value = "Error in animation loop: " + e.message;
     console.error("Error in animation loop:", e);
@@ -159,25 +176,16 @@ const setupNetworkHandlers = () => {
   if (!networkManager.value) return;
   
   networkManager.value.onInit = (message) => {
-    console.log('Received init message with state:', message.state);
+    console.log('Received init message with player ID:', message.playerId, 'and state:', Object.keys(message.state || {}));
     
     if (message.state) {
       Object.entries(message.state).forEach(([id, playerData]) => {
         const parsedData = parsePlayerState(playerData);
-        console.log(`Init player ${id} at world pos: [${parsedData.position[0].toFixed(1)}, ${parsedData.position[1].toFixed(1)}, ${parsedData.position[2].toFixed(1)}], origin: [${parsedData.worldOrigin[0].toFixed(1)}, ${parsedData.worldOrigin[1].toFixed(1)}, ${parsedData.worldOrigin[2].toFixed(1)}]`);
         
-        if (id !== networkManager.value.playerId) {
-          // Handle world origin offset for other players
-          const serverOrigin = new THREE.Vector3(...parsedData.worldOrigin);
-          if (!worldOriginOffset.value.equals(serverOrigin)) {
-            console.log('Setting initial world origin from server:', serverOrigin);
-            worldOriginOffset.value.copy(serverOrigin);
-          }
+        // Skip if this is our own player ID
+        if (id === message.playerId || id === networkManager.value.playerId) {
+          console.log('Skipping our own player in init state:', id);
           
-          // IMMEDIATELY create the other player at their current position
-          sceneManager.value.updateOtherPlayer(id, playerData, worldOriginOffset.value);
-          console.log(`Created other player ${id} during init`);
-        } else {
           // Handle our own player's initial state reconciliation
           const serverOrigin = new THREE.Vector3(...parsedData.worldOrigin);
           if (!worldOriginOffset.value.equals(serverOrigin)) {
@@ -216,6 +224,21 @@ const setupNetworkHandlers = () => {
               });
             }
           }
+        } else {
+          // This is another player
+          console.log(`Init other player ${id} at world pos: [${parsedData.position[0].toFixed(1)}, ${parsedData.position[1].toFixed(1)}, ${parsedData.position[2].toFixed(1)}]`);
+          
+          // Handle world origin offset for other players
+          const serverOrigin = new THREE.Vector3(...parsedData.worldOrigin);
+          if (!worldOriginOffset.value.equals(serverOrigin) && worldOriginOffset.value.length() === 0) {
+            console.log('Setting initial world origin from other player:', serverOrigin);
+            worldOriginOffset.value.copy(serverOrigin);
+          }
+          
+          // Create the other player
+          sceneManager.value.updateOtherPlayer(id, playerData, worldOriginOffset.value);
+          serverPlayers[id] = playerData;
+          console.log(`Created other player ${id} during init`);
         }
       });
     }
@@ -224,20 +247,30 @@ const setupNetworkHandlers = () => {
     if (message.dynamicObjects) {
       Object.entries(message.dynamicObjects).forEach(([id, objData]) => {
         sceneManager.value.createOrUpdateDynamicObject(id, objData, worldOriginOffset.value);
+        serverDynamicObjects[id] = objData;
       });
     }
   };
   
   networkManager.value.onStateUpdate = (message) => {
     const actualState = message.state || message;
-    Object.assign(serverPlayers, actualState);
     
-    // Log state update to verify it's being received
-    const playerCount = Object.keys(actualState).length;
-    console.log(`Received state update with ${playerCount} players`);
+    // Only log if we have other players
+    const otherPlayerCount = Object.keys(actualState).filter(id => id !== networkManager.value.playerId).length;
+    if (otherPlayerCount > 0) {
+      console.log(`Received state update with ${Object.keys(actualState).length} players (${otherPlayerCount} others)`);
+    }
+    
+    // Update server players state
+    Object.keys(serverPlayers).forEach(id => {
+      if (!actualState[id] && id !== networkManager.value.playerId) {
+        delete serverPlayers[id];
+      }
+    });
     
     Object.entries(actualState).forEach(([id, playerData]) => {
       if (id !== networkManager.value.playerId) {
+        serverPlayers[id] = playerData;
         sceneManager.value.updateOtherPlayer(id, playerData, worldOriginOffset.value);
       } else if (fpsController.value?.playerBody) {
         const parsedData = parsePlayerState(playerData);
@@ -248,7 +281,15 @@ const setupNetworkHandlers = () => {
     
     // Update dynamic objects
     if (message.dynamicObjects) {
+      // Clear removed objects first
+      Object.keys(serverDynamicObjects).forEach(id => {
+        if (!message.dynamicObjects[id]) {
+          delete serverDynamicObjects[id];
+        }
+      });
+      
       Object.assign(serverDynamicObjects, message.dynamicObjects);
+      
       Object.entries(message.dynamicObjects).forEach(([id, objData]) => {
         sceneManager.value.createOrUpdateDynamicObject(id, objData, worldOriginOffset.value);
       });
@@ -257,21 +298,21 @@ const setupNetworkHandlers = () => {
       Object.keys(sceneManager.value?.dynamicObjects || {}).forEach(id => {
         if (!message.dynamicObjects[id]) {
           sceneManager.value.removeDynamicObject(id);
-          delete serverDynamicObjects[id];
         }
       });
     }
     
-    // Remove players that left
+    // Remove players that are no longer in the state
     Object.keys(sceneManager.value?.otherPlayerMeshes || {}).forEach(id => {
       if (!actualState[id]) {
+        console.log('Player', id, 'no longer in state, removing');
         sceneManager.value.removeOtherPlayer(id);
-        delete serverPlayers[id];
       }
     });
   };
   
   networkManager.value.onPlayerLeft = (playerId) => {
+    console.log('Player left:', playerId);
     sceneManager.value.removeOtherPlayer(playerId);
     delete serverPlayers[playerId];
   };
@@ -414,7 +455,13 @@ onBeforeUnmount(() => {
   document.removeEventListener('mousemove', onMouseMove);
   document.removeEventListener('pointerlockchange', onPointerLockChange);
   
-  networkManager.value?.disconnect();
+  // Clean up network connection
+  if (networkManager.value) {
+    console.log('Cleaning up network connection');
+    networkManager.value.disconnect();
+    networkManager.value = null;
+  }
+  
   sceneManager.value?.cleanup();
 });
 </script>
