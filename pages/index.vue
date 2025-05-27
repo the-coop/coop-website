@@ -228,6 +228,31 @@ const connectToServer = () => {
         playerManager.value.updatePlayer(playerId, state);
       };
       
+      // Add dynamic object handlers
+      ws.onDynamicObjectSpawn = (objectId, data) => {
+        console.log(`Dynamic object spawned: ${objectId}`, data);
+        
+        if (data.type === 'rock') {
+          // Spawn rock at the given position (already relative to our origin)
+          const pos = new THREE.Vector3(data.position.x, data.position.y, data.position.z);
+          scene.value.spawnMultiplayerRock(objectId, pos);
+          
+          // Set initial rotation if provided
+          if (data.rotation) {
+            scene.value.updateDynamicObject(objectId, { rotation: data.rotation });
+          }
+        }
+      };
+      
+      ws.onDynamicObjectUpdate = (objectId, state) => {
+        scene.value.updateDynamicObject(objectId, state);
+      };
+      
+      ws.onDynamicObjectRemove = (objectId) => {
+        console.log(`Removing dynamic object: ${objectId}`);
+        scene.value.removeDynamicObject(objectId);
+      };
+      
       ws.onError = (error) => {
         console.error("WebSocket error:", error);
         errorMessage.value = "Connection error: " + (error.message || "Unknown error");
@@ -433,6 +458,18 @@ const recenterSceneObjects = (offset) => {
     }
   });
   
+  // Update all dynamic objects
+  scene.value.dynamicObjects.forEach((obj, id) => {
+    if (obj.body) {
+      const currentPos = obj.body.translation();
+      obj.body.setTranslation({
+        x: currentPos.x + offset.x,
+        y: currentPos.y + offset.y,
+        z: currentPos.z + offset.z
+      });
+    }
+  });
+  
   // Update all remote players
   if (playerManager.value) {
     playerManager.value.offsetAllPlayers(offset);
@@ -502,10 +539,17 @@ const applyGlobalGravity = (deltaTime) => {
     physics.value.applyGravityToBody(player.value.body, deltaTime);
   }
   
-  // Apply gravity to all dynamic objects
+  // Apply gravity to all dynamic objects in scene
   scene.value.scene.traverse((child) => {
     if (child.isMesh && child.userData.physicsBody) {
       physics.value.applyGravityToBody(child.userData.physicsBody, deltaTime);
+    }
+  });
+  
+  // Also apply to tracked dynamic objects to ensure they're included
+  scene.value.dynamicObjects.forEach((obj) => {
+    if (obj.body) {
+      physics.value.applyGravityToBody(obj.body, deltaTime);
     }
   });
 };
