@@ -50,7 +50,7 @@ const playerManager = shallowRef(null);
 
 // Network update throttling
 let lastNetworkUpdate = 0;
-const networkUpdateInterval = 50; // Send updates every 50ms (20 Hz)
+const networkUpdateInterval = 50 // Send updates every 50ms (20 Hz)
 
 const debugInfo = reactive({
   isGrounded: false,
@@ -290,6 +290,9 @@ const startGame = async () => {
       return;
     }
     
+    // Request pointer lock immediately after user click
+    requestPointerLock();
+    
     // Connect to server and wait for spawn position
     try {
       await connectToServer();
@@ -310,7 +313,6 @@ const startGame = async () => {
     started.value = true;
     clock.value.start();
     animate();
-    requestPointerLock();
     
     console.log("Game started");
     
