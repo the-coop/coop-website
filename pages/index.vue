@@ -12,6 +12,8 @@
       <div>Moving: {{ debugInfo.isMoving }}</div>
       <div>Speed: {{ debugInfo.currentSpeed?.toFixed(2) }}</div>
       <div>Facing: {{ formatVector(debugInfo.facing) }}</div>
+      <div>Connected: {{ debugInfo.connected }}</div>
+      <div>Players Online: {{ debugInfo.playersOnline }}</div>
     </div>
   </div>
 </template>
@@ -23,6 +25,12 @@ import RAPIER from '@dimforge/rapier3d-compat';
 import { PhysicsManager } from '../lib/physics.js';
 import { SceneManager } from '../lib/scene.js';
 import { FPSController } from '../lib/fpsController.js';
+import { WebSocketManager } from '../lib/network.js';
+import { PlayerManager } from '../lib/players.js';
+
+// Get WebSocket URL from runtime config
+const config = useRuntimeConfig();
+const wsUrl = config.public.wsUrl || 'ws://localhost:8080/ws';
 
 // Refs
 const gameCanvas = ref(null);
@@ -37,13 +45,21 @@ const scene = shallowRef(null);
 const player = shallowRef(null);
 const clock = shallowRef(null);
 const frameCount = ref(0);
+const wsManager = shallowRef(null);
+const playerManager = shallowRef(null);
+
+// Network update throttling
+let lastNetworkUpdate = 0;
+const networkUpdateInterval = 50; // Send updates every 50ms (20 Hz)
 
 const debugInfo = reactive({
   isGrounded: false,
   position: new THREE.Vector3(),
   isMoving: false,
   currentSpeed: 0,
-  facing: new THREE.Vector3(0, 0, -1)
+  facing: new THREE.Vector3(0, 0, -1),
+  connected: false,
+  playersOnline: 0
 });
 
 // Format vector for display
@@ -76,6 +92,10 @@ const initGame = async () => {
     fpsController.create();
     player.value = markRaw(fpsController);
     
+    // Create player manager
+    const manager = new PlayerManager(scene.value, physics.value);
+    playerManager.value = markRaw(manager);
+    
     // Setup clock
     clock.value = markRaw(new THREE.Clock());
     
@@ -88,6 +108,89 @@ const initGame = async () => {
     loading.value = false;
     throw error;
   }
+};
+
+// Connect to WebSocket server
+const connectToServer = async () => {
+  try {
+    console.log("Connecting to multiplayer server...");
+    
+    const ws = new WebSocketManager(wsUrl);
+    wsManager.value = markRaw(ws);
+    
+    // Setup WebSocket callbacks
+    ws.onConnected = () => {
+      debugInfo.connected = true;
+      console.log("Connected to multiplayer server");
+    };
+    
+    ws.onDisconnected = () => {
+      debugInfo.connected = false;
+      console.log("Disconnected from multiplayer server");
+    };
+    
+    ws.onPlayerJoin = (playerId, position) => {
+      console.log(`Player joined: ${playerId}`);
+      const pos = new THREE.Vector3(position.x, position.y, position.z);
+      playerManager.value.addPlayer(playerId, pos);
+      updatePlayerCount();
+    };
+    
+    ws.onPlayerLeave = (playerId) => {
+      console.log(`Player left: ${playerId}`);
+      playerManager.value.removePlayer(playerId);
+      updatePlayerCount();
+    };
+    
+    ws.onPlayerUpdate = (playerId, state) => {
+      playerManager.value.updatePlayer(playerId, state);
+    };
+    
+    ws.onError = (error) => {
+      console.error("WebSocket error:", error);
+      errorMessage.value = "Connection error: " + error.message;
+    };
+    
+    // Connect to server
+    await ws.connect();
+    
+    // Set local player ID in player manager
+    if (ws.playerId) {
+      playerManager.value.setLocalPlayerId(ws.playerId);
+    }
+    
+  } catch (error) {
+    console.error("Failed to connect to server:", error);
+    errorMessage.value = "Failed to connect to multiplayer server";
+    // Continue in single player mode
+  }
+};
+
+// Update player count
+const updatePlayerCount = () => {
+  debugInfo.playersOnline = playerManager.value.getPlayerCount() + 1; // +1 for local player
+};
+
+// Send player state to server
+const sendPlayerState = () => {
+  if (!wsManager.value?.connected || !player.value?.body) return;
+  
+  const currentTime = performance.now();
+  if (currentTime - lastNetworkUpdate < networkUpdateInterval) return;
+  
+  lastNetworkUpdate = currentTime;
+  
+  // Get player state
+  const position = player.value.body.translation();
+  const rotation = player.value.body.rotation();
+  const velocity = player.value.body.linvel();
+  
+  // Send to server
+  wsManager.value.sendPlayerState(
+    { x: position.x, y: position.y, z: position.z },
+    { x: rotation.x, y: rotation.y, z: rotation.z, w: rotation.w },
+    { x: velocity.x, y: velocity.y, z: velocity.z }
+  );
 };
 
 // Animation loop
@@ -122,6 +225,14 @@ const animate = () => {
     debugInfo.currentSpeed = player.value.getSpeed();
     debugInfo.isMoving = player.value.keys.forward || player.value.keys.backward || 
                         player.value.keys.left || player.value.keys.right;
+    
+    // Send player state to server
+    sendPlayerState();
+  }
+  
+  // Update remote players
+  if (playerManager.value) {
+    playerManager.value.update(deltaTime);
   }
   
   // Update scene dynamic objects
@@ -157,6 +268,9 @@ const startGame = async () => {
       errorMessage.value = "Game not initialized";
       return;
     }
+    
+    // Connect to server
+    await connectToServer();
     
     started.value = true;
     clock.value.start();
@@ -339,6 +453,16 @@ onMounted(async () => {
 // Cleanup on unmount
 onBeforeUnmount(() => {
   started.value = false;
+  
+  // Disconnect from server
+  if (wsManager.value) {
+    wsManager.value.disconnect();
+  }
+  
+  // Clear all remote players
+  if (playerManager.value) {
+    playerManager.value.clear();
+  }
   
   // Remove event listeners
   window.removeEventListener('resize', handleResize);
