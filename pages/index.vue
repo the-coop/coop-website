@@ -3,17 +3,34 @@
     <div ref="gameCanvas" class="game-canvas"></div>
     <div v-if="loading" class="loading-screen">Loading physics engine...</div>
     <div v-if="!started && !loading" class="start-screen">
-      <button @click="startGame" class="start-button">Start Game</button>
+      <div class="menu-container">
+        <h1 class="game-title">Conquest</h1>
+        <div class="menu-buttons">
+          <button @click="startCampaign" class="menu-button campaign-button">
+            <span class="button-title">Campaign</span>
+            <span class="button-description">Story mode</span>
+          </button>
+          <button @click="startSandbox" class="menu-button sandbox-button">
+            <span class="button-title">Sandbox</span>
+            <span class="button-description">Free play</span>
+          </button>
+          <button @click="startMultiplayer" class="menu-button multiplayer-button">
+            <span class="button-title">Multiplayer</span>
+            <span class="button-description">Play online</span>
+          </button>
+        </div>
+      </div>
     </div>
     <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
     <div class="debug-info" v-if="started && showDebug">
+      <div>Mode: {{ gameMode }}</div>
       <div>Grounded: {{ debugInfo.isGrounded }}</div>
       <div>Position: {{ formatVector(debugInfo.position) }}</div>
       <div>Moving: {{ debugInfo.isMoving }}</div>
       <div>Speed: {{ debugInfo.currentSpeed?.toFixed(2) }}</div>
       <div>Facing: {{ formatVector(debugInfo.facing) }}</div>
-      <div>Connected: {{ debugInfo.connected }}</div>
-      <div>Players Online: {{ debugInfo.playersOnline }}</div>
+      <div v-if="gameMode === 'multiplayer'">Connected: {{ debugInfo.connected }}</div>
+      <div v-if="gameMode === 'multiplayer'">Players Online: {{ debugInfo.playersOnline }}</div>
     </div>
   </div>
 </template>
@@ -61,6 +78,9 @@ const debugInfo = reactive({
   connected: false,
   playersOnline: 0
 });
+
+// Add game mode ref
+const gameMode = ref('');
 
 // Format vector for display
 const formatVector = (vec) => {
@@ -230,8 +250,80 @@ const updatePlayerCount = () => {
   debugInfo.playersOnline = playerManager.value.getPlayerCount() + 1; // +1 for local player
 };
 
+// Start the game with different modes
+const startCampaign = async () => {
+  gameMode.value = 'campaign';
+  await startGameWithMode(false);
+};
+
+const startSandbox = async () => {
+  gameMode.value = 'sandbox';
+  await startGameWithMode(false);
+};
+
+const startMultiplayer = async () => {
+  gameMode.value = 'multiplayer';
+  await startGameWithMode(true);
+};
+
+// Modified start game function
+const startGameWithMode = async (connectNetwork) => {
+  try {
+    if (!scene.value) {
+      errorMessage.value = "Game not initialized";
+      return;
+    }
+    
+    // Set game mode in scene manager
+    scene.value.setGameMode(gameMode.value);
+    
+    // Request pointer lock immediately after user click
+    requestPointerLock();
+    
+    if (connectNetwork) {
+      // Connect to server and wait for spawn position
+      try {
+        await connectToServer();
+      } catch (error) {
+        console.error("Network connection failed, starting in single player mode");
+        // Fallback to single player mode
+        createLocalPlayer(new THREE.Vector3(0, 35, 0));
+      }
+    } else {
+      // Start offline mode
+      createLocalPlayer(new THREE.Vector3(0, 35, 0));
+      debugInfo.connected = false;
+      debugInfo.playersOnline = 1;
+    }
+    
+    // Wait a bit to ensure player is created
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    if (!player.value) {
+      errorMessage.value = "Failed to create player";
+      return;
+    }
+    
+    started.value = true;
+    clock.value.start();
+    animate();
+    
+    console.log(`Game started in ${gameMode.value} mode`);
+    
+    // Add error handler for pointer lock
+    document.addEventListener('pointerlockerror', (e) => {
+      console.warn('Pointer lock error:', e);
+    }, { once: true });
+    
+  } catch (e) {
+    errorMessage.value = "Error starting game: " + e.message;
+    console.error("Error starting game:", e);
+  }
+};
+
 // Send player state to server
 const sendPlayerState = () => {
+  if (gameMode.value !== 'multiplayer') return;
   if (!wsManager.value?.connected || !player.value?.body) return;
   
   const currentTime = performance.now();
@@ -416,51 +508,6 @@ const applyGlobalGravity = (deltaTime) => {
       physics.value.applyGravityToBody(child.userData.physicsBody, deltaTime);
     }
   });
-};
-
-// Start the game
-const startGame = async () => {
-  try {
-    if (!scene.value) {
-      errorMessage.value = "Game not initialized";
-      return;
-    }
-    
-    // Request pointer lock immediately after user click
-    requestPointerLock();
-    
-    // Connect to server and wait for spawn position
-    try {
-      await connectToServer();
-    } catch (error) {
-      console.error("Network connection failed, starting in single player mode");
-      // Fallback to single player mode
-      createLocalPlayer(new THREE.Vector3(0, 35, 0));
-    }
-    
-    // Wait a bit to ensure player is created
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    if (!player.value) {
-      errorMessage.value = "Failed to create player";
-      return;
-    }
-    
-    started.value = true;
-    clock.value.start();
-    animate();
-    
-    console.log("Game started");
-    
-    // Add error handler for pointer lock
-    document.addEventListener('pointerlockerror', (e) => {
-      console.warn('Pointer lock error:', e);
-    }, { once: true });
-    
-  } catch (e) {
-    errorMessage.value = "Error starting game: " + e.message;
-    console.error("Error starting game:", e);
-  }
 };
 
 // Request pointer lock
@@ -704,19 +751,83 @@ onBeforeUnmount(() => {
   font-size: 24px;
 }
 
-.start-button {
-  padding: 15px 30px;
-  font-size: 20px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+.menu-container {
+  text-align: center;
+  padding: 20px;
 }
 
-.start-button:hover {
-  background-color: #45a049;
+.game-title {
+  font-size: 48px;
+  margin-bottom: 40px;
+  color: #ffffff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.menu-button {
+  width: 100%;
+  padding: 20px 30px;
+  font-size: 18px;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.button-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.button-description {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.campaign-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.campaign-button:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.sandbox-button {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.sandbox-button:hover {
+  background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.multiplayer-button {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.multiplayer-button:hover {
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
 .debug-info {
