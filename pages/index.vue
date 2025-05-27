@@ -103,9 +103,12 @@ const initGame = async () => {
     sceneManager.init(gameCanvas.value);
     scene.value = markRaw(sceneManager);
     
-    // Create world
-    scene.value.createPlanet();
-    scene.value.createPlatform();
+    // Don't create world here for multiplayer - wait for server level data
+    if (!gameMode.value || gameMode.value !== 'multiplayer') {
+      // Create world for single player modes
+      scene.value.createPlanet();
+      scene.value.createPlatform();
+    }
     
     // Create player manager (but not the local player yet)
     const manager = new PlayerManager(scene.value, physics.value);
@@ -268,6 +271,12 @@ const connectToServer = () => {
         console.error("WebSocket error:", error);
         errorMessage.value = "Connection error: " + (error.message || "Unknown error");
         reject(error);
+      };
+      
+      // Add level data handler
+      ws.onLevelData = (levelObjects) => {
+        console.log("Building level from server data");
+        scene.value.buildLevelFromData(levelObjects);
       };
       
       // Connect to server
@@ -539,8 +548,8 @@ const animate = () => {
     sendPlayerState();
   }
   
-  // Remove dynamic object state sending - server controls them
-  // sendDynamicObjectStates();
+  // Remove dynamic object state sending - server controls them now
+  // sendDynamicObjectStates(); // REMOVED
   
   // Update remote players
   if (playerManager.value && !isPhysicsStepping) {
