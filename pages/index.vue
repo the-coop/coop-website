@@ -140,9 +140,7 @@ const connectToServer = () => {
       
       ws.onWelcome = (playerId, spawnPosition) => {
         console.log("Welcome received with spawn position:", spawnPosition);
-        // Set local player ID in player manager
         playerManager.value.setLocalPlayerId(playerId);
-        // Create local player with server-provided spawn position
         createLocalPlayer(spawnPosition);
         updatePlayerCount();
         resolve();
@@ -150,12 +148,28 @@ const connectToServer = () => {
       
       ws.onDisconnected = () => {
         debugInfo.connected = false;
+        debugInfo.playersOnline = 1; // Only local player
         console.log("Disconnected from multiplayer server");
+      };
+      
+      ws.onConnectionLost = () => {
+        console.log("Connection lost unexpectedly");
+        errorMessage.value = "Connection to server lost. Playing in single player mode.";
+        
+        // Clear all remote players
+        if (playerManager.value) {
+          playerManager.value.clear();
+          updatePlayerCount();
+        }
+        
+        // Clear error message after a few seconds
+        setTimeout(() => {
+          errorMessage.value = '';
+        }, 3000);
       };
       
       ws.onPlayerJoin = (playerId, position) => {
         console.log(`Player joined: ${playerId}`, position);
-        // Convert position object to THREE.Vector3
         const pos = new THREE.Vector3(position.x, position.y, position.z);
         playerManager.value.addPlayer(playerId, pos);
         updatePlayerCount();
@@ -495,11 +509,13 @@ onBeforeUnmount(() => {
   // Disconnect from server
   if (wsManager.value) {
     wsManager.value.disconnect();
+    wsManager.value = null;
   }
   
   // Clear all remote players
   if (playerManager.value) {
     playerManager.value.clear();
+    playerManager.value = null;
   }
   
   // Remove event listeners
