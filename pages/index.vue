@@ -128,6 +128,15 @@ const initGame = async () => {
 const localOrigin = shallowRef(new THREE.Vector3(0, 0, 0));
 const ORIGIN_THRESHOLD = 1000; // Recenter when 1km from origin
 
+// Add interaction state
+const interactionState = reactive({
+  lastPushTime: 0,
+  pushCooldown: 100, // ms between pushes
+  pushForce: 15.0,
+  interactionRange: 3.0,
+  ownedObjects: new Map() // Track objects we own
+});
+
 // Connect to WebSocket server
 const connectToServer = () => {
   return new Promise((resolve, reject) => {
@@ -545,6 +554,32 @@ const recenterSceneObjects = (offset) => {
   physics.value.gravity.center.add(negOffset);
 };
 
+// Apply gravity to all dynamic bodies
+const applyGlobalGravity = (deltaTime) => {
+  if (!physics.value || !scene.value) return;
+  
+  // Apply gravity to all dynamic objects
+  scene.value.dynamicObjects.forEach((obj, id) => {
+    if (obj.body && gameMode.value !== 'multiplayer') {
+      // Only apply gravity to local physics bodies in single-player modes
+      physics.value.applyGravityToBody(obj.body, deltaTime);
+    }
+  });
+  
+  // Apply gravity to any other dynamic bodies in the scene
+  scene.value.scene.traverse((child) => {
+    if (child.isMesh && child.userData.physicsBody && 
+        child !== player.value?.mesh && 
+        !scene.value.dynamicObjects.has(child.userData?.objectId)) {
+      // Check if it's a dynamic body
+      const body = child.userData.physicsBody;
+      if (body && body.bodyType && body.bodyType() === 0) { // 0 = Dynamic body type
+        physics.value.applyGravityToBody(body, deltaTime);
+      }
+    }
+  });
+};
+
 // Add physics stepping flag
 let isPhysicsStepping = false;
 
@@ -607,39 +642,90 @@ const animate = () => {
     scene.value.updateDynamicObjects();
   }
   
+  // Update ownership
+  updateOwnership();
+  
   // Render
   scene.value.render();
   
   frameCount.value++;
 };
 
-// Apply gravity to all bodies
-const applyGlobalGravity = (deltaTime) => {
-  if (!scene.value?.scene) return;
+// Check for pushable objects in front of player
+const checkForPushableObject = () => {
+  if (!player.value || !scene.value) return null;
   
-  // Apply gravity to player
-  if (player.value && player.value.body) {
-    physics.value.applyGravityToBody(player.value.body, deltaTime);
-  }
+  const playerPos = player.value.getPosition();
+  const playerDir = player.value.getFacing();
   
-  // In multiplayer, server controls dynamic object physics
-  if (gameMode.value === 'multiplayer') {
-    return; // Don't apply gravity to dynamic objects in multiplayer
-  }
+  let closestObject = null;
+  let closestDistance = interactionState.interactionRange;
   
-  // Only apply gravity to dynamic objects in single player modes
-  scene.value.scene.traverse((child) => {
-    if (child.isMesh && child.userData.physicsBody) {
-      physics.value.applyGravityToBody(child.userData.physicsBody, deltaTime);
+  // Check all dynamic objects
+  scene.value.dynamicObjects.forEach((obj, id) => {
+    if (obj.mesh && obj.type === 'rock') {
+      const objPos = obj.mesh.position;
+      const toObject = objPos.clone().sub(playerPos);
+      const distance = toObject.length();
+      
+      // Check if within range
+      if (distance < closestDistance) {
+        // Check if in front of player (dot product)
+        const dot = toObject.normalize().dot(playerDir);
+        if (dot > 0.5) { // Within ~60 degree cone
+          closestObject = { id, obj, distance, position: objPos };
+          closestDistance = distance;
+        }
+      }
     }
   });
   
-  // Also apply to tracked dynamic objects in single player
-  scene.value.dynamicObjects.forEach((obj) => {
-    if (obj.body) {
-      physics.value.applyGravityToBody(obj.body, deltaTime);
+  return closestObject;
+};
+
+// Push object
+const pushObject = (objectInfo) => {
+  if (!wsManager.value?.connected || !player.value) return;
+  
+  const currentTime = Date.now();
+  if (currentTime - interactionState.lastPushTime < interactionState.pushCooldown) {
+    return;
+  }
+  
+  interactionState.lastPushTime = currentTime;
+  
+  // Calculate push force
+  const playerPos = player.value.getPosition();
+  const playerDir = player.value.getFacing();
+  const playerVel = player.value.getVelocity();
+  
+  // Base force in player's facing direction
+  let pushForce = playerDir.clone().multiplyScalar(interactionState.pushForce);
+  
+  // Add player's velocity for momentum transfer
+  pushForce.add(playerVel.clone().multiplyScalar(0.5));
+  
+  // Calculate contact point (simplified - use player position)
+  const contactPoint = playerPos.clone().sub(objectInfo.position);
+  
+  // Send push request
+  wsManager.value.sendPushObject(objectInfo.id, pushForce, contactPoint);
+  
+  console.log(`Pushing object ${objectInfo.id} with force:`, pushForce);
+};
+
+// Update ownership expiry
+const updateOwnership = () => {
+  const now = Date.now();
+  const expired = [];
+  
+  interactionState.ownedObjects.forEach((expiry, objectId) => {
+    if (expiry <= now) {
+      expired.push(objectId);
     }
   });
+  
+  expired.forEach(id => interactionState.ownedObjects.delete(id));
 };
 
 // Request pointer lock
@@ -687,6 +773,13 @@ const onKeyDown = (event) => {
     case 'KeyO':
       player.value.toggleCamera();
       break;
+    case 'KeyF':
+      // Push/interact key
+      const pushableObject = checkForPushableObject();
+      if (pushableObject) {
+        pushObject(pushableObject);
+      }
+      break;
   }
 };
 
@@ -731,6 +824,18 @@ const onMouseMove = (event) => {
   if (document.pointerLockElement !== scene.value?.renderer?.domElement) return;
   
   player.value.handleMouseMove(event);
+};
+
+const onMouseDown = (event) => {
+  if (!started.value || !player.value) return;
+  if (document.pointerLockElement !== scene.value?.renderer?.domElement) return;
+  
+  if (event.button === 0) { // Left click
+    const pushableObject = checkForPushableObject();
+    if (pushableObject) {
+      pushObject(pushableObject);
+    }
+  }
 };
 
 const onPointerLockChange = () => {
@@ -795,6 +900,7 @@ onMounted(async () => {
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('pointerlockchange', handlePointerLockChange);
     document.addEventListener('webkitpointerlockchange', handlePointerLockChange);
+    document.addEventListener('mousedown', onMouseDown);
     
   } catch (e) {
     console.error("Failed to initialize game:", e);
@@ -826,6 +932,7 @@ onBeforeUnmount(() => {
   document.removeEventListener('mousemove', onMouseMove);
   document.removeEventListener('pointerlockchange', handlePointerLockChange);
   document.removeEventListener('webkitpointerlockchange', handlePointerLockChange);
+  document.removeEventListener('mousedown', onMouseDown);
 });
 </script>
 
