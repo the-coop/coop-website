@@ -128,30 +128,6 @@ const initGame = async () => {
 const localOrigin = shallowRef(new THREE.Vector3(0, 0, 0));
 const ORIGIN_THRESHOLD = 1000; // Recenter when 1km from origin
 
-// Create player with spawn position from server
-const createLocalPlayer = (spawnPosition) => {
-  console.log("Creating local player at:", spawnPosition);
-  
-  const spawnPos = new THREE.Vector3(
-    spawnPosition.x,
-    spawnPosition.y,
-    spawnPosition.z
-  );
-  
-  // Set initial local origin at spawn position
-  localOrigin.value = spawnPos.clone();
-  
-  // Create FPS controller
-  const fpsController = new FPSController(scene.value, physics.value);
-  
-  // Create player at origin (0,0,0) in local space
-  fpsController.create(new THREE.Vector3(0, 0, 0));
-  player.value = markRaw(fpsController);
-  
-  console.log("Local player created with origin at:", localOrigin.value);
-  console.log("Player body position:", player.value.body?.translation());
-};
-
 // Connect to WebSocket server
 const connectToServer = () => {
   return new Promise((resolve, reject) => {
@@ -170,7 +146,10 @@ const connectToServer = () => {
       ws.onWelcome = (playerId, spawnPosition) => {
         console.log("Welcome received with spawn position:", spawnPosition);
         playerManager.value.setLocalPlayerId(playerId);
-        createLocalPlayer(spawnPosition);
+        
+        // Store spawn position for later use after level is built
+        scene.value.multiplayerSpawnPosition = spawnPosition;
+        
         updatePlayerCount();
         resolve();
       };
@@ -231,35 +210,31 @@ const connectToServer = () => {
         console.log(`Dynamic object spawned: ${objectId}`, data);
         
         if (data.type === 'rock') {
-          // Queue rock spawning for next frame when physics isn't stepping
-          const spawnRock = () => {
-            if (isPhysicsStepping) {
-              // Try again next frame
-              requestAnimationFrame(spawnRock);
-              return;
-            }
-            
-            // Spawn rock at the given position (already relative to our origin)
-            // Since server sends positions relative to our origin, and our origin is at spawn position,
-            // we need to offset by our spawn position
-            const worldPos = new THREE.Vector3(
-              data.position.x + localOrigin.value.x,
-              data.position.y + localOrigin.value.y,
-              data.position.z + localOrigin.value.z
-            );
-            const rock = scene.value.spawnMultiplayerRock(objectId, worldPos);
-            
-            // Set initial rotation if provided and rock was created
-            if (rock && data.rotation) {
-              scene.value.updateDynamicObject(objectId, { rotation: data.rotation });
-            }
-          };
+          // Position from server is relative to our origin
+          const rockPos = new THREE.Vector3(
+            data.position.x,
+            data.position.y,
+            data.position.z
+          );
           
-          requestAnimationFrame(spawnRock);
+          console.log(`Creating rock ${objectId} at relative position:`, rockPos);
+          
+          const rock = scene.value.spawnMultiplayerRock(objectId, rockPos, data.scale || 1.0);
+          
+          // Set initial rotation if provided
+          if (rock && data.rotation) {
+            scene.value.updateDynamicObject(objectId, { 
+              rotation: data.rotation
+            });
+          }
         }
       };
       
       ws.onDynamicObjectUpdate = (objectId, state) => {
+        // Log every 60th update to avoid spam
+        if (frameCount.value % 60 === 0) {
+          console.log(`Rock ${objectId} update - pos: (${state.position.x.toFixed(2)}, ${state.position.y.toFixed(2)}, ${state.position.z.toFixed(2)})`);
+        }
         scene.value.updateDynamicObject(objectId, state);
       };
       
@@ -277,8 +252,25 @@ const connectToServer = () => {
       // Add level data handler
       ws.onLevelData = (levelObjects) => {
         console.log("Building level from server data");
-        // For multiplayer, build level at server positions (don't offset yet)
+        // For multiplayer, build level at server positions
         scene.value.buildLevelFromData(levelObjects);
+        
+        // Now create player
+        if (scene.value.multiplayerSpawnPosition) {
+          const spawnPos = new THREE.Vector3(
+            scene.value.multiplayerSpawnPosition.x,
+            scene.value.multiplayerSpawnPosition.y,
+            scene.value.multiplayerSpawnPosition.z
+          );
+          
+          // Create player at spawn position
+          createLocalPlayer(spawnPos);
+          
+          // Don't set local origin or recenter at start - keep everything at server positions
+          localOrigin.value.set(0, 0, 0);
+          
+          console.log("Player created at server position:", spawnPos);
+        }
       };
       
       // Connect to server
@@ -393,6 +385,20 @@ const startGameWithMode = async (connectNetwork) => {
   }
 };
 
+// Create local player helper
+const createLocalPlayer = (spawnPosition) => {
+  if (!scene.value || !physics.value) {
+    console.error("Cannot create player: scene or physics not initialized");
+    return;
+  }
+  
+  const fpsController = new FPSController(scene.value, physics.value);
+  fpsController.create(spawnPosition);
+  player.value = markRaw(fpsController);
+  
+  console.log("Player created at:", spawnPosition);
+};
+
 // Send player state to server
 const sendPlayerState = () => {
   if (gameMode.value !== 'multiplayer') return;
@@ -443,13 +449,16 @@ const recenterSceneObjects = (offset) => {
   // Negate the offset to move scene in opposite direction
   const negOffset = offset.clone().multiplyScalar(-1);
   
-  // Move all scene objects by the negated offset
+  console.log("Recentering scene objects by offset:", negOffset);
+  
+  // In multiplayer, we need to keep physics bodies in sync with visuals
+  // The physics simulation runs in local space, so we need to move physics bodies too
   
   // Update planet
   if (scene.value.objects.planet) {
     scene.value.objects.planet.position.add(negOffset);
-    // Update physics body position if it has one
-    if (scene.value.objects.planetBody) {
+    // Update physics body position to match visual
+    if (scene.value.objects.planetBody && gameMode.value === 'multiplayer') {
       const currentPos = scene.value.objects.planetBody.translation();
       scene.value.objects.planetBody.setTranslation({
         x: currentPos.x + negOffset.x,
@@ -462,8 +471,8 @@ const recenterSceneObjects = (offset) => {
   // Update platforms
   if (scene.value.objects.platform) {
     scene.value.objects.platform.position.add(negOffset);
-    // Update platform physics body if needed
-    if (scene.value.objects.platformBody) {
+    // Update platform physics body to match visual
+    if (scene.value.objects.platformBody && gameMode.value === 'multiplayer') {
       const currentPos = scene.value.objects.platformBody.translation();
       scene.value.objects.platformBody.setTranslation({
         x: currentPos.x + negOffset.x,
@@ -481,7 +490,7 @@ const recenterSceneObjects = (offset) => {
       scene.value.objects.movingPlatform.userData.initialX += negOffset.x;
     }
     // Update physics body
-    if (scene.value.objects.movingPlatformBody) {
+    if (scene.value.objects.movingPlatformBody && gameMode.value === 'multiplayer') {
       const currentPos = scene.value.objects.movingPlatformBody.translation();
       scene.value.objects.movingPlatformBody.setTranslation({
         x: currentPos.x + negOffset.x,
@@ -493,30 +502,27 @@ const recenterSceneObjects = (offset) => {
   
   // Update all other scene objects (walls, ramps, rocks, etc.)
   scene.value.scene.traverse((child) => {
-    if (child.isMesh && child.userData.physicsBody && child !== player.value?.mesh) {
+    if (child.isMesh && child.userData.physicsBody && child !== player.value?.mesh && !scene.value.dynamicObjects.has(child.userData?.objectId)) {
       // Update mesh position
       child.position.add(negOffset);
       
-      // Update physics body
-      const body = child.userData.physicsBody;
-      const currentPos = body.translation();
-      body.setTranslation({
-        x: currentPos.x + negOffset.x,
-        y: currentPos.y + negOffset.y,
-        z: currentPos.z + negOffset.z
-      });
+      // Update physics body in multiplayer
+      if (gameMode.value === 'multiplayer') {
+        const body = child.userData.physicsBody;
+        const currentPos = body.translation();
+        body.setTranslation({
+          x: currentPos.x + negOffset.x,
+          y: currentPos.y + negOffset.y,
+          z: currentPos.z + negOffset.z
+        });
+      }
     }
   });
   
-  // Update all dynamic objects
+  // Update all dynamic objects - visual only in multiplayer
   scene.value.dynamicObjects.forEach((obj, id) => {
-    if (obj.body) {
-      const currentPos = obj.body.translation();
-      obj.body.setTranslation({
-        x: currentPos.x + negOffset.x,
-        y: currentPos.y + negOffset.y,
-        z: currentPos.z + negOffset.z
-      });
+    if (obj.mesh) {
+      obj.mesh.position.add(negOffset);
     }
   });
   
@@ -524,6 +530,9 @@ const recenterSceneObjects = (offset) => {
   if (playerManager.value) {
     playerManager.value.offsetAllPlayers(negOffset);
   }
+  
+  // Update gravity center to stay relative
+  physics.value.gravity.center.add(negOffset);
 };
 
 // Add physics stepping flag
@@ -603,14 +612,19 @@ const applyGlobalGravity = (deltaTime) => {
     physics.value.applyGravityToBody(player.value.body, deltaTime);
   }
   
-  // Apply gravity to all dynamic objects in scene
+  // In multiplayer, server controls dynamic object physics
+  if (gameMode.value === 'multiplayer') {
+    return; // Don't apply gravity to dynamic objects in multiplayer
+  }
+  
+  // Only apply gravity to dynamic objects in single player modes
   scene.value.scene.traverse((child) => {
     if (child.isMesh && child.userData.physicsBody) {
       physics.value.applyGravityToBody(child.userData.physicsBody, deltaTime);
     }
   });
   
-  // Also apply to tracked dynamic objects to ensure they're included
+  // Also apply to tracked dynamic objects in single player
   scene.value.dynamicObjects.forEach((obj) => {
     if (obj.body) {
       physics.value.applyGravityToBody(obj.body, deltaTime);
