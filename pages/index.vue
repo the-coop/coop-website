@@ -141,16 +141,15 @@ const createLocalPlayer = (spawnPosition) => {
   // Set initial local origin at spawn position
   localOrigin.value = spawnPos.clone();
   
-  // Create player at origin (0,0,0) in local space
+  // Create FPS controller
   const fpsController = new FPSController(scene.value, physics.value);
+  
+  // Create player at origin (0,0,0) in local space
   fpsController.create(new THREE.Vector3(0, 0, 0));
   player.value = markRaw(fpsController);
   
-  // Offset all scene objects to be relative to the player's origin
-  const negOffset = spawnPos.clone().multiplyScalar(-1);
-  recenterSceneObjects(negOffset);
-  
   console.log("Local player created with origin at:", localOrigin.value);
+  console.log("Player body position:", player.value.body?.translation());
 };
 
 // Connect to WebSocket server
@@ -241,8 +240,14 @@ const connectToServer = () => {
             }
             
             // Spawn rock at the given position (already relative to our origin)
-            const pos = new THREE.Vector3(data.position.x, data.position.y, data.position.z);
-            const rock = scene.value.spawnMultiplayerRock(objectId, pos);
+            // Since server sends positions relative to our origin, and our origin is at spawn position,
+            // we need to offset by our spawn position
+            const worldPos = new THREE.Vector3(
+              data.position.x + localOrigin.value.x,
+              data.position.y + localOrigin.value.y,
+              data.position.z + localOrigin.value.z
+            );
+            const rock = scene.value.spawnMultiplayerRock(objectId, worldPos);
             
             // Set initial rotation if provided and rock was created
             if (rock && data.rotation) {
@@ -272,6 +277,7 @@ const connectToServer = () => {
       // Add level data handler
       ws.onLevelData = (levelObjects) => {
         console.log("Building level from server data");
+        // For multiplayer, build level at server positions (don't offset yet)
         scene.value.buildLevelFromData(levelObjects);
       };
       
@@ -327,6 +333,8 @@ const startGameWithMode = async (connectNetwork) => {
       // Connect to server and wait for spawn position and level data
       try {
         await connectToServer();
+        // In multiplayer, createLocalPlayer is called from onWelcome callback
+        // which happens after level data is received
       } catch (error) {
         console.error("Network connection failed, starting in single player mode");
         // Fallback to single player mode with default level
@@ -432,50 +440,53 @@ const sendPlayerState = () => {
 
 // Recenter all scene objects when origin changes
 const recenterSceneObjects = (offset) => {
-  // Move all scene objects by the offset
+  // Negate the offset to move scene in opposite direction
+  const negOffset = offset.clone().multiplyScalar(-1);
+  
+  // Move all scene objects by the negated offset
   
   // Update planet
   if (scene.value.objects.planet) {
-    scene.value.objects.planet.position.add(offset);
+    scene.value.objects.planet.position.add(negOffset);
     // Update physics body position if it has one
     if (scene.value.objects.planetBody) {
       const currentPos = scene.value.objects.planetBody.translation();
       scene.value.objects.planetBody.setTranslation({
-        x: currentPos.x + offset.x,
-        y: currentPos.y + offset.y,
-        z: currentPos.z + offset.z
+        x: currentPos.x + negOffset.x,
+        y: currentPos.y + negOffset.y,
+        z: currentPos.z + negOffset.z
       });
     }
   }
   
   // Update platforms
   if (scene.value.objects.platform) {
-    scene.value.objects.platform.position.add(offset);
+    scene.value.objects.platform.position.add(negOffset);
     // Update platform physics body if needed
     if (scene.value.objects.platformBody) {
       const currentPos = scene.value.objects.platformBody.translation();
       scene.value.objects.platformBody.setTranslation({
-        x: currentPos.x + offset.x,
-        y: currentPos.y + offset.y,
-        z: currentPos.z + offset.z
+        x: currentPos.x + negOffset.x,
+        y: currentPos.y + negOffset.y,
+        z: currentPos.z + negOffset.z
       });
     }
   }
   
   // Update moving platform
   if (scene.value.objects.movingPlatform) {
-    scene.value.objects.movingPlatform.position.add(offset);
+    scene.value.objects.movingPlatform.position.add(negOffset);
     // Update the initial position stored in userData
     if (scene.value.objects.movingPlatform.userData) {
-      scene.value.objects.movingPlatform.userData.initialX += offset.x;
+      scene.value.objects.movingPlatform.userData.initialX += negOffset.x;
     }
     // Update physics body
     if (scene.value.objects.movingPlatformBody) {
       const currentPos = scene.value.objects.movingPlatformBody.translation();
       scene.value.objects.movingPlatformBody.setTranslation({
-        x: currentPos.x + offset.x,
-        y: currentPos.y + offset.y,
-        z: currentPos.z + offset.z
+        x: currentPos.x + negOffset.x,
+        y: currentPos.y + negOffset.y,
+        z: currentPos.z + negOffset.z
       });
     }
   }
@@ -484,15 +495,15 @@ const recenterSceneObjects = (offset) => {
   scene.value.scene.traverse((child) => {
     if (child.isMesh && child.userData.physicsBody && child !== player.value?.mesh) {
       // Update mesh position
-      child.position.add(offset);
+      child.position.add(negOffset);
       
       // Update physics body
       const body = child.userData.physicsBody;
       const currentPos = body.translation();
       body.setTranslation({
-        x: currentPos.x + offset.x,
-        y: currentPos.y + offset.y,
-        z: currentPos.z + offset.z
+        x: currentPos.x + negOffset.x,
+        y: currentPos.y + negOffset.y,
+        z: currentPos.z + negOffset.z
       });
     }
   });
@@ -502,20 +513,17 @@ const recenterSceneObjects = (offset) => {
     if (obj.body) {
       const currentPos = obj.body.translation();
       obj.body.setTranslation({
-        x: currentPos.x + offset.x,
-        y: currentPos.y + offset.y,
-        z: currentPos.z + offset.z
+        x: currentPos.x + negOffset.x,
+        y: currentPos.y + negOffset.y,
+        z: currentPos.z + negOffset.z
       });
     }
   });
   
   // Update all remote players
   if (playerManager.value) {
-    playerManager.value.offsetAllPlayers(offset);
+    playerManager.value.offsetAllPlayers(negOffset);
   }
-  
-  // Update physics gravity center
-  physics.value.gravity.center.add(offset);
 };
 
 // Add physics stepping flag
