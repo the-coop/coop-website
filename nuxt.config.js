@@ -20,7 +20,13 @@ export default defineNuxtConfig({
         ws: true,
         changeOrigin: true
       }
-    }
+    },
+    publicAssets: [
+      {
+        baseURL: '/campaign',
+        dir: './campaign'
+      }
+    ]
   },
   vite: {
     define: {

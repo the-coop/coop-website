@@ -44,6 +44,7 @@ import { SceneManager } from '../lib/scene.js';
 import { FPSController } from '../lib/fpsController.js';
 import { WebSocketManager } from '../lib/network.js';
 import { PlayerManager } from '../lib/players.js';
+import { CampaignLoader } from '../lib/campaignLoader.js';
 
 // Get WebSocket URL from runtime config
 const config = useRuntimeConfig();
@@ -103,12 +104,7 @@ const initGame = async () => {
     sceneManager.init(gameCanvas.value);
     scene.value = markRaw(sceneManager);
     
-    // Don't create world here for multiplayer - wait for server level data
-    if (!gameMode.value || gameMode.value !== 'multiplayer') {
-      // Create world for single player modes
-      scene.value.createPlanet();
-      scene.value.createPlatform();
-    }
+    // Don't create world here - wait until game mode is selected
     
     // Create player manager (but not the local player yet)
     const manager = new PlayerManager(scene.value, physics.value);
@@ -325,18 +321,41 @@ const startGameWithMode = async (connectNetwork) => {
     // Request pointer lock immediately after user click
     requestPointerLock();
     
+    let spawnPosition = new THREE.Vector3(0, 35, 0); // Default spawn
+    
     if (connectNetwork) {
-      // Connect to server and wait for spawn position
+      // Connect to server and wait for spawn position and level data
       try {
         await connectToServer();
       } catch (error) {
         console.error("Network connection failed, starting in single player mode");
-        // Fallback to single player mode
-        createLocalPlayer(new THREE.Vector3(0, 35, 0));
+        // Fallback to single player mode with default level
+        scene.value.createPlanet();
+        scene.value.createPlatform();
+        createLocalPlayer(spawnPosition);
       }
     } else {
       // Start offline mode
-      createLocalPlayer(new THREE.Vector3(0, 35, 0));
+      if (gameMode.value === 'campaign') {
+        // Load campaign level
+        console.log("Loading campaign level...");
+        try {
+          const levelData = await CampaignLoader.loadLevel('level1');
+          const levelSpawn = CampaignLoader.buildLevelFromData(scene.value, physics.value, levelData);
+          spawnPosition = new THREE.Vector3(levelSpawn.x, levelSpawn.y, levelSpawn.z);
+        } catch (error) {
+          console.error("Failed to load campaign level:", error);
+          errorMessage.value = "Failed to load campaign level";
+          return;
+        }
+      } else if (gameMode.value === 'sandbox') {
+        // Create full sandbox level with planet
+        console.log("Creating sandbox level...");
+        scene.value.createPlanet();
+        scene.value.createPlatform();
+      }
+      
+      createLocalPlayer(spawnPosition);
       debugInfo.connected = false;
       debugInfo.playersOnline = 1;
     }
