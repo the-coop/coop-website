@@ -415,13 +415,12 @@ const sendPlayerState = () => {
   
   lastNetworkUpdate = currentTime;
   
-  // Get player state in local coordinates
-  const position = player.value.body.translation();
-  const rotation = player.value.body.rotation();
-  const velocity = player.value.body.linvel();
+  // Get full player state including grounded
+  const state = player.value.getNetworkState();
+  if (!state) return;
   
   // Check if we need to recenter local origin
-  const localPos = new THREE.Vector3(position.x, position.y, position.z);
+  const localPos = new THREE.Vector3(state.position.x, state.position.y, state.position.z);
   if (localPos.length() > ORIGIN_THRESHOLD) {
     console.log("Recentering local origin, distance:", localPos.length());
     
@@ -437,15 +436,17 @@ const sendPlayerState = () => {
     // Send position as (0,0,0) since we just recentered
     wsManager.value.sendPlayerState(
       { x: 0, y: 0, z: 0 },
-      { x: rotation.x, y: rotation.y, z: rotation.z, w: rotation.w },
-      { x: velocity.x, y: velocity.y, z: velocity.z }
+      state.rotation,
+      state.velocity,
+      state.isGrounded
     );
   } else {
-    // Send normal position update
+    // Send normal position update with grounded state
     wsManager.value.sendPlayerState(
-      { x: position.x, y: position.y, z: position.z },
-      { x: rotation.x, y: rotation.y, z: rotation.z, w: rotation.w },
-      { x: velocity.x, y: velocity.y, z: velocity.z }
+      state.position,
+      state.rotation,
+      state.velocity,
+      state.isGrounded
     );
   }
 };
