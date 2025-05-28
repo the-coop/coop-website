@@ -240,10 +240,7 @@ const connectToServer = () => {
       };
       
       ws.onDynamicObjectUpdate = (objectId, state) => {
-        // Log every 60th update to avoid spam
-        if (frameCount.value % 60 === 0) {
-          console.log(`Rock ${objectId} update - pos: (${state.position.x.toFixed(2)}, ${state.position.y.toFixed(2)}, ${state.position.z.toFixed(2)})`);
-        }
+        // Remove logging to reduce console spam
         scene.value.updateDynamicObject(objectId, state);
       };
       
