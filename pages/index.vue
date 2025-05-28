@@ -131,10 +131,11 @@ const ORIGIN_THRESHOLD = 1000; // Recenter when 1km from origin
 // Add interaction state
 const interactionState = reactive({
   lastPushTime: 0,
-  pushCooldown: 100, // ms between pushes
+  pushCooldown: 50, // Reduced from 100ms
   pushForce: 15.0,
   interactionRange: 3.0,
-  ownedObjects: new Map() // Track objects we own
+  ownedObjects: new Map(), // Track objects we own
+  lastPushedObjects: new Map() // Track recently pushed objects to prevent spam
 });
 
 // Connect to WebSocket server
@@ -277,6 +278,18 @@ const connectToServer = () => {
           
           console.log("Player created at server position:", spawnPos);
         }
+      };
+      
+      // Add ownership callbacks
+      ws.onObjectOwnershipGranted = (objectId, playerId, durationMs) => {
+        console.log(`Ownership granted for ${objectId} to ${playerId} for ${durationMs}ms`);
+        // Track ownership locally
+        interactionState.ownedObjects.set(objectId, Date.now() + durationMs);
+      };
+      
+      ws.onObjectOwnershipRevoked = (objectId) => {
+        console.log(`Ownership revoked for ${objectId}`);
+        interactionState.ownedObjects.delete(objectId);
       };
       
       // Connect to server
@@ -590,19 +603,20 @@ const checkAndPushNearbyRocks = () => {
   const playerSpeed = playerVel.length();
   
   // Only check if player is moving with some speed
-  if (playerSpeed < 1.0) return;
+  if (playerSpeed < 0.5) return;
   
+  const currentTime = Date.now();
   // Player collision radius
   const playerRadius = 0.4; // From FPSController
   
   scene.value.dynamicObjects.forEach((obj, id) => {
     if (obj.type === 'rock' && obj.mesh) {
-      const rockPos = obj.mesh.position; // Use visual position for smoother detection
+      const rockPos = obj.mesh.position;
       const distance = playerPos.distanceTo(rockPos);
       
       // Check sphere-sphere collision
       const rockRadius = 2 * obj.scale;
-      const collisionDistance = playerRadius + rockRadius + 0.2; // Small buffer
+      const collisionDistance = playerRadius + rockRadius + 0.2; // Slightly larger buffer
       
       if (distance < collisionDistance) {
         // Calculate push direction from player to rock
@@ -613,36 +627,44 @@ const checkAndPushNearbyRocks = () => {
           pushDir.normalize();
           const dotProduct = playerVel.clone().normalize().dot(pushDir);
           
-          if (dotProduct > 0.3) { // Moving towards rock (wider angle)
-            // Check ownership
-            const now = Date.now();
-            const ownedUntil = interactionState.ownedObjects.get(id);
+          if (dotProduct > 0.3) { // More lenient angle check
+            // Check if we recently pushed this object
+            const lastPushTime = interactionState.lastPushedObjects.get(id) || 0;
+            if (currentTime - lastPushTime < 500) return; // Increased cooldown to prevent spam
             
-            if (!ownedUntil || ownedUntil < now) {
-              // Calculate push force based on collision
-              const collisionDepth = collisionDistance - distance;
-              const forceMagnitude = Math.max(5.0, playerSpeed * 3.0 + collisionDepth * 10.0);
+            // Calculate push force based on collision with more reasonable limits
+            const penetrationDepth = Math.max(0, collisionDistance - distance);
+            const basePushStrength = 8.0; // Reduced base strength
+            const speedMultiplier = Math.min(playerSpeed * 0.8, 5.0); // Cap speed contribution
+            const penetrationMultiplier = Math.min(penetrationDepth * 5.0, 3.0); // Cap penetration contribution
+            
+            const forceMagnitude = basePushStrength + speedMultiplier + penetrationMultiplier;
+            
+            const pushForce = pushDir.multiplyScalar(forceMagnitude);
+            
+            // Add controlled momentum transfer
+            const momentumTransfer = playerVel.clone().multiplyScalar(0.3); // Reduced momentum transfer
+            pushForce.add(momentumTransfer);
+            
+            // Add small upward component to help rocks roll over obstacles
+            const upDirection = player.value.getUpDirection();
+            pushForce.add(upDirection.multiplyScalar(1.5));
+            
+            // Send push request to server
+            if (wsManager.value?.connected) {
+              // Contact point should be on the rock surface facing the player
+              const contactPoint = pushDir.clone().multiplyScalar(-rockRadius * 0.8); // Contact point on surface
+              wsManager.value.sendPushObject(id, pushForce, contactPoint);
               
-              const pushForce = pushDir.multiplyScalar(forceMagnitude);
-              pushForce.add(playerVel.clone().multiplyScalar(0.7)); // More momentum transfer
+              // Track this push with longer cooldown
+              interactionState.lastPushedObjects.set(id, currentTime);
               
-              // Add slight upward component
-              const upDirection = playerPos.clone().normalize();
-              pushForce.add(upDirection.multiplyScalar(2.0));
-              
-              // Send push request to server
-              if (wsManager.value?.connected) {
-                const contactPoint = pushDir.clone().multiplyScalar(-rockRadius);
-                wsManager.value.sendPushObject(id, pushForce, contactPoint);
-                
-                // Track temporary ownership with shorter duration
-                interactionState.ownedObjects.set(id, now + 500); // 500ms cooldown
-                
-                // Log only significant pushes
-                if (forceMagnitude > 10.0) {
-                  console.log(`Pushing rock ${id} with force: ${forceMagnitude.toFixed(1)}`);
+              // Clean up old entries
+              interactionState.lastPushedObjects.forEach((time, objId) => {
+                if (currentTime - time > 2000) { // Increased cleanup time
+                  interactionState.lastPushedObjects.delete(objId);
                 }
-              }
+              });
             }
           }
         }
@@ -696,8 +718,8 @@ const animate = () => {
     // Send player state to server
     sendPlayerState();
     
-    // Check for automatic rock pushing in multiplayer - every frame for smooth pushing
-    if (gameMode.value === 'multiplayer') {
+    // Check for automatic rock pushing in multiplayer - but not every frame
+    if (gameMode.value === 'multiplayer' && frameCount.value % 3 === 0) { // Check every 3rd frame (~20Hz)
       checkAndPushNearbyRocks();
     }
   }
