@@ -259,10 +259,10 @@ const connectToServer = () => {
       // Add level data handler
       ws.onLevelData = (levelObjects) => {
         console.log("Building level from server data");
-        // For multiplayer, build level at server positions
+        // For multiplayer, build level from server data exclusively
         scene.value.buildLevelFromData(levelObjects);
         
-        // Now create player
+        // Now create player after level is built
         if (scene.value.multiplayerSpawnPosition) {
           const spawnPos = new THREE.Vector3(
             scene.value.multiplayerSpawnPosition.x,
@@ -344,14 +344,12 @@ const startGameWithMode = async (connectNetwork) => {
       // Connect to server and wait for spawn position and level data
       try {
         await connectToServer();
-        // In multiplayer, createLocalPlayer is called from onWelcome callback
-        // which happens after level data is received
+        // In multiplayer, the player is created in the onLevelData callback
+        // after the level is built from server data
       } catch (error) {
-        console.error("Network connection failed, starting in single player mode");
-        // Fallback to single player mode with default level
-        scene.value.createPlanet();
-        scene.value.createPlatform();
-        createLocalPlayer(spawnPosition);
+        console.error("Network connection failed:", error);
+        errorMessage.value = "Failed to connect to multiplayer server";
+        return; // Don't fallback to single player
       }
     } else {
       // Start offline mode
@@ -368,7 +366,7 @@ const startGameWithMode = async (connectNetwork) => {
           return;
         }
       } else if (gameMode.value === 'sandbox') {
-        // Create full sandbox level with planet
+        // Create full sandbox level with planet locally
         console.log("Creating sandbox level...");
         scene.value.createPlanet();
         scene.value.createPlatform();
@@ -616,7 +614,7 @@ const checkAndPushNearbyRocks = () => {
       
       // Check sphere-sphere collision
       const rockRadius = 2 * obj.scale;
-      const collisionDistance = playerRadius + rockRadius + 0.2; // Slightly larger buffer
+      const collisionDistance = playerRadius + rockRadius + 0.1; // Smaller buffer
       
       if (distance < collisionDistance) {
         // Calculate push direction from player to rock
@@ -627,41 +625,41 @@ const checkAndPushNearbyRocks = () => {
           pushDir.normalize();
           const dotProduct = playerVel.clone().normalize().dot(pushDir);
           
-          if (dotProduct > 0.3) { // More lenient angle check
+          if (dotProduct > 0.5) { // Player must be moving towards rock
             // Check if we recently pushed this object
             const lastPushTime = interactionState.lastPushedObjects.get(id) || 0;
-            if (currentTime - lastPushTime < 500) return; // Increased cooldown to prevent spam
+            if (currentTime - lastPushTime < 100) return; // Shorter cooldown for responsiveness
             
-            // Calculate push force based on collision with more reasonable limits
+            // Calculate push force with more conservative values
             const penetrationDepth = Math.max(0, collisionDistance - distance);
-            const basePushStrength = 8.0; // Reduced base strength
-            const speedMultiplier = Math.min(playerSpeed * 0.8, 5.0); // Cap speed contribution
-            const penetrationMultiplier = Math.min(penetrationDepth * 5.0, 3.0); // Cap penetration contribution
+            const basePushStrength = 5.0; // Further reduced
+            const speedMultiplier = Math.min(playerSpeed * 0.5, 3.0); // Lower multiplier
+            const penetrationMultiplier = Math.min(penetrationDepth * 3.0, 2.0); // Lower multiplier
             
             const forceMagnitude = basePushStrength + speedMultiplier + penetrationMultiplier;
             
             const pushForce = pushDir.multiplyScalar(forceMagnitude);
             
-            // Add controlled momentum transfer
-            const momentumTransfer = playerVel.clone().multiplyScalar(0.3); // Reduced momentum transfer
+            // Add minimal momentum transfer
+            const momentumTransfer = playerVel.clone().multiplyScalar(0.2);
             pushForce.add(momentumTransfer);
             
-            // Add small upward component to help rocks roll over obstacles
+            // Add very small upward component
             const upDirection = player.value.getUpDirection();
-            pushForce.add(upDirection.multiplyScalar(1.5));
+            pushForce.add(upDirection.multiplyScalar(0.5));
             
             // Send push request to server
             if (wsManager.value?.connected) {
-              // Contact point should be on the rock surface facing the player
-              const contactPoint = pushDir.clone().multiplyScalar(-rockRadius * 0.8); // Contact point on surface
+              // Contact point should be on the rock surface
+              const contactPoint = pushDir.clone().multiplyScalar(-rockRadius);
               wsManager.value.sendPushObject(id, pushForce, contactPoint);
               
-              // Track this push with longer cooldown
+              // Track this push
               interactionState.lastPushedObjects.set(id, currentTime);
               
               // Clean up old entries
               interactionState.lastPushedObjects.forEach((time, objId) => {
-                if (currentTime - time > 2000) { // Increased cleanup time
+                if (currentTime - time > 1000) {
                   interactionState.lastPushedObjects.delete(objId);
                 }
               });
