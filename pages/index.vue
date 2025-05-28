@@ -519,10 +519,20 @@ const recenterSceneObjects = (offset) => {
     }
   });
   
-  // Update all dynamic objects - visual only in multiplayer
+  // Update all dynamic objects - visual and physics in multiplayer
   scene.value.dynamicObjects.forEach((obj, id) => {
     if (obj.mesh) {
       obj.mesh.position.add(negOffset);
+    }
+    
+    // Update kinematic physics body in multiplayer
+    if (obj.body && gameMode.value === 'multiplayer') {
+      const currentPos = obj.body.translation();
+      obj.body.setNextKinematicTranslation({
+        x: currentPos.x + negOffset.x,
+        y: currentPos.y + negOffset.y,
+        z: currentPos.z + negOffset.z
+      });
     }
   });
   
