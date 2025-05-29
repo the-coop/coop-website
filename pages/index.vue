@@ -31,6 +31,7 @@
       <div>Facing: {{ formatVector(debugInfo.facing) }}</div>
       <div v-if="gameMode === 'multiplayer'">Connected: {{ debugInfo.connected }}</div>
       <div v-if="gameMode === 'multiplayer'">Players Online: {{ debugInfo.playersOnline }}</div>
+      <div v-if="debugInfo.inVehicle" class="vehicle-info">In Vehicle</div>
     </div>
   </div>
 </template>
@@ -77,7 +78,8 @@ const debugInfo = reactive({
   currentSpeed: 0,
   facing: new THREE.Vector3(0, 0, -1),
   connected: false,
-  playersOnline: 0
+  playersOnline: 0,
+  inVehicle: false // Add vehicle state
 });
 
 // Add game mode ref
@@ -701,15 +703,28 @@ const animate = () => {
     applyGlobalGravity(deltaTime);
   }
   
+  // Update vehicles
+  if (scene.value && !isPhysicsStepping) {
+    scene.value.updateVehicles(deltaTime);
+  }
+  
   // Update player
   if (player.value && !isPhysicsStepping) {
     player.value.update(deltaTime);
     
     // Update debug info
     debugInfo.isGrounded = player.value.isGrounded;
-    debugInfo.position.copy(player.value.getPosition());
-    debugInfo.facing.copy(player.value.getFacing());
-    debugInfo.currentSpeed = player.value.getSpeed();
+    debugInfo.inVehicle = player.value.isInVehicle;
+    
+    if (player.value.isInVehicle && player.value.currentVehicle) {
+      // Show vehicle position when in vehicle
+      debugInfo.position.copy(player.value.currentVehicle.getPosition());
+      debugInfo.currentSpeed = player.value.currentVehicle.getVelocity().length();
+    } else {
+      debugInfo.position.copy(player.value.getPosition());
+      debugInfo.currentSpeed = player.value.getSpeed();
+    }
+    
     debugInfo.isMoving = player.value.keys.forward || player.value.keys.backward || 
                         player.value.keys.left || player.value.keys.right;
     
@@ -829,6 +844,38 @@ const requestPointerLock = () => {
 const onKeyDown = (event) => {
   if (!started.value || !player.value) return;
   
+  // Handle vehicle controls when in vehicle
+  if (player.value.isInVehicle && player.value.currentVehicle) {
+    const vehicle = player.value.currentVehicle;
+    switch (event.code) {
+      case 'KeyW':
+      case 'ArrowUp':
+        vehicle.keys.forward = true;
+        break;
+      case 'KeyS':
+      case 'ArrowDown':
+        vehicle.keys.backward = true;
+        break;
+      case 'KeyA':
+      case 'ArrowLeft':
+        vehicle.keys.left = true;
+        break;
+      case 'KeyD':
+      case 'ArrowRight':
+        vehicle.keys.right = true;
+        break;
+      case 'Space':
+        vehicle.keys.brake = true;
+        break;
+      case 'KeyU':
+        // Exit vehicle
+        player.value.exitVehicle();
+        break;
+    }
+    return;
+  }
+  
+  // Normal player controls
   switch (event.code) {
     case 'KeyW':
     case 'ArrowUp':
@@ -870,11 +917,45 @@ const onKeyDown = (event) => {
         pushObject(pushableObject);
       }
       break;
+    case 'KeyU':
+      // Enter vehicle
+      const nearbyVehicle = player.value.checkForNearbyVehicle();
+      if (nearbyVehicle) {
+        player.value.enterVehicle(nearbyVehicle);
+      }
+      break;
   }
 };
 
 const onKeyUp = (event) => {
   if (!started.value || !player.value) return;
+  
+  // Handle vehicle controls when in vehicle
+  if (player.value.isInVehicle && player.value.currentVehicle) {
+    const vehicle = player.value.currentVehicle;
+    switch (event.code) {
+      case 'KeyW':
+      case 'ArrowUp':
+        vehicle.keys.forward = false;
+        break;
+      case 'KeyS':
+      case 'ArrowDown':
+        vehicle.keys.backward = false;
+        break;
+      case 'KeyA':
+      case 'ArrowLeft':
+        vehicle.keys.left = false;
+        break;
+      case 'KeyD':
+      case 'ArrowRight':
+        vehicle.keys.right = false;
+        break;
+      case 'Space':
+        vehicle.keys.brake = false;
+        break;
+    }
+    return;
+  }
   
   switch (event.code) {
     case 'KeyW':
@@ -1186,5 +1267,11 @@ onBeforeUnmount(() => {
   max-width: 80%;
   text-align: center;
   z-index: 1000;
+}
+
+.vehicle-info {
+  color: #00ff00;
+  font-weight: bold;
+  margin-top: 5px;
 }
 </style>
