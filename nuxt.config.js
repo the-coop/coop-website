@@ -11,7 +11,9 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      wsUrl: process.env.WS_URL || 'ws://localhost:8080/ws'
+      wsUrl: process.env.NODE_ENV === 'production' 
+        ? 'wss://thecoop.herokuapp.com/ws'
+        : (process.env.WS_URL || 'ws://localhost:8080/ws')
     }
   },
   nitro: {
