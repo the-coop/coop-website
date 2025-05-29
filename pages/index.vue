@@ -248,8 +248,7 @@ const connectToServer = () => {
       };
       
       ws.onDynamicObjectRemove = (objectId) => {
-        console.log(`Removing dynamic object: ${objectId}`);
-        scene.value.removeDynamicObject(objectId);
+        this.scene.removeDynamicObject(objectId);
       };
       
       ws.onError = (error) => {
