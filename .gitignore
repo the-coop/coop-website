@@ -111,3 +111,26 @@ package-lock.json
 .vs/coopwebsite/v17/.wsuo
 .vs/coopwebsite/config/applicationhost.config
 .vs/coop-website/v17/.wsuo
+
+# Nuxt dev/build outputs
+.output
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.idea
+
+# Local env files
+.env
+.env.*
+!.env.example
