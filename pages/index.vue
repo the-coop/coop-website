@@ -69,7 +69,7 @@ const playerManager = shallowRef(null);
 
 // Network update throttling
 let lastNetworkUpdate = 0;
-const networkUpdateInterval = 50 // Send updates every 50ms (20 Hz)
+const networkUpdateInterval = 33; // Increased to 30Hz from 20Hz for smoother falling
 
 const debugInfo = reactive({
   isGrounded: false,
@@ -460,13 +460,17 @@ const sendPlayerState = () => {
   if (!wsManager.value?.connected || !player.value?.body) return;
   
   const currentTime = performance.now();
-  if (currentTime - lastNetworkUpdate < networkUpdateInterval) return;
-  
-  lastNetworkUpdate = currentTime;
   
   // Get full player state including grounded
   const state = player.value.getNetworkState();
   if (!state) return;
+  
+  // Send updates more frequently when falling
+  const updateInterval = state.isGrounded ? networkUpdateInterval : 16; // 60Hz when falling
+  
+  if (currentTime - lastNetworkUpdate < updateInterval) return;
+  
+  lastNetworkUpdate = currentTime;
   
   // Check if we need to recenter local origin
   const localPos = new THREE.Vector3(state.position.x, state.position.y, state.position.z);
