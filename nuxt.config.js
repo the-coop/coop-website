@@ -1,5 +1,6 @@
 export default defineNuxtConfig({
-  ssr: false,
+  ssr: true,
+  target: 'static',
   app: {
     head: {
       title: 'FPS with Spherical Gravity',
@@ -14,7 +15,7 @@ export default defineNuxtConfig({
     }
   },
   nitro: {
-    preset: 'netlify',
+    preset: 'netlify-edge',
     devProxy: {
       '/api/ws': {
         target: 'ws://localhost:8080/ws',
