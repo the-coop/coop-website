@@ -491,15 +491,17 @@ const sendPlayerState = () => {
       { x: 0, y: 0, z: 0 },
       state.rotation,
       state.velocity,
-      state.isGrounded
+      state.isGrounded,
+      state.isSwimming
     );
   } else {
-    // Send normal position update with grounded state
+    // Send normal position update with grounded and swimming state
     wsManager.value.sendPlayerState(
       state.position,
       state.rotation,
       state.velocity,
-      state.isGrounded
+      state.isGrounded,
+      state.isSwimming
     );
   }
 };
