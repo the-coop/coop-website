@@ -32,6 +32,7 @@
       <div v-if="gameMode === 'multiplayer'">Connected: {{ debugInfo.connected }}</div>
       <div v-if="gameMode === 'multiplayer'">Players Online: {{ debugInfo.playersOnline }}</div>
       <div v-if="debugInfo.inVehicle" class="vehicle-info">In Vehicle</div>
+      <div v-if="debugInfo.isSwimming" class="swimming-info">Swimming</div> <!-- Swimming state -->
     </div>
   </div>
 </template>
@@ -79,7 +80,8 @@ const debugInfo = reactive({
   facing: new THREE.Vector3(0, 0, -1),
   connected: false,
   playersOnline: 0,
-  inVehicle: false // Add vehicle state
+  inVehicle: false, // Add vehicle state
+  isSwimming: false // Add swimming state
 });
 
 // Add game mode ref
@@ -757,6 +759,7 @@ const animate = () => {
     // Update debug info
     debugInfo.isGrounded = player.value.isGrounded;
     debugInfo.inVehicle = player.value.isInVehicle;
+    debugInfo.isSwimming = player.value.isSwimming; // Add swimming state
     
     if (player.value.isInVehicle && player.value.currentVehicle) {
       // Show vehicle position when in vehicle
@@ -1313,6 +1316,12 @@ onBeforeUnmount(() => {
 
 .vehicle-info {
   color: #00ff00;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.swimming-info {
+  color: #00ffff;
   font-weight: bold;
   margin-top: 5px;
 }
