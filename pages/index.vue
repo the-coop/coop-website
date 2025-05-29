@@ -272,13 +272,16 @@ const connectToServer = () => {
             scene.value.multiplayerSpawnPosition.z
           );
           
-          // Create player at spawn position
-          createLocalPlayer(spawnPos);
-          
-          // Don't set local origin or recenter at start - keep everything at server positions
-          localOrigin.value.set(0, 0, 0);
-          
-          console.log("Player created at server position:", spawnPos);
+          // Only create player if not already created
+          if (!player.value) {
+            console.log("Creating player at server position:", spawnPos);
+            createLocalPlayer(spawnPos);
+            
+            // Don't set local origin or recenter at start - keep everything at server positions
+            localOrigin.value.set(0, 0, 0);
+          }
+        } else {
+          console.warn("No spawn position available after level data received");
         }
       };
       
@@ -346,11 +349,44 @@ const startGameWithMode = async (connectNetwork) => {
       // Connect to server and wait for spawn position and level data
       try {
         await connectToServer();
-        // In multiplayer, the player is created in the onLevelData callback
-        // after the level is built from server data
+        
+        // In multiplayer, explicitly wait for level data before proceeding
+        if (wsManager.value) {
+          loading.value = true; // Show loading while waiting for level data
+          console.log("Waiting for level data from server...");
+          
+          try {
+            await wsManager.value.waitForLevelData();
+            console.log("Level data received, proceeding with game start");
+          } catch (error) {
+            console.error("Error waiting for level data:", error);
+            errorMessage.value = "Failed to load level data. Please try again.";
+            loading.value = false;
+            return;
+          }
+        }
+        
+        // By this point, the level should be built and player created via onLevelData callback
+        loading.value = false;
+        
+        // Check if player was created properly
+        if (!player.value && scene.value.multiplayerSpawnPosition) {
+          console.log("Player not created yet, creating now with spawn position:", 
+            scene.value.multiplayerSpawnPosition);
+          
+          const spawnPos = new THREE.Vector3(
+            scene.value.multiplayerSpawnPosition.x,
+            scene.value.multiplayerSpawnPosition.y,
+            scene.value.multiplayerSpawnPosition.z
+          );
+          
+          createLocalPlayer(spawnPos);
+        }
+        
       } catch (error) {
         console.error("Network connection failed:", error);
         errorMessage.value = "Failed to connect to multiplayer server";
+        loading.value = false;
         return; // Don't fallback to single player
       }
     } else {
@@ -379,11 +415,11 @@ const startGameWithMode = async (connectNetwork) => {
       debugInfo.playersOnline = 1;
     }
     
-    // Wait a bit to ensure player is created
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
+    // Check for player with a more robust approach
     if (!player.value) {
-      errorMessage.value = "Failed to create player";
+      console.error("Player not created after all setup steps");
+      errorMessage.value = "Failed to create player. Please try again.";
+      loading.value = false;
       return;
     }
     
@@ -401,6 +437,7 @@ const startGameWithMode = async (connectNetwork) => {
   } catch (e) {
     errorMessage.value = "Error starting game: " + e.message;
     console.error("Error starting game:", e);
+    loading.value = false;
   }
 };
 
