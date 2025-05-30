@@ -757,17 +757,18 @@ const animate = () => {
   
   // Update vehicles
   if (scene.value && !isPhysicsStepping) {
-    scene.value.vehicles.forEach((car, id) => {
-      // Apply gravity to car chassis and wheels
-      if (car.chassisBody) {
-        physics.value.applyGravityToBody(car.chassisBody, deltaTime);
+    scene.value.vehicles.forEach((vehicle, id) => {
+      // Apply gravity to vehicle bodies
+      if (vehicle.chassisBody) {
+        // Car - only apply gravity to chassis
+        physics.value.applyGravityToBody(vehicle.chassisBody, deltaTime);
+      } else if (vehicle.body) {
+        // Plane or Helicopter - apply gravity to main body
+        physics.value.applyGravityToBody(vehicle.body, deltaTime);
       }
-      car.wheelBodies.forEach(wheel => {
-        physics.value.applyGravityToBody(wheel, deltaTime);
-      });
       
-      // Then update the car
-      car.update(deltaTime);
+      // Then update the vehicle
+      vehicle.update(deltaTime);
     });
     
     // Also check dynamic objects for vehicles
@@ -782,6 +783,14 @@ const animate = () => {
         });
         
         // Then update the vehicle
+        obj.controller.update(deltaTime);
+      } else if ((obj.type === 'plane' || obj.type === 'helicopter') && obj.controller) {
+        // Apply gravity to aircraft body
+        if (obj.controller.body) {
+          physics.value.applyGravityToBody(obj.controller.body, deltaTime);
+        }
+        
+        // Update the aircraft
         obj.controller.update(deltaTime);
       }
     });
@@ -955,25 +964,44 @@ const onKeyDown = (event) => {
   
   // Handle vehicle enter/exit with U key
   if (event.code === 'KeyU') {
-    if (player.value.isInVehicle) {
+    // Check if player is in any vehicle
+    if (player.value.isInVehicle && player.value.currentVehicle) {
       // Exit vehicle
-      player.value.exitVehicle();
+      const vehicle = player.value.currentVehicle;
+      let exitInfo = null;
       
-      // Send exit to server in multiplayer
-      if (gameMode.value === 'multiplayer' && wsManager.value?.connected) {
-        wsManager.value.sendPlayerAction('exit_vehicle');
+      if (vehicle.exitCar) {
+        exitInfo = vehicle.exitCar();
+      } else if (vehicle.exitPlane) {
+        exitInfo = vehicle.exitPlane();
+      } else if (vehicle.exitHelicopter) {
+        exitInfo = vehicle.exitHelicopter();
+      }
+      
+      if (exitInfo) {
+        // Exit the vehicle and don't check for nearby vehicles
+        player.value.exitVehicle(exitInfo.exitPosition);
+        // Add a small delay before allowing re-entry
+        player.value.vehicleExitCooldown = Date.now() + 500; // 500ms cooldown
       }
     } else {
-      // Try to enter nearby vehicle
-      const nearbyVehicle = player.value.checkForNearbyVehicle();
-      if (nearbyVehicle) {
-        const success = player.value.enterVehicle(nearbyVehicle);
-        
-        // Send enter to server in multiplayer
-        if (success && gameMode.value === 'multiplayer' && wsManager.value?.connected) {
-          wsManager.value.sendPlayerAction('enter_vehicle', {
-            vehicle_id: nearbyVehicle.objectId || nearbyVehicle.id
-          });
+      // Only try to enter a vehicle if we're not in cooldown
+      if (!player.value.vehicleExitCooldown || Date.now() > player.value.vehicleExitCooldown) {
+        const nearbyVehicle = player.value.checkNearbyVehicles();
+        if (nearbyVehicle) {
+          let entered = false;
+          
+          if (nearbyVehicle.enterCar) {
+            entered = nearbyVehicle.enterCar(player.value);
+          } else if (nearbyVehicle.enterPlane) {
+            entered = nearbyVehicle.enterPlane(player.value);
+          } else if (nearbyVehicle.enterHelicopter) {
+            entered = nearbyVehicle.enterHelicopter(player.value);
+          }
+          
+          if (entered) {
+            player.value.enterVehicle(nearbyVehicle);
+          }
         }
       }
     }
@@ -983,31 +1011,100 @@ const onKeyDown = (event) => {
   // Handle vehicle controls when in vehicle
   if (player.value.isInVehicle && player.value.currentVehicle) {
     const vehicle = player.value.currentVehicle;
-    switch (event.code) {
-      case 'KeyW':
-      case 'ArrowUp':
-        vehicle.keys.forward = true;
-        break;
-      case 'KeyS':
-      case 'ArrowDown':
-        vehicle.keys.backward = true;
-        break;
-      case 'KeyA':
-      case 'ArrowLeft':
-        vehicle.keys.left = true;
-        break;
-      case 'KeyD':
-      case 'ArrowRight':
-        vehicle.keys.right = true;
-        break;
-      case 'Space':
-        vehicle.keys.brake = true;
-        break;
-      case 'KeyU':
-        // Exit vehicle
-        player.value.exitVehicle();
-        break;
+    
+    // Car controls
+    if (vehicle.keys && vehicle.chassisBody) {
+      switch (event.code) {
+        case 'KeyW':
+        case 'ArrowUp':
+          vehicle.keys.forward = true;
+          break;
+        case 'KeyS':
+        case 'ArrowDown':
+          vehicle.keys.backward = true;
+          break;
+        case 'KeyA':
+        case 'ArrowLeft':
+          vehicle.keys.left = true;
+          break;
+        case 'KeyD':
+        case 'ArrowRight':
+          vehicle.keys.right = true;
+          break;
+        case 'Space':
+          vehicle.keys.brake = true;
+          break;
+      }
     }
+    
+    // Plane controls
+    else if (vehicle.keys && vehicle.elevatorAngle !== undefined) {
+      switch (event.code) {
+        case 'KeyW':
+        case 'ArrowUp':
+          vehicle.keys.pitchDown = true; // Pitch down = nose down
+          break;
+        case 'KeyS':
+        case 'ArrowDown':
+          vehicle.keys.pitchUp = true; // Pitch up = nose up
+          break;
+        case 'KeyA':
+        case 'ArrowLeft':
+          vehicle.keys.rollLeft = true;
+          break;
+        case 'KeyD':
+        case 'ArrowRight':
+          vehicle.keys.rollRight = true;
+          break;
+        case 'KeyQ':
+          vehicle.keys.yawLeft = true;
+          break;
+        case 'KeyE':
+          vehicle.keys.yawRight = true;
+          break;
+        case 'ShiftLeft':
+          vehicle.keys.throttleUp = true;
+          break;
+        case 'ControlLeft':
+          vehicle.keys.throttleDown = true;
+          break;
+      }
+    }
+    
+    // Helicopter controls
+    else if (vehicle.keys && vehicle.collective !== undefined) {
+      switch (event.code) {
+        case 'KeyW':
+        case 'ArrowUp':
+          vehicle.keys.forward = true;
+          break;
+        case 'KeyS':
+        case 'ArrowDown':
+          vehicle.keys.backward = true;
+          break;
+        case 'KeyA':
+        case 'ArrowLeft':
+          vehicle.keys.left = true;
+          break;
+        case 'KeyD':
+        case 'ArrowRight':
+          vehicle.keys.right = true;
+          break;
+        case 'KeyQ':
+          vehicle.keys.yawLeft = true;
+          break;
+        case 'KeyE':
+          vehicle.keys.yawRight = true;
+          break;
+        case 'ShiftLeft':
+          vehicle.keys.collectiveUp = true;
+          break;
+        case 'ControlLeft':
+          vehicle.keys.collectiveDown = true;
+          break;
+      }
+    }
+    
     return;
   }
   
@@ -1069,27 +1166,100 @@ const onKeyUp = (event) => {
   // Handle vehicle controls when in vehicle
   if (player.value.isInVehicle && player.value.currentVehicle) {
     const vehicle = player.value.currentVehicle;
-    switch (event.code) {
-      case 'KeyW':
-      case 'ArrowUp':
-        vehicle.keys.forward = false;
-        break;
-      case 'KeyS':
-      case 'ArrowDown':
-        vehicle.keys.backward = false;
-        break;
-      case 'KeyA':
-      case 'ArrowLeft':
-        vehicle.keys.left = false;
-        break;
-      case 'KeyD':
-      case 'ArrowRight':
-        vehicle.keys.right = false;
-        break;
-      case 'Space':
-        vehicle.keys.brake = false;
-        break;
+    
+    // Car controls
+    if (vehicle.keys && vehicle.chassisBody) {
+      switch (event.code) {
+        case 'KeyW':
+        case 'ArrowUp':
+          vehicle.keys.forward = false;
+          break;
+        case 'KeyS':
+        case 'ArrowDown':
+          vehicle.keys.backward = false;
+          break;
+        case 'KeyA':
+        case 'ArrowLeft':
+          vehicle.keys.left = false;
+          break;
+        case 'KeyD':
+        case 'ArrowRight':
+          vehicle.keys.right = false;
+          break;
+        case 'Space':
+          vehicle.keys.brake = false;
+          break;
+      }
     }
+    
+    // Plane controls
+    else if (vehicle.keys && vehicle.elevatorAngle !== undefined) {
+      switch (event.code) {
+        case 'KeyW':
+        case 'ArrowUp':
+          vehicle.keys.pitchDown = false;
+          break;
+        case 'KeyS':
+        case 'ArrowDown':
+          vehicle.keys.pitchUp = false;
+          break;
+        case 'KeyA':
+        case 'ArrowLeft':
+          vehicle.keys.rollLeft = false;
+          break;
+        case 'KeyD':
+        case 'ArrowRight':
+          vehicle.keys.rollRight = false;
+          break;
+        case 'KeyQ':
+          vehicle.keys.yawLeft = false;
+          break;
+        case 'KeyE':
+          vehicle.keys.yawRight = false;
+          break;
+        case 'ShiftLeft':
+          vehicle.keys.throttleUp = false;
+          break;
+        case 'ControlLeft':
+          vehicle.keys.throttleDown = false;
+          break;
+      }
+    }
+    
+    // Helicopter controls
+    else if (vehicle.keys && vehicle.collective !== undefined) {
+      switch (event.code) {
+        case 'KeyW':
+        case 'ArrowUp':
+          vehicle.keys.forward = false;
+          break;
+        case 'KeyS':
+        case 'ArrowDown':
+          vehicle.keys.backward = false;
+          break;
+        case 'KeyA':
+        case 'ArrowLeft':
+          vehicle.keys.left = false;
+          break;
+        case 'KeyD':
+        case 'ArrowRight':
+          vehicle.keys.right = false;
+          break;
+        case 'KeyQ':
+          vehicle.keys.yawLeft = false;
+          break;
+        case 'KeyE':
+          vehicle.keys.yawRight = false;
+          break;
+        case 'ShiftLeft':
+          vehicle.keys.collectiveUp = false;
+          break;
+        case 'ControlLeft':
+          vehicle.keys.collectiveDown = false;
+          break;
+      }
+    }
+    
     return;
   }
   
