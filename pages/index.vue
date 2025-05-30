@@ -779,37 +779,14 @@ const animate = () => {
     debugInfo.isMoving = player.value.keys.forward || player.value.keys.backward || 
                         player.value.keys.left || player.value.keys.right;
     
-    // Send player or vehicle state to server
-    if (gameMode.value === 'multiplayer' && wsManager.value?.connected) {
-      if (player.value.isInVehicle && player.value.currentVehicle) {
-        // Send vehicle controls
-        wsManager.value.sendVehicleControl({
-          forward: player.value.keys.forward,
-          backward: player.value.keys.backward,
-          left: player.value.keys.left,
-          right: player.value.keys.right,
-          brake: player.value.keys.jump
-        });
-      } else {
-        // Send regular player state
-        const state = player.value.getNetworkState();
-        if (state) {
-          wsManager.value.sendPlayerState(
-            state.position,
-            state.rotation,
-            state.velocity,
-            state.isGrounded,
-            state.isSwimming
-          );
-        }
-      }
-    }
-    
     // Check for automatic rock pushing in multiplayer - but not every frame
     if (gameMode.value === 'multiplayer' && frameCount.value % 3 === 0) { // Check every 3rd frame (~20Hz)
       checkAndPushNearbyRocks();
     }
   }
+  
+  // Send player state to server (including floating origin updates)
+  sendPlayerState();
   
   // Update remote players
   if (playerManager.value && !isPhysicsStepping) {
