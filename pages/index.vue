@@ -219,27 +219,26 @@ const connectToServer = () => {
         playerManager.value.updatePlayer(playerId, state);
       };
       
+      // Add platform update handler
+      ws.onPlatformUpdate = (platformId, position) => {
+        if (scene.value) {
+          scene.value.updatePlatformPosition(platformId, position);
+        }
+      };
+      
       // Add dynamic object handlers
       ws.onDynamicObjectSpawn = (objectId, data) => {
-        console.log(`Dynamic object spawned: ${objectId}`, data);
-        
-        if (data.type === 'rock') {
-          // Position from server is relative to our origin
-          const rockPos = new THREE.Vector3(
-            data.position.x,
-            data.position.y,
-            data.position.z
-          );
+        if (scene.value) {
+          // Prevent duplicate dynamic platforms
+          if (data.type === 'dynamic_platform' && scene.value.dynamicObjects.has(objectId)) {
+            console.log(`Dynamic platform ${objectId} already exists, skipping spawn`);
+            return;
+          }
           
-          console.log(`Creating rock ${objectId} at relative position:`, rockPos);
-          
-          const rock = scene.value.spawnMultiplayerRock(objectId, rockPos, data.scale || 1.0);
-          
-          // Set initial rotation if provided
-          if (rock && data.rotation) {
-            scene.value.updateDynamicObject(objectId, { 
-              rotation: data.rotation
-            });
+          if (data.type === 'rock') {
+            scene.value.spawnMultiplayerRock(objectId, data.position, data.scale);
+          } else if (data.type === 'dynamic_platform') {
+            scene.value.spawnMultiplayerDynamicPlatform(objectId, data.position, data.scale);
           }
         }
       };
