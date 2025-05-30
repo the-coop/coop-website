@@ -757,7 +757,34 @@ const animate = () => {
   
   // Update vehicles
   if (scene.value && !isPhysicsStepping) {
-    scene.value.updateVehicles(deltaTime);
+    scene.value.vehicles.forEach((car, id) => {
+      // Apply gravity to car chassis and wheels
+      if (car.chassisBody) {
+        physics.value.applyGravityToBody(car.chassisBody, deltaTime);
+      }
+      car.wheelBodies.forEach(wheel => {
+        physics.value.applyGravityToBody(wheel, deltaTime);
+      });
+      
+      // Then update the car
+      car.update(deltaTime);
+    });
+    
+    // Also check dynamic objects for vehicles
+    scene.value.dynamicObjects.forEach((obj, id) => {
+      if (obj.type === 'vehicle' && obj.controller) {
+        // Apply gravity to vehicle chassis and wheels
+        if (obj.controller.chassisBody) {
+          physics.value.applyGravityToBody(obj.controller.chassisBody, deltaTime);
+        }
+        obj.controller.wheelBodies.forEach(wheel => {
+          physics.value.applyGravityToBody(wheel, deltaTime);
+        });
+        
+        // Then update the vehicle
+        obj.controller.update(deltaTime);
+      }
+    });
   }
   
   // Update player
@@ -765,30 +792,45 @@ const animate = () => {
     player.value.update(deltaTime);
     
     // Update debug info
+    debugInfo.position = player.value.getPosition();
     debugInfo.isGrounded = player.value.isGrounded;
-    debugInfo.inVehicle = player.value.isInVehicle;
-    debugInfo.isSwimming = player.value.isSwimming; // Add swimming state
-    
-    if (player.value.isInVehicle && player.value.currentVehicle) {
-      // Show vehicle position when in vehicle
-      debugInfo.position.copy(player.value.currentVehicle.getPosition());
-      debugInfo.currentSpeed = player.value.currentVehicle.getVelocity().length();
-    } else {
-      debugInfo.position.copy(player.value.getPosition());
-      debugInfo.currentSpeed = player.value.getSpeed();
-    }
-    
-    debugInfo.isMoving = player.value.keys.forward || player.value.keys.backward || 
-                        player.value.keys.left || player.value.keys.right;
-    
-    // Check for automatic rock pushing in multiplayer - but not every frame
-    if (gameMode.value === 'multiplayer' && frameCount.value % 3 === 0) { // Check every 3rd frame (~20Hz)
-      checkAndPushNearbyRocks();
-    }
+    debugInfo.isMoving = player.value.isMoving;
+    debugInfo.currentSpeed = player.value.currentSpeed;
+    debugInfo.facing = player.value.getFacing();
+    debugInfo.inVehicle = player.value.isInVehicle; // Update vehicle state
+    debugInfo.isSwimming = player.value.isSwimming;
   }
   
-  // Send player state to server (including floating origin updates)
-  sendPlayerState();
+  // Check for automatic rock pushing in multiplayer - but not every frame
+  if (gameMode.value === 'multiplayer' && frameCount.value % 3 === 0) { // Check every 3rd frame (~20Hz)
+    checkAndPushNearbyRocks();
+  }
+  
+  // Send player or vehicle state to server
+  if (gameMode.value === 'multiplayer' && wsManager?.connected) {
+    if (player.value.isInVehicle && player.value.currentVehicle) {
+      // Send vehicle controls
+      wsManager.value.sendVehicleControl({
+        forward: player.value.keys.forward,
+        backward: player.value.keys.backward,
+        left: player.value.keys.left,
+        right: player.value.keys.right,
+        brake: player.value.keys.jump
+      });
+    } else {
+      // Send regular player state
+      const state = player.value.getNetworkState();
+      if (state) {
+        wsManager.value.sendPlayerState(
+          state.position,
+          state.rotation,
+          state.velocity,
+          state.isGrounded,
+          state.isSwimming
+        );
+      }
+    }
+  }
   
   // Update remote players
   if (playerManager.value && !isPhysicsStepping) {
@@ -908,6 +950,33 @@ const onKeyDown = (event) => {
     }
     
     console.log(`Debug mode: ${showDebug.value ? 'ON' : 'OFF'}`);
+    return;
+  }
+  
+  // Handle vehicle enter/exit with U key
+  if (event.code === 'KeyU') {
+    if (player.value.isInVehicle) {
+      // Exit vehicle
+      player.value.exitVehicle();
+      
+      // Send exit to server in multiplayer
+      if (gameMode.value === 'multiplayer' && wsManager.value?.connected) {
+        wsManager.value.sendPlayerAction('exit_vehicle');
+      }
+    } else {
+      // Try to enter nearby vehicle
+      const nearbyVehicle = player.value.checkForNearbyVehicle();
+      if (nearbyVehicle) {
+        const success = player.value.enterVehicle(nearbyVehicle);
+        
+        // Send enter to server in multiplayer
+        if (success && gameMode.value === 'multiplayer' && wsManager.value?.connected) {
+          wsManager.value.sendPlayerAction('enter_vehicle', {
+            vehicle_id: nearbyVehicle.objectId || nearbyVehicle.id
+          });
+        }
+      }
+    }
     return;
   }
   
