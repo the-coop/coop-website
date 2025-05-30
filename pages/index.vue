@@ -779,8 +779,31 @@ const animate = () => {
     debugInfo.isMoving = player.value.keys.forward || player.value.keys.backward || 
                         player.value.keys.left || player.value.keys.right;
     
-    // Send player state to server
-    sendPlayerState();
+    // Send player or vehicle state to server
+    if (gameMode.value === 'multiplayer' && wsManager.value?.connected) {
+      if (player.value.isInVehicle && player.value.currentVehicle) {
+        // Send vehicle controls
+        wsManager.value.sendVehicleControl({
+          forward: player.value.keys.forward,
+          backward: player.value.keys.backward,
+          left: player.value.keys.left,
+          right: player.value.keys.right,
+          brake: player.value.keys.jump
+        });
+      } else {
+        // Send regular player state
+        const state = player.value.getNetworkState();
+        if (state) {
+          wsManager.value.sendPlayerState(
+            state.position,
+            state.rotation,
+            state.velocity,
+            state.isGrounded,
+            state.isSwimming
+          );
+        }
+      }
+    }
     
     // Check for automatic rock pushing in multiplayer - but not every frame
     if (gameMode.value === 'multiplayer' && frameCount.value % 3 === 0) { // Check every 3rd frame (~20Hz)
@@ -1138,6 +1161,132 @@ onMounted(async () => {
     document.addEventListener('webkitpointerlockchange', handlePointerLockChange);
     document.addEventListener('mousedown', onMouseDown);
     
+    // Key bindings
+    const keyMap = {
+      'w': 'forward',
+      's': 'backward',
+      'a': 'left',
+      'd': 'right',
+      ' ': 'jump',
+      'shift': 'run',
+      'q': 'rollLeft',
+      'e': 'rollRight',
+      'u': 'interact'  // Add U key for vehicle interaction
+    };
+    
+    // Update setupMultiplayer to handle vehicles
+    const setupMultiplayer = async () => {
+      // ...existing code...
+      
+      // Vehicle event handlers
+      webSocketManager.onPlayerEnteredVehicle = (playerId, vehicleId) => {
+        if (playerId === webSocketManager.playerId && player) {
+          // Local player entered vehicle
+          const vehicle = scene.dynamicObjects.get(vehicleId);
+          if (vehicle && vehicle.controller) {
+            player.enterVehicle(vehicle.controller);
+          }
+        } else {
+          // Remote player entered vehicle
+          const remotePlayer = playerManager.players.get(playerId);
+          if (remotePlayer) {
+            remotePlayer.isInVehicle = true;
+            remotePlayer.currentVehicle = vehicleId;
+            // Hide remote player mesh when in vehicle
+            if (remotePlayer.mesh) {
+              remotePlayer.mesh.visible = false;
+            }
+          }
+        }
+      };
+      
+      webSocketManager.onPlayerExitedVehicle = (playerId, vehicleId, exitPosition) => {
+        if (playerId === webSocketManager.playerId && player) {
+          // Local player exited vehicle
+          player.exitVehicle();
+          // Update position from server
+          if (player.body && exitPosition) {
+            player.body.setTranslation({
+              x: exitPosition.x,
+              y: exitPosition.y,
+              z: exitPosition.z
+            });
+          }
+        } else {
+          // Remote player exited vehicle
+          const remotePlayer = playerManager.players.get(playerId);
+          if (remotePlayer) {
+            remotePlayer.isInVehicle = false;
+            remotePlayer.currentVehicle = null;
+            // Show remote player mesh
+            if (remotePlayer.mesh) {
+              remotePlayer.mesh.visible = true;
+            }
+            // Update position
+            if (remotePlayer.body && exitPosition) {
+              remotePlayer.body.setTranslation({
+                x: exitPosition.x,
+                y: exitPosition.y,
+                z: exitPosition.z
+              });
+            }
+          }
+        }
+      };
+      
+      webSocketManager.onVehicleUpdate = (vehicleId, state) => {
+        const vehicle = scene.dynamicObjects.get(vehicleId);
+        if (vehicle && vehicle.controller) {
+          // Update vehicle position from server
+          if (vehicle.controller.isMultiplayer && !vehicle.controller.isOccupied) {
+            // Only update if not locally controlled
+            vehicle.controller.updateFromServer(state);
+          }
+        }
+      };
+      
+      // Set network manager on player
+      if (player) {
+        player.setNetworkManager(webSocketManager);
+      }
+      
+      // ...existing code...
+    };
+    
+    // Update animation loop to send vehicle controls
+    const animate = (currentTime) => {
+      // ...existing code...
+      
+      // Send player or vehicle state to server
+      if (gameMode.value === 'multiplayer' && webSocketManager?.connected) {
+        if (player.isInVehicle && player.currentVehicle) {
+          // Send vehicle controls
+          webSocketManager.sendVehicleControl({
+            forward: player.keys.forward,
+            backward: player.keys.backward,
+            left: player.keys.left,
+            right: player.keys.right,
+            brake: player.keys.jump
+          });
+        } else {
+          // Send regular player state
+          const state = player.getNetworkState();
+          if (state) {
+            webSocketManager.sendPlayerState(
+              state.position,
+              state.rotation,
+              state.velocity,
+              state.isGrounded,
+              state.isSwimming
+            );
+          }
+        }
+      }
+      
+      // ...existing code...
+    };
+    
+    // ...existing code...
   } catch (e) {
     console.error("Failed to initialize game:", e);
     errorMessage.value = "Failed to initialize game: " + e.message;
