@@ -57,7 +57,7 @@ const gameCanvas = ref(null);
 const loading = ref(true);
 const started = ref(false);
 const errorMessage = ref('');
-const showDebug = ref(true);
+const showDebug = ref(false); // Start with debug UI hidden
 
 // Game state - use shallowRef to prevent deep reactivity
 const physics = shallowRef(null);
@@ -67,6 +67,9 @@ const clock = shallowRef(null);
 const frameCount = ref(0);
 const wsManager = shallowRef(null);
 const playerManager = shallowRef(null);
+
+// Add debug visibility state
+const showDebugVisuals = ref(false); // Start with debug visuals hidden
 
 // Network update throttling
 let lastNetworkUpdate = 0;
@@ -450,6 +453,10 @@ const createLocalPlayer = (spawnPosition) => {
   
   const fpsController = new FPSController(scene.value, physics.value);
   fpsController.create(spawnPosition);
+  
+  // Set initial debug visibility
+  fpsController.setDebugVisualsEnabled(showDebugVisuals.value);
+  
   player.value = markRaw(fpsController);
   
   console.log("Player created at:", spawnPosition);
@@ -887,6 +894,20 @@ const requestPointerLock = () => {
 // Input handlers
 const onKeyDown = (event) => {
   if (!started.value || !player.value) return;
+  
+  // Handle debug toggle
+  if (event.code === 'Backquote') {
+    showDebug.value = !showDebug.value;
+    showDebugVisuals.value = !showDebugVisuals.value;
+    
+    // Update player debug visibility
+    if (player.value) {
+      player.value.setDebugVisualsEnabled(showDebugVisuals.value);
+    }
+    
+    console.log(`Debug mode: ${showDebug.value ? 'ON' : 'OFF'}`);
+    return;
+  }
   
   // Handle vehicle controls when in vehicle
   if (player.value.isInVehicle && player.value.currentVehicle) {
