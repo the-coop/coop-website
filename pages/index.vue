@@ -242,6 +242,8 @@ const connectToServer = () => {
             scene.value.spawnMultiplayerRock(objectId, data.position, data.scale);
           } else if (data.type === 'dynamic_platform') {
             scene.value.spawnMultiplayerDynamicPlatform(objectId, data.position, data.scale);
+          } else if (data.type === 'vehicle') {
+            scene.value.spawnMultiplayerVehicle(objectId, data.position, data.scale);
           }
         }
       };
