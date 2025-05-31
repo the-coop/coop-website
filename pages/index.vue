@@ -1127,14 +1127,21 @@ const onKeyDown = (event) => {
       player.value.keys.interact = true;
       break;
     case 'v':
-      player.value.toggleCamera();
-      break;
-    case 'k':
-      // Toggle debug visuals
+      // Toggle debug ray visualizations
       showDebugVisuals.value = !showDebugVisuals.value;
       if (player.value) {
         player.value.setDebugVisualsEnabled(showDebugVisuals.value);
       }
+      break;
+    case 'o':
+      player.value.keys.toggleCamera = true;
+      break;
+    case 'k':
+      // K key remains for something else if needed
+      break;
+    case '`':
+      // Backtick toggles debug UI
+      showDebug.value = !showDebug.value;
       break;
   }
   
@@ -1251,6 +1258,9 @@ const onKeyUp = (event) => {
       break;
     case 'u':
       player.value.keys.interact = false;
+      break;
+    case 'o':
+      player.value.keys.toggleCamera = false;
       break;
   }
 };
