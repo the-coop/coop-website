@@ -91,6 +91,9 @@ const frameCount = ref(0);
 const wsManager = shallowRef(null);
 const playerManager = shallowRef(null);
 
+// Add controller type tracking
+const controllerType = ref('fps'); // 'fps' or 'tp'
+
 // Add debug visibility state
 const showDebugVisuals = ref(false); // Start with debug visuals hidden
 
@@ -122,7 +125,8 @@ const debugInfo = reactive({
   isSwimming: false,
   isOnLadder: false,
   inVehicle: false,
-  playerCount: 0
+  playerCount: 0,
+  controllerType: 'FPS' // Add controller type to debug
 });
 
 // Format vector for display
@@ -485,7 +489,12 @@ const startGameWithMode = async (connectNetwork) => {
 const createLocalPlayer = (spawnPosition) => {
   console.log('Creating local player at:', spawnPosition);
   
-  player.value = new FPSController(scene.value, physics.value);
+  if (controllerType.value === 'fps') {
+    player.value = new FPSController(scene.value, physics.value);
+  } else {
+    player.value = new TPController(scene.value, physics.value);
+  }
+  
   player.value.create(spawnPosition);
   
   // Spawn test weapons in sandbox mode
@@ -506,9 +515,90 @@ const createLocalPlayer = (spawnPosition) => {
     player.value.weaponSystem.spawnWeaponPickup('shotgun', 
       new THREE.Vector3(0, platformHeight + 1, -5)
     );
+    
+    console.log('Spawned test weapons on platform');
   }
   
   console.log("Player created at:", spawnPosition);
+};
+
+// Add controller switching function
+const switchController = () => {
+  if (!player.value || !scene.value || !physics.value) return;
+  
+  // Get current state
+  const currentPosition = player.value.getPosition();
+  const currentVelocity = player.value.getVelocity();
+  const currentKeys = { ...player.value.keys };
+  const wasInVehicle = player.value.isInVehicle;
+  const currentVehicle = player.value.currentVehicle;
+  
+  // Store weapon system state if it exists
+  let weaponSystemState = null;
+  if (player.value.weaponSystem) {
+    weaponSystemState = {
+      inventory: [...player.value.weaponSystem.inventory],
+      currentSlot: player.value.weaponSystem.currentSlot,
+      weapons: new Map(player.value.weaponSystem.weapons),
+      weaponPickups: new Map(player.value.weaponSystem.weaponPickups)
+    };
+  }
+  
+  // Destroy current controller
+  if (player.value.dispose) {
+    player.value.dispose();
+  } else if (player.value.destroy) {
+    player.value.destroy();
+  }
+  
+  // Toggle controller type
+  controllerType.value = controllerType.value === 'fps' ? 'tp' : 'fps';
+  
+  // Create new controller
+  if (controllerType.value === 'fps') {
+    player.value = new FPSController(scene.value, physics.value);
+  } else {
+    player.value = new TPController(scene.value, physics.value);
+  }
+  
+  // Create at current position
+  player.value.create(currentPosition);
+  
+  // Restore velocity
+  if (player.value.body) {
+    player.value.body.setLinvel({
+      x: currentVelocity.x,
+      y: currentVelocity.y,
+      z: currentVelocity.z
+    });
+  }
+  
+  // Restore keys
+  player.value.keys = currentKeys;
+  
+  // Restore weapon system state if FPS controller
+  if (controllerType.value === 'fps' && weaponSystemState && player.value.weaponSystem) {
+    player.value.weaponSystem.inventory = weaponSystemState.inventory;
+    player.value.weaponSystem.currentSlot = weaponSystemState.currentSlot;
+    player.value.weaponSystem.weapons = weaponSystemState.weapons;
+    // Transfer weapon pickups
+    player.value.weaponSystem.weaponPickups = weaponSystemState.weaponPickups;
+    player.value.weaponSystem.switchToSlot(weaponSystemState.currentSlot);
+  }
+  
+  // Restore vehicle state if was in vehicle
+  if (wasInVehicle && currentVehicle) {
+    // Re-enter the vehicle
+    if (currentVehicle.enterCar) {
+      player.value.enterCar(currentVehicle);
+    } else if (currentVehicle.enterPlane) {
+      player.value.enterPlane(currentVehicle);
+    } else if (currentVehicle.enterHelicopter) {
+      player.value.enterHelicopter(currentVehicle);
+    }
+  }
+  
+  console.log(`Switched to ${controllerType.value.toUpperCase()} controller`);
 };
 
 // Send player state to server
@@ -855,6 +945,7 @@ const animate = () => {
     debugInfo.facing = player.value.getFacing();
     debugInfo.inVehicle = player.value.isInVehicle; // Update vehicle state
     debugInfo.isSwimming = player.value.isSwimming;
+    debugInfo.controllerType = controllerType.value.toUpperCase(); // Update controller type
     
     // Check for weapon pickups
     if (player.value.weaponSystem) {
@@ -1077,6 +1168,12 @@ const onKeyDown = (event) => {
     return;
   }
   
+  // Handle controller switch
+  if (event.code === 'KeyO') {
+    switchController();
+    return;
+  }
+  
   // Handle vehicle controls when in vehicle
   if (player.value.isInVehicle && player.value.currentVehicle) {
     const vehicle = player.value.currentVehicle;
@@ -1210,7 +1307,7 @@ const onKeyDown = (event) => {
       player.value.keys.run = true;
       break;
     case 'KeyO':
-      player.value.toggleCamera();
+      switchController(); // Changed from toggleCamera to switchController
       break;
     case 'KeyF':
       // Interact - pick up weapon
