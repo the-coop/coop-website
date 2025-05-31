@@ -1085,7 +1085,10 @@ const onKeyDown = (event) => {
         }
         break;
       case 'u':
-        // Set interact key for player controller
+        // Map interact key to vehicle controls AND player keys
+        if (vehicle.controls) {
+          vehicle.controls.interact = true;
+        }
         if (player.value) {
           player.value.keys.interact = true;
         }
@@ -1208,7 +1211,10 @@ const onKeyUp = (event) => {
         }
         break;
       case 'u':
-        // Release interact key for player controller
+        // Release interact key for both vehicle controls AND player keys
+        if (vehicle.controls) {
+          vehicle.controls.interact = false;
+        }
         if (player.value) {
           player.value.keys.interact = false;
         }
