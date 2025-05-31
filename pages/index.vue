@@ -939,9 +939,8 @@ const animate = () => {
     weaponSystem.value.update(deltaTime);
     
     // Update weapon HUD
-    if (frameCount.value % 3 === 0) { // Update HUD less frequently
+    if (frameCount.value % 3 === 0) // Update HUD less frequently
       weaponInfo.value = weaponSystem.value.getHUDInfo();
-    }
   }
   
   // Render
@@ -1044,55 +1043,55 @@ const onKeyDown = (event) => {
     
     switch(event.key.toLowerCase()) {
       case 'w':
-        if (vehicle.keys) {
-          vehicle.keys.forward = true;
-          if (vehicle.keys.throttleUp !== undefined) vehicle.keys.throttleUp = true;
+        if (vehicle.controls) {
+          vehicle.controls.forward = true;
+          vehicle.controls.throttleUp = true;
         }
         break;
       case 's':
-        if (vehicle.keys) {
-          vehicle.keys.backward = true;
-          if (vehicle.keys.throttleDown !== undefined) vehicle.keys.throttleDown = true;
+        if (vehicle.controls) {
+          vehicle.controls.backward = true;
+          vehicle.controls.throttleDown = true;
         }
         break;
       case 'a':
-        if (vehicle.keys) {
-          vehicle.keys.left = true;
-          if (vehicle.keys.rollLeft !== undefined) vehicle.keys.rollLeft = true;
+        if (vehicle.controls) {
+          vehicle.controls.left = true;
+          vehicle.controls.rollLeft = true;
         }
         break;
       case 'd':
-        if (vehicle.keys) {
-          vehicle.keys.right = true;
-          if (vehicle.keys.rollRight !== undefined) vehicle.keys.rollRight = true;
+        if (vehicle.controls) {
+          vehicle.controls.right = true;
+          vehicle.controls.rollRight = true;
         }
         break;
       case ' ':
-        if (vehicle.keys) {
-          if (vehicle.keys.brake !== undefined) vehicle.keys.brake = true;
-          if (vehicle.keys.collectiveUp !== undefined) vehicle.keys.collectiveUp = true;
-        }
-        break;
-      case 'shift':
-        if (vehicle.keys) {
-          if (vehicle.keys.collectiveDown !== undefined) vehicle.keys.collectiveDown = true;
+        if (vehicle.controls) {
+          vehicle.controls.brake = true;
+          vehicle.controls.pitchUp = true;
         }
         break;
       case 'q':
-        if (vehicle.keys && vehicle.keys.yawLeft !== undefined) {
-          vehicle.keys.yawLeft = true;
+        if (vehicle.controls) {
+          vehicle.controls.pitchDown = true;
+          vehicle.controls.yawLeft = true;
         }
         break;
       case 'e':
-        if (vehicle.keys && vehicle.keys.yawRight !== undefined) {
-          vehicle.keys.yawRight = true;
+        if (vehicle.controls) {
+          vehicle.controls.pitchUp = true;
+          vehicle.controls.yawRight = true;
         }
         break;
       case 'u':
-        player.value.keys.interact = true;
+        // Set interact key for player controller
+        if (player.value) {
+          player.value.keys.interact = true;
+        }
         break;
     }
-    return; // Don't process normal player controls
+    return;
   }
   
   // Normal player controls
@@ -1124,25 +1123,37 @@ const onKeyDown = (event) => {
     case 'u':
       player.value.keys.interact = true;
       break;
-    case 'c':
-      player.value.toggleCamera();
-      break;
-    case 'o':  // Add 'o' key for third-person toggle
-      player.value.toggleCamera();
-      break;
     case 'v':
-      player.value.setDebugVisualsEnabled(!player.value.debugVisualsEnabled);
-      console.log('Debug visuals:', player.value.debugVisualsEnabled ? 'enabled' : 'disabled');
+      player.value.toggleCamera();
       break;
-    case '`':  // Add backtick key for debug UI toggle
-      showDebug.value = !showDebug.value;
-      console.log('Debug UI:', showDebug.value ? 'shown' : 'hidden');
+    case 'k':
+      // Toggle debug visuals
+      showDebugVisuals.value = !showDebugVisuals.value;
+      if (player.value) {
+        player.value.setDebugVisualsEnabled(showDebugVisuals.value);
+      }
       break;
   }
   
   // Weapon controls - FIX: Add .value to access the ref
   if (weaponSystem.value) {
-    weaponSystem.value.handleKeyPress(event.key);
+    switch(event.key.toLowerCase()) {
+      case '1':
+        weaponSystem.value.switchWeapon('hands');
+        break;
+      case '2':
+        weaponSystem.value.switchWeapon('pistol');
+        break;
+      case '3':
+        weaponSystem.value.switchWeapon('rifle');
+        break;
+      case '4':
+        weaponSystem.value.switchWeapon('shotgun');
+        break;
+      case 'r':
+        weaponSystem.value.reload();
+        break;
+    }
   }
 };
 
@@ -1155,55 +1166,55 @@ const onKeyUp = (event) => {
     
     switch(event.key.toLowerCase()) {
       case 'w':
-        if (vehicle.keys) {
-          vehicle.keys.forward = false;
-          if (vehicle.keys.throttleUp !== undefined) vehicle.keys.throttleUp = false;
+        if (vehicle.controls) {
+          vehicle.controls.forward = false;
+          vehicle.controls.throttleUp = false;
         }
         break;
       case 's':
-        if (vehicle.keys) {
-          vehicle.keys.backward = false;
-          if (vehicle.keys.throttleDown !== undefined) vehicle.keys.throttleDown = false;
+        if (vehicle.controls) {
+          vehicle.controls.backward = false;
+          vehicle.controls.throttleDown = false;
         }
         break;
       case 'a':
-        if (vehicle.keys) {
-          vehicle.keys.left = false;
-          if (vehicle.keys.rollLeft !== undefined) vehicle.keys.rollLeft = false;
+        if (vehicle.controls) {
+          vehicle.controls.left = false;
+          vehicle.controls.rollLeft = false;
         }
         break;
       case 'd':
-        if (vehicle.keys) {
-          vehicle.keys.right = false;
-          if (vehicle.keys.rollRight !== undefined) vehicle.keys.rollRight = false;
+        if (vehicle.controls) {
+          vehicle.controls.right = false;
+          vehicle.controls.rollRight = false;
         }
         break;
       case ' ':
-        if (vehicle.keys) {
-          if (vehicle.keys.brake !== undefined) vehicle.keys.brake = false;
-          if (vehicle.keys.collectiveUp !== undefined) vehicle.keys.collectiveUp = false;
-        }
-        break;
-      case 'shift':
-        if (vehicle.keys) {
-          if (vehicle.keys.collectiveDown !== undefined) vehicle.keys.collectiveDown = false;
+        if (vehicle.controls) {
+          vehicle.controls.brake = false;
+          vehicle.controls.pitchUp = false;
         }
         break;
       case 'q':
-        if (vehicle.keys && vehicle.keys.yawLeft !== undefined) {
-          vehicle.keys.yawLeft = false;
+        if (vehicle.controls) {
+          vehicle.controls.pitchDown = false;
+          vehicle.controls.yawLeft = false;
         }
         break;
       case 'e':
-        if (vehicle.keys && vehicle.keys.yawRight !== undefined) {
-          vehicle.keys.yawRight = false;
+        if (vehicle.controls) {
+          vehicle.controls.pitchUp = false;
+          vehicle.controls.yawRight = false;
         }
         break;
       case 'u':
-        player.value.keys.interact = false;
+        // Release interact key for player controller
+        if (player.value) {
+          player.value.keys.interact = false;
+        }
         break;
     }
-    return; // Don't process normal player controls
+    return;
   }
   
   // Normal player controls
