@@ -34,6 +34,28 @@
       <div v-if="debugInfo.inVehicle" class="vehicle-info">In Vehicle</div>
       <div v-if="debugInfo.isSwimming" class="swimming-info">Swimming</div> <!-- Swimming state -->
     </div>
+    
+    <!-- Add weapon UI after other UI elements -->
+    <div v-if="started && showDebug" class="weapon-info">
+      <div class="weapon-name">{{ weaponInfo.name }}</div>
+      <div v-if="weaponInfo.ammo !== Infinity" class="weapon-ammo">
+        {{ weaponInfo.currentAmmo }} / {{ weaponInfo.maxAmmo }}
+      </div>
+      <div class="weapon-slots">
+        <div 
+          v-for="(slot, index) in weaponSlots" 
+          :key="index"
+          :class="['weapon-slot', { active: currentWeaponSlot === index }]"
+        >
+          {{ index }}: {{ slot ? slot.type : 'Empty' }}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Add interaction prompt -->
+    <div v-if="interactionPrompt" class="interaction-prompt">
+      {{ interactionPrompt }}
+    </div>
   </div>
 </template>
 
@@ -44,6 +66,7 @@ import RAPIER from '@dimforge/rapier3d-compat';
 import { PhysicsManager } from '../lib/physics.js';
 import { SceneManager } from '../lib/scene.js';
 import { FPSController } from '../lib/fpsController.js';
+import { TPController } from '../lib/TPController.js'; // Add this import if needed
 import { WebSocketManager } from '../lib/network.js';
 import { PlayerManager } from '../lib/players.js';
 import { CampaignLoader } from '../lib/campaignLoader.js';
@@ -71,24 +94,36 @@ const playerManager = shallowRef(null);
 // Add debug visibility state
 const showDebugVisuals = ref(false); // Start with debug visuals hidden
 
+// Add game mode
+const gameMode = ref('');
+
 // Network update throttling
 let lastNetworkUpdate = 0;
-const networkUpdateInterval = 33; // Increased to 30Hz from 20Hz for smoother falling
+const networkUpdateInterval = 33; // ~30 FPS for network updates
 
-const debugInfo = reactive({
-  isGrounded: false,
-  position: new THREE.Vector3(),
-  isMoving: false,
-  currentSpeed: 0,
-  facing: new THREE.Vector3(0, 0, -1),
-  connected: false,
-  playersOnline: 0,
-  inVehicle: false, // Add vehicle state
-  isSwimming: false // Add swimming state
+// Add weapon state
+const weaponInfo = reactive({
+  name: 'Hands',
+  ammo: Infinity,
+  currentAmmo: Infinity,
+  maxAmmo: Infinity
 });
 
-// Add game mode ref
-const gameMode = ref('');
+const weaponSlots = ref([]);
+const currentWeaponSlot = ref(0);
+const interactionPrompt = ref('');
+
+// Add debug info
+const debugInfo = reactive({
+  frameTime: 16,
+  position: new THREE.Vector3(),
+  velocity: new THREE.Vector3(),
+  isGrounded: false,
+  isSwimming: false,
+  isOnLadder: false,
+  inVehicle: false,
+  playerCount: 0
+});
 
 // Format vector for display
 const formatVector = (vec) => {
@@ -448,18 +483,30 @@ const startGameWithMode = async (connectNetwork) => {
 
 // Create local player helper
 const createLocalPlayer = (spawnPosition) => {
-  if (!scene.value || !physics.value) {
-    console.error("Cannot create player: scene or physics not initialized");
-    return;
+  console.log('Creating local player at:', spawnPosition);
+  
+  player.value = new FPSController(scene.value, physics.value);
+  player.value.create(spawnPosition);
+  
+  // Spawn test weapons in sandbox mode
+  if (gameMode.value === 'sandbox' && player.value.weaponSystem) {
+    const platformHeight = 30 + 3/2;
+    
+    // Spawn pistol
+    player.value.weaponSystem.spawnWeaponPickup('pistol', 
+      new THREE.Vector3(5, platformHeight + 1, 5)
+    );
+    
+    // Spawn rifle
+    player.value.weaponSystem.spawnWeaponPickup('rifle', 
+      new THREE.Vector3(-5, platformHeight + 1, 5)
+    );
+    
+    // Spawn shotgun
+    player.value.weaponSystem.spawnWeaponPickup('shotgun', 
+      new THREE.Vector3(0, platformHeight + 1, -5)
+    );
   }
-  
-  const fpsController = new FPSController(scene.value, physics.value);
-  fpsController.create(spawnPosition);
-  
-  // Set initial debug visibility
-  fpsController.setDebugVisualsEnabled(showDebugVisuals.value);
-  
-  player.value = markRaw(fpsController);
   
   console.log("Player created at:", spawnPosition);
 };
@@ -808,6 +855,28 @@ const animate = () => {
     debugInfo.facing = player.value.getFacing();
     debugInfo.inVehicle = player.value.isInVehicle; // Update vehicle state
     debugInfo.isSwimming = player.value.isSwimming;
+    
+    // Check for weapon pickups
+    if (player.value.weaponSystem) {
+      const nearbyPickup = player.value.checkNearbyWeaponPickup();
+      if (nearbyPickup) {
+        interactionPrompt.value = `Press F to pick up ${nearbyPickup.type}`;
+      } else {
+        interactionPrompt.value = '';
+      }
+      
+      // Update weapon UI
+      const currentWeapon = player.value.weaponSystem.getCurrentWeaponInfo();
+      if (currentWeapon) {
+        weaponInfo.name = currentWeapon.name;
+        weaponInfo.ammo = currentWeapon.ammo;
+        weaponInfo.currentAmmo = currentWeapon.currentAmmo;
+        weaponInfo.maxAmmo = currentWeapon.maxAmmo;
+      }
+      
+      weaponSlots.value = player.value.weaponSystem.inventory;
+      currentWeaponSlot.value = player.value.weaponSystem.currentSlot;
+    }
   }
   
   // Check for automatic rock pushing in multiplayer - but not every frame
@@ -1144,18 +1213,20 @@ const onKeyDown = (event) => {
       player.value.toggleCamera();
       break;
     case 'KeyF':
-      // Push/interact key
-      const pushableObject = checkForPushableObject();
-      if (pushableObject) {
-        pushObject(pushableObject);
-      }
+      // Interact - pick up weapon
+      player.value.tryPickupWeapon();
       break;
-    case 'KeyU':
-      // Enter vehicle
-      const nearbyVehicle = player.value.checkForNearbyVehicle();
-      if (nearbyVehicle) {
-        player.value.enterVehicle(nearbyVehicle);
-      }
+    case 'Digit1':
+      player.value.switchWeapon(0);
+      break;
+    case 'Digit2':
+      player.value.switchWeapon(1);
+      break;
+    case 'Digit3':
+      player.value.switchWeapon(2);
+      break;
+    case 'KeyR':
+      player.value.reloadWeapon();
       break;
   }
 };
@@ -1305,12 +1376,16 @@ const onMouseMove = (event) => {
 
 const onMouseDown = (event) => {
   if (!started.value || !player.value) return;
-  if (document.pointerLockElement !== scene.value?.renderer?.domElement) return;
   
   if (event.button === 0) { // Left click
-    const pushableObject = checkForPushableObject();
-    if (pushableObject) {
-      pushObject(pushableObject);
+    if (document.pointerLockElement) {
+      // Fire weapon if we have pointer lock
+      if (player.value && player.value.weaponSystem) {
+        player.value.fireWeapon();
+      }
+    } else {
+      // Request pointer lock if we don't have it
+      requestPointerLock();
     }
   }
 };
@@ -1711,5 +1786,59 @@ onBeforeUnmount(() => {
   color: #00ffff;
   font-weight: bold;
   margin-top: 5px;
+}
+
+/* Add weapon UI styles */
+.weapon-info {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 15px;
+  font-family: monospace;
+  border-radius: 5px;
+  min-width: 200px;
+}
+
+.weapon-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.weapon-ammo {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.weapon-slots {
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+.weapon-slot {
+  padding: 2px 0;
+  opacity: 0.5;
+}
+
+.weapon-slot.active {
+  opacity: 1;
+  font-weight: bold;
+  color: #00ff00;
+}
+
+.interaction-prompt {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 20px;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  border-radius: 5px;
 }
 </style>
