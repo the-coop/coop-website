@@ -1,60 +1,67 @@
 <template>
   <div class="game-container">
+    <!-- Canvas container -->
     <div ref="gameCanvas" class="game-canvas"></div>
-    <div v-if="loading" class="loading-screen">Loading physics engine...</div>
-    <div v-if="!started && !loading" class="start-screen">
+    
+    <!-- Loading screen -->
+    <div v-if="loading" class="loading-screen">
+      <div class="loading-text">Loading...</div>
+    </div>
+    
+    <!-- Start screen -->
+    <div v-else-if="!started" class="start-screen">
       <div class="menu-container">
-        <h1 class="game-title">Conquest</h1>
+        <h1 class="game-title">CONQUEST</h1>
         <div class="menu-buttons">
           <button @click="startCampaign" class="menu-button campaign-button">
-            <span class="button-title">Campaign</span>
-            <span class="button-description">Story mode</span>
+            <div class="button-title">Campaign</div>
+            <div class="button-description">Play through story missions</div>
           </button>
           <button @click="startSandbox" class="menu-button sandbox-button">
-            <span class="button-title">Sandbox</span>
-            <span class="button-description">Free play</span>
+            <div class="button-title">Sandbox</div>
+            <div class="button-description">Free play with all features</div>
           </button>
           <button @click="startMultiplayer" class="menu-button multiplayer-button">
-            <span class="button-title">Multiplayer</span>
-            <span class="button-description">Play online</span>
+            <div class="button-title">Multiplayer</div>
+            <div class="button-description">Play with others online</div>
           </button>
         </div>
       </div>
     </div>
-    <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
-    <div class="debug-info" v-if="started && showDebug">
+    
+    <!-- Crosshair -->
+    <div v-if="started && showCrosshair" class="crosshair">
+      <div class="crosshair-line crosshair-horizontal"></div>
+      <div class="crosshair-line crosshair-vertical"></div>
+    </div>
+    
+    <!-- Debug info -->
+    <div v-if="started && showDebug" class="debug-info">
       <div>Mode: {{ gameMode }}</div>
-      <div>Grounded: {{ debugInfo.isGrounded }}</div>
       <div>Position: {{ formatVector(debugInfo.position) }}</div>
-      <div>Moving: {{ debugInfo.isMoving }}</div>
-      <div>Speed: {{ debugInfo.currentSpeed?.toFixed(2) }}</div>
       <div>Facing: {{ formatVector(debugInfo.facing) }}</div>
-      <div v-if="gameMode === 'multiplayer'">Connected: {{ debugInfo.connected }}</div>
-      <div v-if="gameMode === 'multiplayer'">Players Online: {{ debugInfo.playersOnline }}</div>
+      <div>Speed: {{ debugInfo.currentSpeed.toFixed(2) }} m/s</div>
+      <div>Moving: {{ debugInfo.isMoving ? 'Yes' : 'No' }}</div>
+      <div>Grounded: {{ debugInfo.isGrounded ? 'Yes' : 'No' }}</div>
+      <div>Swimming: {{ debugInfo.isSwimming ? 'Yes' : 'No' }}</div>
       <div v-if="debugInfo.inVehicle" class="vehicle-info">In Vehicle</div>
-      <div v-if="debugInfo.isSwimming" class="swimming-info">Swimming</div> <!-- Swimming state -->
-    </div>
-    
-    <!-- Add weapon UI after other UI elements -->
-    <div v-if="started && showDebug" class="weapon-info">
-      <div class="weapon-name">{{ weaponInfo.name }}</div>
-      <div v-if="weaponInfo.ammo !== Infinity" class="weapon-ammo">
-        {{ weaponInfo.currentAmmo }} / {{ weaponInfo.maxAmmo }}
-      </div>
-      <div class="weapon-slots">
-        <div 
-          v-for="(slot, index) in weaponSlots" 
-          :key="index"
-          :class="['weapon-slot', { active: currentWeaponSlot === index }]"
-        >
-          {{ index }}: {{ slot ? slot.type : 'Empty' }}
-        </div>
+      <div v-if="gameMode === 'multiplayer'">
+        <div>Connected: {{ debugInfo.connected ? 'Yes' : 'No' }}</div>
+        <div>Players Online: {{ debugInfo.playersOnline }}</div>
       </div>
     </div>
     
-    <!-- Add interaction prompt -->
-    <div v-if="interactionPrompt" class="interaction-prompt">
-      {{ interactionPrompt }}
+    <!-- Add weapon HUD when game is started and in sandbox mode -->
+    <div v-if="started && gameMode === 'sandbox' && weaponInfo" class="weapon-hud">
+      <div class="weapon-name">{{ weaponInfo.weaponName }}</div>
+      <div class="ammo-display" v-if="weaponInfo.maxAmmo > 0">
+        <span class="current-ammo">{{ weaponInfo.currentAmmo }}</span>
+        <span class="ammo-separator">/</span>
+        <span class="max-ammo">{{ weaponInfo.maxAmmo }}</span>
+      </div>
+      <div v-if="weaponInfo.isReloading" class="reload-bar">
+        <div class="reload-progress" :style="{ width: (weaponInfo.reloadProgress * 100) + '%' }"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -66,10 +73,10 @@ import RAPIER from '@dimforge/rapier3d-compat';
 import { PhysicsManager } from '../lib/physics.js';
 import { SceneManager } from '../lib/scene.js';
 import { FPSController } from '../lib/fpsController.js';
-import { TPController } from '../lib/TPController.js'; // Add this import if needed
 import { WebSocketManager } from '../lib/network.js';
 import { PlayerManager } from '../lib/players.js';
 import { CampaignLoader } from '../lib/campaignLoader.js';
+import { WeaponSystem } from '../lib/weapons.js';
 
 // Get WebSocket URL from runtime config
 const config = useRuntimeConfig();
@@ -90,43 +97,40 @@ const clock = shallowRef(null);
 const frameCount = ref(0);
 const wsManager = shallowRef(null);
 const playerManager = shallowRef(null);
-
-// Add controller type tracking
-const controllerType = ref('fps'); // 'fps' or 'tp'
+const weaponSystem = shallowRef(null); // ADD THIS LINE - Define weaponSystem ref
 
 // Add debug visibility state
 const showDebugVisuals = ref(false); // Start with debug visuals hidden
 
-// Add game mode
-const gameMode = ref('');
+// Add crosshair visibility state
+const showCrosshair = ref(true);
 
 // Network update throttling
 let lastNetworkUpdate = 0;
-const networkUpdateInterval = 33; // ~30 FPS for network updates
+const networkUpdateInterval = 33; // Increased to 30Hz from 20Hz for smoother falling
 
-// Add weapon state
-const weaponInfo = reactive({
-  name: 'Hands',
-  ammo: Infinity,
-  currentAmmo: Infinity,
-  maxAmmo: Infinity
+const debugInfo = reactive({
+  isGrounded: false,
+  position: new THREE.Vector3(),
+  isMoving: false,
+  currentSpeed: 0,
+  facing: new THREE.Vector3(0, 0, -1),
+  connected: false,
+  playersOnline: 0,
+  inVehicle: false, // Add vehicle state
+  isSwimming: false // Add swimming state
 });
 
-const weaponSlots = ref([]);
-const currentWeaponSlot = ref(0);
-const interactionPrompt = ref('');
+// Add game mode ref
+const gameMode = ref('');
 
-// Add debug info
-const debugInfo = reactive({
-  frameTime: 16,
-  position: new THREE.Vector3(),
-  velocity: new THREE.Vector3(),
-  isGrounded: false,
-  isSwimming: false,
-  isOnLadder: false,
-  inVehicle: false,
-  playerCount: 0,
-  controllerType: 'FPS' // Add controller type to debug
+// Add weapon info reactive state for HUD
+const weaponInfo = reactive({
+  weaponName: '',
+  currentAmmo: 0,
+  maxAmmo: 0,
+  isReloading: false,
+  reloadProgress: 0
 });
 
 // Format vector for display
@@ -467,6 +471,35 @@ const startGameWithMode = async (connectNetwork) => {
       return;
     }
     
+    // Create weapon system for sandbox mode
+    if (gameMode.value === 'sandbox') {
+      weaponSystem.value = markRaw(new WeaponSystem(scene.value, physics.value, player.value));
+      
+      // Set global reference for FPS controller
+      window.weaponSystem = weaponSystem.value;
+      
+      // Spawn weapons on the platform after weapon system is initialized
+      scene.value.spawnSandboxWeapons(weaponSystem.value);
+      
+      // Update weapon HUD info
+      const updateWeaponHUD = () => {
+        const info = weaponSystem.value.getHUDInfo();
+        if (info) {
+          weaponInfo.weaponName = info.weaponName;
+          weaponInfo.currentAmmo = info.currentAmmo;
+          weaponInfo.maxAmmo = info.maxAmmo;
+          weaponInfo.isReloading = info.isReloading;
+          weaponInfo.reloadProgress = info.reloadProgress;
+        }
+      };
+      
+      // Initial HUD update
+      updateWeaponHUD();
+      
+      // Update HUD periodically
+      setInterval(updateWeaponHUD, 100);
+    }
+    
     started.value = true;
     clock.value.start();
     animate();
@@ -487,118 +520,20 @@ const startGameWithMode = async (connectNetwork) => {
 
 // Create local player helper
 const createLocalPlayer = (spawnPosition) => {
-  console.log('Creating local player at:', spawnPosition);
-  
-  if (controllerType.value === 'fps') {
-    player.value = new FPSController(scene.value, physics.value);
-  } else {
-    player.value = new TPController(scene.value, physics.value);
+  if (!scene.value || !physics.value) {
+    console.error("Cannot create player: scene or physics not initialized");
+    return;
   }
   
-  player.value.create(spawnPosition);
+  const fpsController = new FPSController(scene.value, physics.value);
+  fpsController.create(spawnPosition);
   
-  // Spawn test weapons in sandbox mode
-  if (gameMode.value === 'sandbox' && player.value.weaponSystem) {
-    const platformHeight = 30 + 3/2;
-    
-    // Spawn pistol
-    player.value.weaponSystem.spawnWeaponPickup('pistol', 
-      new THREE.Vector3(5, platformHeight + 1, 5)
-    );
-    
-    // Spawn rifle
-    player.value.weaponSystem.spawnWeaponPickup('rifle', 
-      new THREE.Vector3(-5, platformHeight + 1, 5)
-    );
-    
-    // Spawn shotgun
-    player.value.weaponSystem.spawnWeaponPickup('shotgun', 
-      new THREE.Vector3(0, platformHeight + 1, -5)
-    );
-    
-    console.log('Spawned test weapons on platform');
-  }
+  // Set initial debug visibility
+  fpsController.setDebugVisualsEnabled(showDebugVisuals.value);
+  
+  player.value = markRaw(fpsController);
   
   console.log("Player created at:", spawnPosition);
-};
-
-// Add controller switching function
-const switchController = () => {
-  if (!player.value || !scene.value || !physics.value) return;
-  
-  // Get current state
-  const currentPosition = player.value.getPosition();
-  const currentVelocity = player.value.getVelocity();
-  const currentKeys = { ...player.value.keys };
-  const wasInVehicle = player.value.isInVehicle;
-  const currentVehicle = player.value.currentVehicle;
-  
-  // Store weapon system state if it exists
-  let weaponSystemState = null;
-  if (player.value.weaponSystem) {
-    weaponSystemState = {
-      inventory: [...player.value.weaponSystem.inventory],
-      currentSlot: player.value.weaponSystem.currentSlot,
-      weapons: new Map(player.value.weaponSystem.weapons),
-      weaponPickups: new Map(player.value.weaponSystem.weaponPickups)
-    };
-  }
-  
-  // Destroy current controller
-  if (player.value.dispose) {
-    player.value.dispose();
-  } else if (player.value.destroy) {
-    player.value.destroy();
-  }
-  
-  // Toggle controller type
-  controllerType.value = controllerType.value === 'fps' ? 'tp' : 'fps';
-  
-  // Create new controller
-  if (controllerType.value === 'fps') {
-    player.value = new FPSController(scene.value, physics.value);
-  } else {
-    player.value = new TPController(scene.value, physics.value);
-  }
-  
-  // Create at current position
-  player.value.create(currentPosition);
-  
-  // Restore velocity
-  if (player.value.body) {
-    player.value.body.setLinvel({
-      x: currentVelocity.x,
-      y: currentVelocity.y,
-      z: currentVelocity.z
-    });
-  }
-  
-  // Restore keys
-  player.value.keys = currentKeys;
-  
-  // Restore weapon system state if FPS controller
-  if (controllerType.value === 'fps' && weaponSystemState && player.value.weaponSystem) {
-    player.value.weaponSystem.inventory = weaponSystemState.inventory;
-    player.value.weaponSystem.currentSlot = weaponSystemState.currentSlot;
-    player.value.weaponSystem.weapons = weaponSystemState.weapons;
-    // Transfer weapon pickups
-    player.value.weaponSystem.weaponPickups = weaponSystemState.weaponPickups;
-    player.value.weaponSystem.switchToSlot(weaponSystemState.currentSlot);
-  }
-  
-  // Restore vehicle state if was in vehicle
-  if (wasInVehicle && currentVehicle) {
-    // Re-enter the vehicle
-    if (currentVehicle.enterCar) {
-      player.value.enterCar(currentVehicle);
-    } else if (currentVehicle.enterPlane) {
-      player.value.enterPlane(currentVehicle);
-    } else if (currentVehicle.enterHelicopter) {
-      player.value.enterHelicopter(currentVehicle);
-    }
-  }
-  
-  console.log(`Switched to ${controllerType.value.toUpperCase()} controller`);
 };
 
 // Send player state to server
@@ -938,35 +873,20 @@ const animate = () => {
     player.value.update(deltaTime);
     
     // Update debug info
-    debugInfo.position = player.value.getPosition();
     debugInfo.isGrounded = player.value.isGrounded;
-    debugInfo.isMoving = player.value.isMoving;
-    debugInfo.currentSpeed = player.value.currentSpeed;
+    debugInfo.position = player.value.getPosition();
     debugInfo.facing = player.value.getFacing();
-    debugInfo.inVehicle = player.value.isInVehicle; // Update vehicle state
+    debugInfo.inVehicle = player.value.isInVehicle;
     debugInfo.isSwimming = player.value.isSwimming;
-    debugInfo.controllerType = controllerType.value.toUpperCase(); // Update controller type
     
-    // Check for weapon pickups
-    if (player.value.weaponSystem) {
-      const nearbyPickup = player.value.checkNearbyWeaponPickup();
-      if (nearbyPickup) {
-        interactionPrompt.value = `Press F to pick up ${nearbyPickup.type}`;
-      } else {
-        interactionPrompt.value = '';
-      }
-      
-      // Update weapon UI
-      const currentWeapon = player.value.weaponSystem.getCurrentWeaponInfo();
-      if (currentWeapon) {
-        weaponInfo.name = currentWeapon.name;
-        weaponInfo.ammo = currentWeapon.ammo;
-        weaponInfo.currentAmmo = currentWeapon.currentAmmo;
-        weaponInfo.maxAmmo = currentWeapon.maxAmmo;
-      }
-      
-      weaponSlots.value = player.value.weaponSystem.inventory;
-      currentWeaponSlot.value = player.value.weaponSystem.currentSlot;
+    // Calculate speed and movement
+    const velocity = player.value.getVelocity();
+    debugInfo.currentSpeed = velocity.length();
+    debugInfo.isMoving = debugInfo.currentSpeed > 0.1;
+    
+    // Update crosshair visibility based on camera mode
+    if (player.value.tpController) {
+      showCrosshair.value = !player.value.tpController.isActive;
     }
   }
   
@@ -1013,6 +933,16 @@ const animate = () => {
   
   // Update ownership
   updateOwnership();
+  
+  // Update weapon system
+  if (weaponSystem.value && !isPhysicsStepping) {
+    weaponSystem.value.update(deltaTime);
+    
+    // Update weapon HUD
+    if (frameCount.value % 3 === 0) { // Update HUD less frequently
+      weaponInfo.value = weaponSystem.value.getHUDInfo();
+    }
+  }
   
   // Render
   scene.value.render();
@@ -1106,383 +1036,234 @@ const requestPointerLock = () => {
 
 // Input handlers
 const onKeyDown = (event) => {
-  if (!started.value || !player.value) return;
+  if (!started.value || isPhysicsStepping) return;
   
-  // Handle debug toggle
-  if (event.code === 'Backquote') {
-    showDebug.value = !showDebug.value;
-    showDebugVisuals.value = !showDebugVisuals.value;
-    
-    // Update player debug visibility
-    if (player.value) {
-      player.value.setDebugVisualsEnabled(showDebugVisuals.value);
-    }
-    
-    console.log(`Debug mode: ${showDebug.value ? 'ON' : 'OFF'}`);
-    return;
-  }
-  
-  // Handle vehicle enter/exit with U key
-  if (event.code === 'KeyU') {
-    // Check if player is in any vehicle
-    if (player.value.isInVehicle && player.value.currentVehicle) {
-      // Exit vehicle
-      const vehicle = player.value.currentVehicle;
-      let exitInfo = null;
-      
-      if (vehicle.exitCar) {
-        exitInfo = vehicle.exitCar();
-      } else if (vehicle.exitPlane) {
-        exitInfo = vehicle.exitPlane();
-      } else if (vehicle.exitHelicopter) {
-        exitInfo = vehicle.exitHelicopter();
-      }
-      
-      if (exitInfo) {
-        // Exit the vehicle and don't check for nearby vehicles
-        player.value.exitVehicle(exitInfo.exitPosition);
-        // Add a small delay before allowing re-entry
-        player.value.vehicleExitCooldown = Date.now() + 500; // 500ms cooldown
-      }
-    } else {
-      // Only try to enter a vehicle if we're not in cooldown
-      if (!player.value.vehicleExitCooldown || Date.now() > player.value.vehicleExitCooldown) {
-        const nearbyVehicle = player.value.checkNearbyVehicles();
-        if (nearbyVehicle) {
-          let entered = false;
-          
-          if (nearbyVehicle.enterCar) {
-            entered = nearbyVehicle.enterCar(player.value);
-          } else if (nearbyVehicle.enterPlane) {
-            entered = nearbyVehicle.enterPlane(player.value);
-          } else if (nearbyVehicle.enterHelicopter) {
-            entered = nearbyVehicle.enterHelicopter(player.value);
-          }
-          
-          if (entered) {
-            player.value.enterVehicle(nearbyVehicle);
-          }
-        }
-      }
-    }
-    return;
-  }
-  
-  // Handle controller switch
-  if (event.code === 'KeyO') {
-    switchController();
-    return;
-  }
-  
-  // Handle vehicle controls when in vehicle
-  if (player.value.isInVehicle && player.value.currentVehicle) {
+  // Handle vehicle controls if player is in a vehicle
+  if (player.value?.isInVehicle && player.value?.currentVehicle) {
     const vehicle = player.value.currentVehicle;
     
-    // Car controls
-    if (vehicle.keys && vehicle.chassisBody) {
-      switch (event.code) {
-        case 'KeyW':
-        case 'ArrowUp':
+    switch(event.key.toLowerCase()) {
+      case 'w':
+        if (vehicle.keys) {
           vehicle.keys.forward = true;
-          break;
-        case 'KeyS':
-        case 'ArrowDown':
+          if (vehicle.keys.throttleUp !== undefined) vehicle.keys.throttleUp = true;
+        }
+        break;
+      case 's':
+        if (vehicle.keys) {
           vehicle.keys.backward = true;
-          break;
-        case 'KeyA':
-        case 'ArrowLeft':
+          if (vehicle.keys.throttleDown !== undefined) vehicle.keys.throttleDown = true;
+        }
+        break;
+      case 'a':
+        if (vehicle.keys) {
           vehicle.keys.left = true;
-          break;
-        case 'KeyD':
-        case 'ArrowRight':
+          if (vehicle.keys.rollLeft !== undefined) vehicle.keys.rollLeft = true;
+        }
+        break;
+      case 'd':
+        if (vehicle.keys) {
           vehicle.keys.right = true;
-          break;
-        case 'Space':
-          vehicle.keys.brake = true;
-          break;
-      }
-    }
-    
-    // Plane controls
-    else if (vehicle.keys && vehicle.elevatorAngle !== undefined) {
-      switch (event.code) {
-        case 'KeyW':
-        case 'ArrowUp':
-          vehicle.keys.pitchDown = true; // Pitch down = nose down
-          break;
-        case 'KeyS':
-        case 'ArrowDown':
-          vehicle.keys.pitchUp = true; // Pitch up = nose up
-          break;
-        case 'KeyA':
-        case 'ArrowLeft':
-          vehicle.keys.rollLeft = true;
-          break;
-        case 'KeyD':
-        case 'ArrowRight':
-          vehicle.keys.rollRight = true;
-          break;
-        case 'KeyQ':
+          if (vehicle.keys.rollRight !== undefined) vehicle.keys.rollRight = true;
+        }
+        break;
+      case ' ':
+        if (vehicle.keys) {
+          if (vehicle.keys.brake !== undefined) vehicle.keys.brake = true;
+          if (vehicle.keys.collectiveUp !== undefined) vehicle.keys.collectiveUp = true;
+        }
+        break;
+      case 'shift':
+        if (vehicle.keys) {
+          if (vehicle.keys.collectiveDown !== undefined) vehicle.keys.collectiveDown = true;
+        }
+        break;
+      case 'q':
+        if (vehicle.keys && vehicle.keys.yawLeft !== undefined) {
           vehicle.keys.yawLeft = true;
-          break;
-        case 'KeyE':
+        }
+        break;
+      case 'e':
+        if (vehicle.keys && vehicle.keys.yawRight !== undefined) {
           vehicle.keys.yawRight = true;
-          break;
-        case 'ShiftLeft':
-          vehicle.keys.throttleUp = true;
-          break;
-        case 'ControlLeft':
-          vehicle.keys.throttleDown = true;
-          break;
-      }
+        }
+        break;
+      case 'u':
+        player.value.keys.interact = true;
+        break;
     }
-    
-    // Helicopter controls
-    else if (vehicle.keys && vehicle.collective !== undefined) {
-      switch (event.code) {
-        case 'KeyW':
-        case 'ArrowUp':
-          vehicle.keys.forward = true;
-          break;
-        case 'KeyS':
-        case 'ArrowDown':
-          vehicle.keys.backward = true;
-          break;
-        case 'KeyA':
-        case 'ArrowLeft':
-          vehicle.keys.left = true;
-          break;
-        case 'KeyD':
-        case 'ArrowRight':
-          vehicle.keys.right = true;
-          break;
-        case 'KeyQ':
-          vehicle.keys.yawLeft = true;
-          break;
-        case 'KeyE':
-          vehicle.keys.yawRight = true;
-          break;
-        case 'ShiftLeft':
-          vehicle.keys.collectiveUp = true;
-          break;
-        case 'ControlLeft':
-          vehicle.keys.collectiveDown = true;
-          break;
-      }
-    }
-    
-    return;
+    return; // Don't process normal player controls
   }
   
   // Normal player controls
-  switch (event.code) {
-    case 'KeyW':
-    case 'ArrowUp':
+  switch(event.key.toLowerCase()) {
+    case 'w':
       player.value.keys.forward = true;
       break;
-    case 'KeyS':
-    case 'ArrowDown':
+    case 's':
       player.value.keys.backward = true;
       break;
-    case 'KeyA':
-    case 'ArrowLeft':
+    case 'a':
       player.value.keys.left = true;
       break;
-    case 'KeyD':
-    case 'ArrowRight':
+    case 'd':
       player.value.keys.right = true;
       break;
-    case 'KeyQ':
-      player.value.keys.rollLeft = true;
+    case ' ':
+      player.value.keys.jump = true;
       break;
-    case 'KeyE':
-      player.value.keys.rollRight = true;
-      break;
-    case 'Space':
-      if (player.value.isGrounded) {
-        player.value.keys.jump = true;
-      }
-      break;
-    case 'ShiftLeft':
+    case 'shift':
       player.value.keys.run = true;
       break;
-    case 'KeyO':
-      switchController(); // Changed from toggleCamera to switchController
+    case 'q':
+      player.value.keys.rollLeft = true;
       break;
-    case 'KeyF':
-      // Interact - pick up weapon
-      player.value.tryPickupWeapon();
+    case 'e':
+      player.value.keys.rollRight = true;
       break;
-    case 'Digit1':
-      player.value.switchWeapon(0);
+    case 'u':
+      player.value.keys.interact = true;
       break;
-    case 'Digit2':
-      player.value.switchWeapon(1);
+    case 'c':
+      player.value.toggleCamera();
       break;
-    case 'Digit3':
-      player.value.switchWeapon(2);
+    case 'o':  // Add 'o' key for third-person toggle
+      player.value.toggleCamera();
       break;
-    case 'KeyR':
-      player.value.reloadWeapon();
+    case 'v':
+      player.value.setDebugVisualsEnabled(!player.value.debugVisualsEnabled);
+      console.log('Debug visuals:', player.value.debugVisualsEnabled ? 'enabled' : 'disabled');
       break;
+    case '`':  // Add backtick key for debug UI toggle
+      showDebug.value = !showDebug.value;
+      console.log('Debug UI:', showDebug.value ? 'shown' : 'hidden');
+      break;
+  }
+  
+  // Weapon controls - FIX: Add .value to access the ref
+  if (weaponSystem.value) {
+    weaponSystem.value.handleKeyPress(event.key);
   }
 };
 
 const onKeyUp = (event) => {
-  if (!started.value || !player.value) return;
+  if (!started.value || isPhysicsStepping) return;
   
-  // Handle vehicle controls when in vehicle
-  if (player.value.isInVehicle && player.value.currentVehicle) {
+  // Handle vehicle controls if player is in a vehicle
+  if (player.value?.isInVehicle && player.value?.currentVehicle) {
     const vehicle = player.value.currentVehicle;
     
-    // Car controls
-    if (vehicle.keys && vehicle.chassisBody) {
-      switch (event.code) {
-        case 'KeyW':
-        case 'ArrowUp':
+    switch(event.key.toLowerCase()) {
+      case 'w':
+        if (vehicle.keys) {
           vehicle.keys.forward = false;
-          break;
-        case 'KeyS':
-        case 'ArrowDown':
+          if (vehicle.keys.throttleUp !== undefined) vehicle.keys.throttleUp = false;
+        }
+        break;
+      case 's':
+        if (vehicle.keys) {
           vehicle.keys.backward = false;
-          break;
-        case 'KeyA':
-        case 'ArrowLeft':
+          if (vehicle.keys.throttleDown !== undefined) vehicle.keys.throttleDown = false;
+        }
+        break;
+      case 'a':
+        if (vehicle.keys) {
           vehicle.keys.left = false;
-          break;
-        case 'KeyD':
-        case 'ArrowRight':
+          if (vehicle.keys.rollLeft !== undefined) vehicle.keys.rollLeft = false;
+        }
+        break;
+      case 'd':
+        if (vehicle.keys) {
           vehicle.keys.right = false;
-          break;
-        case 'Space':
-          vehicle.keys.brake = false;
-          break;
-      }
-    }
-    
-    // Plane controls
-    else if (vehicle.keys && vehicle.elevatorAngle !== undefined) {
-      switch (event.code) {
-        case 'KeyW':
-        case 'ArrowUp':
-          vehicle.keys.pitchDown = false;
-          break;
-        case 'KeyS':
-        case 'ArrowDown':
-          vehicle.keys.pitchUp = false;
-          break;
-        case 'KeyA':
-        case 'ArrowLeft':
-          vehicle.keys.rollLeft = false;
-          break;
-        case 'KeyD':
-        case 'ArrowRight':
-          vehicle.keys.rollRight = false;
-          break;
-        case 'KeyQ':
+          if (vehicle.keys.rollRight !== undefined) vehicle.keys.rollRight = false;
+        }
+        break;
+      case ' ':
+        if (vehicle.keys) {
+          if (vehicle.keys.brake !== undefined) vehicle.keys.brake = false;
+          if (vehicle.keys.collectiveUp !== undefined) vehicle.keys.collectiveUp = false;
+        }
+        break;
+      case 'shift':
+        if (vehicle.keys) {
+          if (vehicle.keys.collectiveDown !== undefined) vehicle.keys.collectiveDown = false;
+        }
+        break;
+      case 'q':
+        if (vehicle.keys && vehicle.keys.yawLeft !== undefined) {
           vehicle.keys.yawLeft = false;
-          break;
-        case 'KeyE':
+        }
+        break;
+      case 'e':
+        if (vehicle.keys && vehicle.keys.yawRight !== undefined) {
           vehicle.keys.yawRight = false;
-          break;
-        case 'ShiftLeft':
-          vehicle.keys.throttleUp = false;
-          break;
-        case 'ControlLeft':
-          vehicle.keys.throttleDown = false;
-          break;
-      }
+        }
+        break;
+      case 'u':
+        player.value.keys.interact = false;
+        break;
     }
-    
-    // Helicopter controls
-    else if (vehicle.keys && vehicle.collective !== undefined) {
-      switch (event.code) {
-        case 'KeyW':
-        case 'ArrowUp':
-          vehicle.keys.forward = false;
-          break;
-        case 'KeyS':
-        case 'ArrowDown':
-          vehicle.keys.backward = false;
-          break;
-        case 'KeyA':
-        case 'ArrowLeft':
-          vehicle.keys.left = false;
-          break;
-        case 'KeyD':
-        case 'ArrowRight':
-          vehicle.keys.right = false;
-          break;
-        case 'KeyQ':
-          vehicle.keys.yawLeft = false;
-          break;
-        case 'KeyE':
-          vehicle.keys.yawRight = false;
-          break;
-        case 'ShiftLeft':
-          vehicle.keys.collectiveUp = false;
-          break;
-        case 'ControlLeft':
-          vehicle.keys.collectiveDown = false;
-          break;
-      }
-    }
-    
-    return;
+    return; // Don't process normal player controls
   }
   
-  switch (event.code) {
-    case 'KeyW':
-    case 'ArrowUp':
+  // Normal player controls
+  switch(event.key.toLowerCase()) {
+    case 'w':
       player.value.keys.forward = false;
       break;
-    case 'KeyS':
-    case 'ArrowDown':
+    case 's':
       player.value.keys.backward = false;
       break;
-    case 'KeyA':
-    case 'ArrowLeft':
+    case 'a':
       player.value.keys.left = false;
       break;
-    case 'KeyD':
-    case 'ArrowRight':
+    case 'd':
       player.value.keys.right = false;
       break;
-    case 'KeyQ':
-      player.value.keys.rollLeft = false;
-      break;
-    case 'KeyE':
-      player.value.keys.rollRight = false;
-      break;
-    case 'Space':
+    case ' ':
       player.value.keys.jump = false;
       break;
-    case 'ShiftLeft':
+    case 'shift':
       player.value.keys.run = false;
+      break;
+    case 'q':
+      player.value.keys.rollLeft = false;
+      break;
+    case 'e':
+      player.value.keys.rollRight = false;
+      break;
+    case 'u':
+      player.value.keys.interact = false;
       break;
   }
 };
 
 // Modified mouse handler to check physics stepping
 const onMouseMove = (event) => {
-  if (!started.value || !player.value || isPhysicsStepping) return;
-  if (document.pointerLockElement !== scene.value?.renderer?.domElement) return;
+  if (!started.value || !document.pointerLockElement || isPhysicsStepping) return;
   
-  player.value.handleMouseMove(event);
+  // Don't handle mouse movement for player if in vehicle
+  if (!player.value?.isInVehicle) {
+    player.value?.handleMouseMove(event);
+  }
 };
 
 const onMouseDown = (event) => {
   if (!started.value || !player.value) return;
+  if (document.pointerLockElement !== scene.value?.renderer?.domElement) return;
   
   if (event.button === 0) { // Left click
-    if (document.pointerLockElement) {
-      // Fire weapon if we have pointer lock
-      if (player.value && player.value.weaponSystem) {
-        player.value.fireWeapon();
+    // Fire weapon if in sandbox mode
+    if (gameMode.value === 'sandbox' && weaponSystem.value) {
+      weaponSystem.value.fire();
+    }
+    
+    // Push object if in multiplayer mode
+    if (gameMode.value === 'multiplayer') {
+      const pushableObject = checkForPushableObject();
+      if (pushableObject) {
+        pushObject(pushableObject);
       }
-    } else {
-      // Request pointer lock if we don't have it
-      requestPointerLock();
     }
   }
 };
@@ -1708,6 +1489,12 @@ onBeforeUnmount(() => {
   document.removeEventListener('pointerlockchange', handlePointerLockChange);
   document.removeEventListener('webkitpointerlockchange', handlePointerLockChange);
   document.removeEventListener('mousedown', onMouseDown);
+  
+  // Clean up weapon system
+  if (weaponSystem.value) {
+    weaponSystem.value.clear();
+    window.weaponSystem = null; // Clear global reference
+  }
 });
 </script>
 
@@ -1885,57 +1672,86 @@ onBeforeUnmount(() => {
   margin-top: 5px;
 }
 
-/* Add weapon UI styles */
-.weapon-info {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  background: rgba(0, 0, 0, 0.7);
+.weapon-hud {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
   color: white;
-  padding: 15px;
-  font-family: monospace;
-  border-radius: 5px;
-  min-width: 200px;
+  font-family: 'Courier New', monospace;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  user-select: none;
+  pointer-events: none;
 }
 
 .weapon-name {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.weapon-ammo {
   font-size: 24px;
-  margin-bottom: 10px;
-}
-
-.weapon-slots {
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
-  padding-top: 10px;
-  margin-top: 10px;
-}
-
-.weapon-slot {
-  padding: 2px 0;
-  opacity: 0.5;
-}
-
-.weapon-slot.active {
-  opacity: 1;
   font-weight: bold;
-  color: #00ff00;
+  margin-bottom: 8px;
+  text-align: right;
 }
 
-.interaction-prompt {
+.ammo-display {
+  font-size: 32px;
+  text-align: right;
+}
+
+.current-ammo {
+  font-weight: bold;
+}
+
+.ammo-separator {
+  margin: 0 4px;
+  opacity: 0.6;
+}
+
+.max-ammo {
+  opacity: 0.8;
+}
+
+.reload-bar {
+  width: 200px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  margin-top: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.reload-progress {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  transition: width 0.1s ease-out;
+}
+
+.crosshair {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.crosshair-line {
   position: absolute;
-  bottom: 50%;
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.crosshair-horizontal {
+  width: 100%;
+  height: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.crosshair-vertical {
+  width: 2px;
+  height: 100%;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 10px 20px;
-  font-family: Arial, sans-serif;
-  font-size: 16px;
-  border-radius: 5px;
 }
 </style>
