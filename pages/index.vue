@@ -96,6 +96,8 @@
               {{ pitch }}°
             </div>
           </div>
+          <!-- Add gravity reference indicator -->
+          <div v-if="flightData.gravityDir" class="gravity-indicator" :style="gravityIndicatorStyle"></div>
         </div>
         
         <div class="instrument-panel right-panel">
@@ -123,7 +125,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, reactive, shallowRef, markRaw } from 'vue';
+import { ref, onMounted, onBeforeUnmount, reactive, shallowRef, markRaw, computed } from 'vue';
 import * as THREE from 'three';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { PhysicsManager } from '../lib/physics.js';
@@ -203,7 +205,21 @@ const flightData = reactive({
   throttle: 0,
   engineRPM: 0,
   isGrounded: true,
-  stallWarning: false
+  stallWarning: false,
+  gravityDir: new THREE.Vector3(0, -1, 0) // Default gravity direction
+});
+
+// Computed style for gravity indicator
+const gravityIndicatorStyle = computed(() => {
+  if (!flightData.gravityDir) return {};
+  
+  // Project gravity direction onto the aircraft's local coordinate system
+  // This will show which way is "down" relative to the aircraft
+  const angle = Math.atan2(flightData.gravityDir.x, flightData.gravityDir.y) * (180 / Math.PI);
+  
+  return {
+    transform: `rotate(${angle}deg)`
+  };
 });
 
 // Format vector for display
@@ -1959,5 +1975,18 @@ onBeforeUnmount(() => {
 
 @keyframes blink {
   50% { opacity: 0.5; }
+}
+
+.gravity-indicator {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 10px solid #ff0000;
+  opacity: 0.7;
 }
 </style>
