@@ -1211,6 +1211,9 @@ const onKeyDown = (event) => {
     case 'm':
       player.value.keys.fireMissile = true;
       break;
+    case 'n':
+      player.value.keys.toggleLights = true; // Add N key for toggling lights
+      break;
   }
   
   // Weapon controls - only when not in vehicle
@@ -1281,6 +1284,9 @@ const onKeyUp = (event) => {
       break;
     case 'm':
       player.value.keys.fireMissile = false;
+      break;
+    case 'n':
+      player.value.keys.toggleLights = false; // Release N key for toggling lights
       break;
   }
 };
