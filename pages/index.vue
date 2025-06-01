@@ -1,7 +1,7 @@
 <template>
   <div class="game-container">
     <!-- Canvas container -->
-    <div ref="gameCanvas" class="game-canvas"></div>
+    <div ref="gameCanvas" class="game-canvas" @click="handleCanvasClick"></div>
     
     <!-- Loading screen -->
     <div v-if="loading" class="loading-screen">
@@ -1150,6 +1150,14 @@ const updateOwnership = () => {
 const requestPointerLock = () => {
   if (scene.value?.renderer) {
     scene.value.renderer.domElement.requestPointerLock();
+  }
+};
+
+// Add canvas click handler to re-request pointer lock
+const handleCanvasClick = () => {
+  // Only request pointer lock if game has started and we don't already have it
+  if (started.value && document.pointerLockElement !== scene.value?.renderer?.domElement) {
+    requestPointerLock();
   }
 };
 
