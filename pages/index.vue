@@ -1177,7 +1177,7 @@ const onKeyDown = (event) => {
       player.value.keys.run = true;
       break;
     case 'control':
-      player.value.keys.throttleDown = true;  // Add Control key for throttle down
+      player.value.keys.crouch = true;  // Add Control key for crouch
       break;
     case 'q':
       player.value.keys.rollLeft = true;
@@ -1259,7 +1259,7 @@ const onKeyUp = (event) => {
       player.value.keys.run = false;
       break;
     case 'control':
-      player.value.keys.throttleDown = false;  // Add Control key release
+      player.value.keys.crouch = false;  // Add Control key release
       break;
     case 'q':
       player.value.keys.rollLeft = false;
