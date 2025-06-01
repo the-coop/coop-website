@@ -63,6 +63,62 @@
         <div class="reload-progress" :style="{ width: (weaponInfo.reloadProgress * 100) + '%' }"></div>
       </div>
     </div>
+    
+    <!-- Flight HUD -->
+    <div v-if="showFlightHUD" class="flight-hud">
+      <div class="flight-instruments">
+        <div class="instrument-panel left-panel">
+          <div class="instrument">
+            <label>ALT</label>
+            <span class="value">{{ flightData.altitude }}m</span>
+          </div>
+          <div class="instrument">
+            <label>IAS</label>
+            <span class="value">{{ flightData.airspeed }}m/s</span>
+          </div>
+          <div class="instrument">
+            <label>VS</label>
+            <span class="value" :class="{ positive: flightData.verticalSpeed > 0, negative: flightData.verticalSpeed < 0 }">
+              {{ flightData.verticalSpeed > 0 ? '+' : '' }}{{ flightData.verticalSpeed }}m/s
+            </span>
+          </div>
+        </div>
+        
+        <div class="attitude-indicator">
+          <div class="horizon" :style="{ transform: `rotate(${-flightData.roll}deg) translateY(${flightData.pitch * 2}px)` }">
+            <div class="sky"></div>
+            <div class="ground"></div>
+            <div class="horizon-line"></div>
+          </div>
+          <div class="aircraft-symbol"></div>
+          <div class="pitch-ladder">
+            <div class="pitch-mark" v-for="pitch in [-20, -10, 0, 10, 20]" :key="pitch" :style="{ top: `${50 - pitch * 2}%` }">
+              {{ pitch }}°
+            </div>
+          </div>
+        </div>
+        
+        <div class="instrument-panel right-panel">
+          <div class="instrument">
+            <label>HDG</label>
+            <span class="value">{{ String(flightData.heading).padStart(3, '0') }}°</span>
+          </div>
+          <div class="instrument">
+            <label>THR</label>
+            <span class="value">{{ flightData.throttle }}%</span>
+          </div>
+          <div class="instrument" v-if="flightData.engineRPM">
+            <label>RPM</label>
+            <span class="value">{{ flightData.engineRPM }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="flight-status">
+        <span v-if="flightData.isGrounded" class="status-indicator grounded">GROUNDED</span>
+        <span v-if="flightData.stallWarning" class="status-indicator warning">STALL WARNING</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -131,6 +187,20 @@ const weaponInfo = reactive({
   maxAmmo: 0,
   isReloading: false,
   reloadProgress: 0
+});
+
+// Flight data reactive state
+const flightData = reactive({
+  altitude: 0,
+  airspeed: 0,
+  verticalSpeed: 0,
+  heading: 0,
+  pitch: 0,
+  roll: 0,
+  throttle: 0,
+  engineRPM: 0,
+  isGrounded: true,
+  stallWarning: false
 });
 
 // Format vector for display
@@ -943,6 +1013,30 @@ const animate = () => {
       weaponInfo.value = weaponSystem.value.getHUDInfo();
   }
   
+  // Update flight HUD if in vehicle
+  if (player.value && player.value.isInVehicle && player.value.currentVehicle) {
+    const vehicle = player.value.currentVehicle;
+    if (vehicle.getFlightData) {
+      const data = vehicle.getFlightData();
+      if (data) {
+        flightData.altitude = data.altitude;
+        flightData.airspeed = data.airspeed;
+        flightData.verticalSpeed = data.verticalSpeed;
+        flightData.heading = data.heading;
+        flightData.pitch = data.pitch;
+        flightData.roll = data.roll;
+        flightData.throttle = data.throttle;
+        flightData.engineRPM = data.engineRPM;
+        flightData.isGrounded = data.isGrounded;
+        flightData.stallWarning = data.stallWarning;
+        
+        showFlightHUD.value = true;
+      }
+    }
+  } else {
+    showFlightHUD.value = false;
+  }
+  
   // Render
   scene.value.render();
   
@@ -1041,60 +1135,77 @@ const onKeyDown = (event) => {
   if (player.value?.isInVehicle && player.value?.currentVehicle) {
     const vehicle = player.value.currentVehicle;
     
-    switch(event.key.toLowerCase()) {
+    // Make sure vehicle has controls object
+    if (!vehicle || !vehicle.controls) {
+      console.warn('Vehicle missing controls object:', vehicle);
+      return;
+    }
+    
+    switch (event.key.toLowerCase()) {
+      case 'shift':
+        event.preventDefault();
+        vehicle.controls.throttleUp = true;
+        break;
+      case 'control':
+        event.preventDefault();
+        vehicle.controls.throttleDown = true;
+        break;
       case 'w':
-        if (vehicle.controls) {
-          vehicle.controls.forward = true;
-          vehicle.controls.throttleUp = true;
+        event.preventDefault();
+        if (vehicle.controls.hasOwnProperty('pitchForward')) {
+          vehicle.controls.pitchForward = true; // Helicopter
+        } else if (vehicle.controls.hasOwnProperty('pitchUp')) {
+          vehicle.controls.pitchUp = true; // Plane
+        } else if (vehicle.controls.hasOwnProperty('forward')) {
+          vehicle.controls.forward = true; // Car
         }
         break;
       case 's':
-        if (vehicle.controls) {
-          vehicle.controls.backward = true;
-          vehicle.controls.throttleDown = true;
+        event.preventDefault();
+        if (vehicle.controls.hasOwnProperty('pitchBackward')) {
+          vehicle.controls.pitchBackward = true; // Helicopter
+        } else if (vehicle.controls.hasOwnProperty('pitchDown')) {
+          vehicle.controls.pitchDown = true; // Plane
+        } else if (vehicle.controls.hasOwnProperty('backward')) {
+          vehicle.controls.backward = true; // Car
         }
         break;
       case 'a':
-        if (vehicle.controls) {
-          vehicle.controls.left = true;
-          vehicle.controls.rollLeft = true;
+        event.preventDefault();
+        if (vehicle.controls.hasOwnProperty('rollLeft')) {
+          vehicle.controls.rollLeft = true; // Helicopter/Plane
+        } else if (vehicle.controls.hasOwnProperty('left')) {
+          vehicle.controls.left = true; // Car
         }
         break;
       case 'd':
-        if (vehicle.controls) {
-          vehicle.controls.right = true;
-          vehicle.controls.rollRight = true;
-        }
-        break;
-      case ' ':
-        if (vehicle.controls) {
-          vehicle.controls.brake = true;
-          vehicle.controls.pitchUp = true;
+        event.preventDefault();
+        if (vehicle.controls.hasOwnProperty('rollRight')) {
+          vehicle.controls.rollRight = true; // Helicopter/Plane
+        } else if (vehicle.controls.hasOwnProperty('right')) {
+          vehicle.controls.right = true; // Car
         }
         break;
       case 'q':
-        if (vehicle.controls) {
-          vehicle.controls.pitchDown = true;
+        event.preventDefault();
+        if (vehicle.controls.hasOwnProperty('yawLeft')) {
           vehicle.controls.yawLeft = true;
         }
         break;
       case 'e':
-        if (vehicle.controls) {
-          vehicle.controls.pitchUp = true;
+        event.preventDefault();
+        if (vehicle.controls.hasOwnProperty('yawRight')) {
           vehicle.controls.yawRight = true;
         }
         break;
-      case 'u':
-        // Map interact key to vehicle controls AND player keys
-        if (vehicle.controls) {
-          vehicle.controls.interact = true;
-        }
-        if (player.value) {
-          player.value.keys.interact = true;
+      case ' ':
+        event.preventDefault();
+        if (vehicle.controls.hasOwnProperty('brake')) {
+          vehicle.controls.brake = true; // Car
         }
         break;
     }
-    return;
+    return; // Don't process other controls when in vehicle
   }
   
   // Normal player controls
@@ -1174,60 +1285,67 @@ const onKeyUp = (event) => {
   if (player.value?.isInVehicle && player.value?.currentVehicle) {
     const vehicle = player.value.currentVehicle;
     
-    switch(event.key.toLowerCase()) {
+    // Make sure vehicle has controls object
+    if (!vehicle || !vehicle.controls) {
+      return;
+    }
+    
+    switch (event.key.toLowerCase()) {
+      case 'shift':
+        vehicle.controls.throttleUp = false;
+        break;
+      case 'control':
+        vehicle.controls.throttleDown = false;
+        break;
       case 'w':
-        if (vehicle.controls) {
-          vehicle.controls.forward = false;
-          vehicle.controls.throttleUp = false;
+        if (vehicle.controls.hasOwnProperty('pitchForward')) {
+          vehicle.controls.pitchForward = false; // Helicopter
+        } else if (vehicle.controls.hasOwnProperty('pitchUp')) {
+          vehicle.controls.pitchUp = false; // Plane
+        } else if (vehicle.controls.hasOwnProperty('forward')) {
+          vehicle.controls.forward = false; // Car
         }
         break;
       case 's':
-        if (vehicle.controls) {
-          vehicle.controls.backward = false;
-          vehicle.controls.throttleDown = false;
+        if (vehicle.controls.hasOwnProperty('pitchBackward')) {
+          vehicle.controls.pitchBackward = false; // Helicopter
+        } else if (vehicle.controls.hasOwnProperty('pitchDown')) {
+          vehicle.controls.pitchDown = false; // Plane
+        } else if (vehicle.controls.hasOwnProperty('backward')) {
+          vehicle.controls.backward = false; // Car
         }
         break;
       case 'a':
-        if (vehicle.controls) {
-          vehicle.controls.left = false;
-          vehicle.controls.rollLeft = false;
+        if (vehicle.controls.hasOwnProperty('rollLeft')) {
+          vehicle.controls.rollLeft = false; // Helicopter/Plane
+        } else if (vehicle.controls.hasOwnProperty('left')) {
+          vehicle.controls.left = false; // Car
         }
         break;
       case 'd':
-        if (vehicle.controls) {
-          vehicle.controls.right = false;
-          vehicle.controls.rollRight = false;
-        }
-        break;
-      case ' ':
-        if (vehicle.controls) {
-          vehicle.controls.brake = false;
-          vehicle.controls.pitchUp = false;
+        if (vehicle.controls.hasOwnProperty('rollRight')) {
+          vehicle.controls.rollRight = false; // Helicopter/Plane
+        } else if (vehicle.controls.hasOwnProperty('right')) {
+          vehicle.controls.right = false; // Car
         }
         break;
       case 'q':
-        if (vehicle.controls) {
-          vehicle.controls.pitchDown = false;
+        if (vehicle.controls.hasOwnProperty('yawLeft')) {
           vehicle.controls.yawLeft = false;
         }
         break;
       case 'e':
-        if (vehicle.controls) {
-          vehicle.controls.pitchUp = false;
+        if (vehicle.controls.hasOwnProperty('yawRight')) {
           vehicle.controls.yawRight = false;
         }
         break;
-      case 'u':
-        // Release interact key for both vehicle controls AND player keys
-        if (vehicle.controls) {
-          vehicle.controls.interact = false;
-        }
-        if (player.value) {
-          player.value.keys.interact = false;
+      case ' ':
+        if (vehicle.controls.hasOwnProperty('brake')) {
+          vehicle.controls.brake = false; // Car
         }
         break;
     }
-    return;
+    return; // Don't process other controls when in vehicle
   }
   
   // Normal player controls
@@ -1780,5 +1898,180 @@ onBeforeUnmount(() => {
   height: 100%;
   left: 50%;
   transform: translateX(-50%);
+}
+
+/* Flight HUD styles */
+.flight-hud {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+  pointer-events: none;
+  user-select: none;
+}
+
+.flight-instruments {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  border: 1px solid #00ff00;
+  border-radius: 5px;
+}
+
+.instrument-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.instrument {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.instrument label {
+  font-size: 12px;
+  color: #00ff00;
+  width: 30px;
+}
+
+.instrument .value {
+  font-size: 16px;
+  font-weight: bold;
+  color: #00ff00;
+  min-width: 60px;
+  text-align: right;
+}
+
+.value.positive {
+  color: #00ff00;
+}
+
+.value.negative {
+  color: #ff6666;
+}
+
+.attitude-indicator {
+  width: 150px;
+  height: 150px;
+  border: 2px solid #00ff00;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  background: #000;
+}
+
+.horizon {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  transition: transform 0.1s ease-out;
+}
+
+.sky {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 50%;
+  background: #1e3c72;
+}
+
+.ground {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 50%;
+  background: #654321;
+}
+
+.horizon-line {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  height: 2px;
+  background: #fff;
+}
+
+.aircraft-symbol {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 2px;
+  background: #ffff00;
+}
+
+.aircraft-symbol::before,
+.aircraft-symbol::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 2px;
+  background: #ffff00;
+  top: 0;
+}
+
+.aircraft-symbol::before {
+  left: -10px;
+  transform: rotate(90deg);
+}
+
+.aircraft-symbol::after {
+  right: -10px;
+  transform: rotate(90deg);
+}
+
+.pitch-ladder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.pitch-mark {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  font-size: 10px;
+  color: #00ff00;
+}
+
+.flight-status {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.status-indicator {
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: bold;
+  margin: 0 5px;
+}
+
+.status-indicator.grounded {
+  background: #333;
+  color: #00ff00;
+  border: 1px solid #00ff00;
+}
+
+.status-indicator.warning {
+  background: #ff0000;
+  color: #fff;
+  animation: blink 0.5s infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0.5; }
 }
 </style>
