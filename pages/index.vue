@@ -135,6 +135,7 @@ import { WebSocketManager } from '../lib/network.js';
 import { PlayerManager } from '../lib/players.js';
 import { CampaignLoader } from '../lib/campaignLoader.js';
 import { WeaponSystem } from '../lib/weapons.js';
+import { Pyrotechnics } from '../lib/pyrotechnics.js';
 
 // Get WebSocket URL from runtime config
 const config = useRuntimeConfig();
@@ -1371,6 +1372,12 @@ onMounted(async () => {
     }, 8000);
     
     await initGame();
+    
+    // Initialize pyrotechnics system after scene is created
+    if (scene.value && scene.value.scene) {
+      const pyro = new Pyrotechnics(scene.value.scene);
+      window.pyrotechnics = markRaw(pyro); // Make it globally accessible
+    }
     
     clearTimeout(initTimeout);
     
