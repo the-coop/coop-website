@@ -1186,6 +1186,15 @@ const onKeyDown = (event) => {
       // Backtick toggles debug UI
       showDebug.value = !showDebug.value;
       break;
+    case 'l':
+      player.value.keys.landingGear = true;
+      break;
+    case 'g':
+      player.value.keys.fireGun = true;
+      break;
+    case 'm':
+      player.value.keys.fireMissile = true;
+      break;
   }
   
   // Weapon controls - only when not in vehicle
@@ -1247,6 +1256,15 @@ const onKeyUp = (event) => {
       break;
     case 'o':
       player.value.keys.toggleCamera = false;
+      break;
+    case 'l':
+      player.value.keys.landingGear = false;
+      break;
+    case 'g':
+      player.value.keys.fireGun = false;
+      break;
+    case 'm':
+      player.value.keys.fireMissile = false;
       break;
   }
 };
