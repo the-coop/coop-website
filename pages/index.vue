@@ -161,6 +161,9 @@ const showDebugVisuals = ref(false); // Start with debug visuals hidden
 // Add crosshair visibility state
 const showCrosshair = ref(true);
 
+// Add flight HUD visibility state
+const showFlightHUD = ref(false);
+
 // Network update throttling
 let lastNetworkUpdate = 0;
 const networkUpdateInterval = 33; // Increased to 30Hz from 20Hz for smoother falling
@@ -1019,19 +1022,25 @@ const animate = () => {
     if (vehicle.getFlightData) {
       const data = vehicle.getFlightData();
       if (data) {
-        flightData.altitude = data.altitude;
-        flightData.airspeed = data.airspeed;
-        flightData.verticalSpeed = data.verticalSpeed;
-        flightData.heading = data.heading;
-        flightData.pitch = data.pitch;
-        flightData.roll = data.roll;
-        flightData.throttle = data.throttle;
-        flightData.engineRPM = data.engineRPM;
-        flightData.isGrounded = data.isGrounded;
-        flightData.stallWarning = data.stallWarning;
+        // Update flight data without touching camera
+        Object.assign(flightData, {
+          altitude: data.altitude,
+          airspeed: data.airspeed,
+          verticalSpeed: data.verticalSpeed,
+          heading: data.heading,
+          pitch: data.pitch,
+          roll: data.roll,
+          throttle: data.throttle,
+          engineRPM: data.engineRPM || 0,
+          isGrounded: data.isGrounded,
+          stallWarning: data.stallWarning || false
+        });
         
         showFlightHUD.value = true;
       }
+    } else {
+      // Not an aircraft, hide flight HUD
+      showFlightHUD.value = false;
     }
   } else {
     showFlightHUD.value = false;
@@ -1131,84 +1140,7 @@ const requestPointerLock = () => {
 const onKeyDown = (event) => {
   if (!started.value || isPhysicsStepping) return;
   
-  // Handle vehicle controls if player is in a vehicle
-  if (player.value?.isInVehicle && player.value?.currentVehicle) {
-    const vehicle = player.value.currentVehicle;
-    
-    // Make sure vehicle has controls object
-    if (!vehicle || !vehicle.controls) {
-      console.warn('Vehicle missing controls object:', vehicle);
-      return;
-    }
-    
-    switch (event.key.toLowerCase()) {
-      case 'shift':
-        event.preventDefault();
-        vehicle.controls.throttleUp = true;
-        break;
-      case 'control':
-        event.preventDefault();
-        vehicle.controls.throttleDown = true;
-        break;
-      case 'w':
-        event.preventDefault();
-        if (vehicle.controls.hasOwnProperty('pitchForward')) {
-          vehicle.controls.pitchForward = true; // Helicopter
-        } else if (vehicle.controls.hasOwnProperty('pitchUp')) {
-          vehicle.controls.pitchUp = true; // Plane
-        } else if (vehicle.controls.hasOwnProperty('forward')) {
-          vehicle.controls.forward = true; // Car
-        }
-        break;
-      case 's':
-        event.preventDefault();
-        if (vehicle.controls.hasOwnProperty('pitchBackward')) {
-          vehicle.controls.pitchBackward = true; // Helicopter
-        } else if (vehicle.controls.hasOwnProperty('pitchDown')) {
-          vehicle.controls.pitchDown = true; // Plane
-        } else if (vehicle.controls.hasOwnProperty('backward')) {
-          vehicle.controls.backward = true; // Car
-        }
-        break;
-      case 'a':
-        event.preventDefault();
-        if (vehicle.controls.hasOwnProperty('rollLeft')) {
-          vehicle.controls.rollLeft = true; // Helicopter/Plane
-        } else if (vehicle.controls.hasOwnProperty('left')) {
-          vehicle.controls.left = true; // Car
-        }
-        break;
-      case 'd':
-        event.preventDefault();
-        if (vehicle.controls.hasOwnProperty('rollRight')) {
-          vehicle.controls.rollRight = true; // Helicopter/Plane
-        } else if (vehicle.controls.hasOwnProperty('right')) {
-          vehicle.controls.right = true; // Car
-        }
-        break;
-      case 'q':
-        event.preventDefault();
-        if (vehicle.controls.hasOwnProperty('yawLeft')) {
-          vehicle.controls.yawLeft = true;
-        }
-        break;
-      case 'e':
-        event.preventDefault();
-        if (vehicle.controls.hasOwnProperty('yawRight')) {
-          vehicle.controls.yawRight = true;
-        }
-        break;
-      case ' ':
-        event.preventDefault();
-        if (vehicle.controls.hasOwnProperty('brake')) {
-          vehicle.controls.brake = true; // Car
-        }
-        break;
-    }
-    return; // Don't process other controls when in vehicle
-  }
-  
-  // Normal player controls
+  // Always update player keys, whether in vehicle or not
   switch(event.key.toLowerCase()) {
     case 'w':
       player.value.keys.forward = true;
@@ -1247,17 +1179,14 @@ const onKeyDown = (event) => {
     case 'o':
       player.value.keys.toggleCamera = true;
       break;
-    case 'k':
-      // K key remains for something else if needed
-      break;
     case '`':
       // Backtick toggles debug UI
       showDebug.value = !showDebug.value;
       break;
   }
   
-  // Weapon controls - FIX: Add .value to access the ref
-  if (weaponSystem.value) {
+  // Weapon controls - only when not in vehicle
+  if (weaponSystem.value && !player.value?.isInVehicle) {
     switch(event.key.toLowerCase()) {
       case '1':
         weaponSystem.value.switchWeapon('hands');
@@ -1281,74 +1210,7 @@ const onKeyDown = (event) => {
 const onKeyUp = (event) => {
   if (!started.value || isPhysicsStepping) return;
   
-  // Handle vehicle controls if player is in a vehicle
-  if (player.value?.isInVehicle && player.value?.currentVehicle) {
-    const vehicle = player.value.currentVehicle;
-    
-    // Make sure vehicle has controls object
-    if (!vehicle || !vehicle.controls) {
-      return;
-    }
-    
-    switch (event.key.toLowerCase()) {
-      case 'shift':
-        vehicle.controls.throttleUp = false;
-        break;
-      case 'control':
-        vehicle.controls.throttleDown = false;
-        break;
-      case 'w':
-        if (vehicle.controls.hasOwnProperty('pitchForward')) {
-          vehicle.controls.pitchForward = false; // Helicopter
-        } else if (vehicle.controls.hasOwnProperty('pitchUp')) {
-          vehicle.controls.pitchUp = false; // Plane
-        } else if (vehicle.controls.hasOwnProperty('forward')) {
-          vehicle.controls.forward = false; // Car
-        }
-        break;
-      case 's':
-        if (vehicle.controls.hasOwnProperty('pitchBackward')) {
-          vehicle.controls.pitchBackward = false; // Helicopter
-        } else if (vehicle.controls.hasOwnProperty('pitchDown')) {
-          vehicle.controls.pitchDown = false; // Plane
-        } else if (vehicle.controls.hasOwnProperty('backward')) {
-          vehicle.controls.backward = false; // Car
-        }
-        break;
-      case 'a':
-        if (vehicle.controls.hasOwnProperty('rollLeft')) {
-          vehicle.controls.rollLeft = false; // Helicopter/Plane
-        } else if (vehicle.controls.hasOwnProperty('left')) {
-          vehicle.controls.left = false; // Car
-        }
-        break;
-      case 'd':
-        if (vehicle.controls.hasOwnProperty('rollRight')) {
-          vehicle.controls.rollRight = false; // Helicopter/Plane
-        } else if (vehicle.controls.hasOwnProperty('right')) {
-          vehicle.controls.right = false; // Car
-        }
-        break;
-      case 'q':
-        if (vehicle.controls.hasOwnProperty('yawLeft')) {
-          vehicle.controls.yawLeft = false;
-        }
-        break;
-      case 'e':
-        if (vehicle.controls.hasOwnProperty('yawRight')) {
-          vehicle.controls.yawRight = false;
-        }
-        break;
-      case ' ':
-        if (vehicle.controls.hasOwnProperty('brake')) {
-          vehicle.controls.brake = false; // Car
-        }
-        break;
-    }
-    return; // Don't process other controls when in vehicle
-  }
-  
-  // Normal player controls
+  // Always update player keys
   switch(event.key.toLowerCase()) {
     case 'w':
       player.value.keys.forward = false;
