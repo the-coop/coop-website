@@ -1152,7 +1152,13 @@ const onKeyDown = (event) => {
       player.value.keys.fireMissile = true;
       break;
     case 'n':
-      player.value.keys.toggleLights = true; // Add N key for toggling lights
+      player.value.keys.toggleLights = true;
+      break;
+    case 'f':
+      player.value.keys.deployFlares = true; // Add F key for flares
+      break;
+    case 'p':
+      player.value.keys.changePerspective = true; // Add P key for disassembly
       break;
   }
   
@@ -1227,6 +1233,12 @@ const onKeyUp = (event) => {
       break;
     case 'n':
       player.value.keys.toggleLights = false; // Release N key for toggling lights
+      break;
+    case 'f':
+      player.value.keys.deployFlares = false; // Release F key
+      break;
+    case 'p':
+      player.value.keys.changePerspective = false; // Release P key
       break;
   }
 };
