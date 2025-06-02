@@ -36,20 +36,7 @@
     </div>
     
     <!-- Debug info -->
-    <div v-if="started && showDebug" class="debug-info">
-      <div>Mode: {{ gameMode }}</div>
-      <div>Position: {{ formatVector(debugInfo.position) }}</div>
-      <div>Facing: {{ formatVector(debugInfo.facing) }}</div>
-      <div>Speed: {{ debugInfo.currentSpeed.toFixed(2) }} m/s</div>
-      <div>Moving: {{ debugInfo.isMoving ? 'Yes' : 'No' }}</div>
-      <div>Grounded: {{ debugInfo.isGrounded ? 'Yes' : 'No' }}</div>
-      <div>Swimming: {{ debugInfo.isSwimming ? 'Yes' : 'No' }}</div>
-      <div v-if="debugInfo.inVehicle" class="vehicle-info">In Vehicle</div>
-      <div v-if="gameMode === 'multiplayer'">
-        <div>Connected: {{ debugInfo.connected ? 'Yes' : 'No' }}</div>
-        <div>Players Online: {{ debugInfo.playersOnline }}</div>
-      </div>
-    </div>
+    <Debug :visible="started && showDebug" :game-mode="gameMode" :data="debugInfo" />
     
     <!-- Add weapon HUD when game is started and in sandbox mode -->
     <div v-if="started && gameMode === 'sandbox' && weaponInfo && weaponInfo.weaponName" class="weapon-hud">
@@ -65,62 +52,7 @@
     </div>
     
     <!-- Flight HUD -->
-    <div v-if="showFlightHUD" class="flight-hud">
-      <div class="flight-instruments">
-        <div class="instrument-panel left-panel">
-          <div class="instrument">
-            <label>ALT</label>
-            <span class="value">{{ flightData.altitude }}m</span>
-          </div>
-          <div class="instrument">
-            <label>IAS</label>
-            <span class="value">{{ flightData.airspeed }}m/s</span>
-          </div>
-          <div class="instrument">
-            <label>VS</label>
-            <span class="value" :class="{ positive: flightData.verticalSpeed > 0, negative: flightData.verticalSpeed < 0 }">
-              {{ flightData.verticalSpeed > 0 ? '+' : '' }}{{ flightData.verticalSpeed }}m/s
-            </span>
-          </div>
-        </div>
-        
-        <div class="attitude-indicator">
-          <div class="horizon" :style="{ transform: `rotate(${-flightData.roll}deg) translateY(${flightData.pitch * 2}px)` }">
-            <div class="sky"></div>
-            <div class="ground"></div>
-            <div class="horizon-line"></div>
-          </div>
-          <div class="aircraft-symbol"></div>
-          <div class="pitch-ladder">
-            <div class="pitch-mark" v-for="pitch in [-20, -10, 0, 10, 20]" :key="pitch" :style="{ top: `${50 - pitch * 2}%` }">
-              {{ pitch }}°
-            </div>
-          </div>
-          <!-- Add gravity reference indicator -->
-          <div v-if="flightData.gravityDir" class="gravity-indicator" :style="gravityIndicatorStyle"></div>
-        </div>
-        
-        <div class="instrument-panel right-panel">
-          <div class="instrument">
-            <label>HDG</label>
-            <span class="value">{{ String(flightData.heading).padStart(3, '0') }}°</span>
-          </div>
-          <div class="instrument">
-            <label>THR</label>
-            <span class="value">{{ flightData.throttle }}%</span>
-          </div>
-          <div class="instrument" v-if="flightData.engineRPM">
-            <label>RPM</label>
-            <span class="value">{{ flightData.engineRPM }}</span>
-          </div>
-        </div>
-      </div>
-      
-      <div class="flight-status">
-        <span v-if="flightData.isGrounded" class="status-indicator grounded">GROUNDED</span>
-        <span v-if="flightData.stallWarning" class="status-indicator warning">STALL WARNING</span>
-      </div>
-    </div>
+    <FlightHUD :visible="showFlightHUD" :data="flightData" />
   </div>
 </template>
 
@@ -136,6 +68,8 @@ import { PlayerManager } from '../lib/players.js';
 import { CampaignLoader } from '../lib/campaignLoader.js';
 import { WeaponSystem } from '../lib/weapons.js';
 import { Pyrotechnics } from '../lib/pyrotechnics.js';
+import FlightHUD from '../components/ui/flightHUD.vue';
+import Debug from '../components/ui/debug.vue';
 
 // Get WebSocket URL from runtime config
 const config = useRuntimeConfig();
@@ -209,25 +143,6 @@ const flightData = reactive({
   stallWarning: false,
   gravityDir: new THREE.Vector3(0, -1, 0) // Default gravity direction
 });
-
-// Computed style for gravity indicator
-const gravityIndicatorStyle = computed(() => {
-  if (!flightData.gravityDir) return {};
-  
-  // Project gravity direction onto the aircraft's local coordinate system
-  // This will show which way is "down" relative to the aircraft
-  const angle = Math.atan2(flightData.gravityDir.x, flightData.gravityDir.y) * (180 / Math.PI);
-  
-  return {
-    transform: `rotate(${angle}deg)`
-  };
-});
-
-// Format vector for display
-const formatVector = (vec) => {
-  if (!vec) return '0.00, 0.00, 0.00';
-  return `${vec.x.toFixed(2)}, ${vec.y.toFixed(2)}, ${vec.z.toFixed(2)}`;
-};
 
 // Initialize game
 const initGame = async () => {
@@ -1717,17 +1632,7 @@ onBeforeUnmount(() => {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
-.debug-info {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  color: white;
-  font-family: monospace;
-  font-size: 14px;
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 5px;
-  border-radius: 4px;
-}
+/* Remove .debug-info and .vehicle-info styles as they're now in Debug component */
 
 .error-message {
   position: absolute;
@@ -1743,12 +1648,6 @@ onBeforeUnmount(() => {
   max-width: 80%;
   text-align: center;
   z-index: 1000;
-}
-
-.vehicle-info {
-  color: #00ff00;
-  font-weight: bold;
-  margin-top: 5px;
 }
 
 .swimming-info {
@@ -1838,193 +1737,5 @@ onBeforeUnmount(() => {
   height: 100%;
   left: 50%;
   transform: translateX(-50%);
-}
-
-/* Flight HUD styles */
-.flight-hud {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: #00ff00;
-  font-family: 'Courier New', monospace;
-  pointer-events: none;
-  user-select: none;
-}
-
-.flight-instruments {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 10px;
-  border: 1px solid #00ff00;
-  border-radius: 5px;
-}
-
-.instrument-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.instrument {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.instrument label {
-  font-size: 12px;
-  color: #00ff00;
-  width: 30px;
-}
-
-.instrument .value {
-  font-size: 16px;
-  font-weight: bold;
-  color: #00ff00;
-  min-width: 60px;
-  text-align: right;
-}
-
-.value.positive {
-  color: #00ff00;
-}
-
-.value.negative {
-  color: #ff6666;
-}
-
-.attitude-indicator {
-  width: 150px;
-  height: 150px;
-  border: 2px solid #00ff00;
-  border-radius: 50%;
-  position: relative;
-  overflow: hidden;
-  background: #000;
-}
-
-.horizon {
-  position: absolute;
-  width: 200%;
-  height: 200%;
-  top: -50%;
-  left: -50%;
-  transition: transform 0.1s ease-out;
-}
-
-.sky {
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 50%;
-  background: #1e3c72;
-}
-
-.ground {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 50%;
-  background: #654321;
-}
-
-.horizon-line {
-  position: absolute;
-  top: 50%;
-  width: 100%;
-  height: 2px;
-  background: #fff;
-}
-
-.aircraft-symbol {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 60px;
-  height: 2px;
-  background: #ffff00;
-}
-
-.aircraft-symbol::before,
-.aircraft-symbol::after {
-  content: '';
-  position: absolute;
-  width: 20px;
-  height: 2px;
-  background: #ffff00;
-  top: 0;
-}
-
-.aircraft-symbol::before {
-  left: -10px;
-  transform: rotate(90deg);
-}
-
-.aircraft-symbol::after {
-  right: -10px;
-  transform: rotate(90deg);
-}
-
-.pitch-ladder {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.pitch-mark {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  font-size: 10px;
-  color: #00ff00;
-}
-
-.flight-status {
-  margin-top: 10px;
-  text-align: center;
-}
-
-.status-indicator {
-  padding: 5px 10px;
-  border-radius: 3px;
-  font-size: 12px;
-  font-weight: bold;
-  margin: 0 5px;
-}
-
-.status-indicator.grounded {
-  background: #333;
-  color: #00ff00;
-  border: 1px solid #00ff00;
-}
-
-.status-indicator.warning {
-  background: #ff0000;
-  color: #fff;
-  animation: blink 0.5s infinite;
-}
-
-@keyframes blink {
-  50% { opacity: 0.5; }
-}
-
-.gravity-indicator {
-  position: absolute;
-  bottom: 5px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 10px solid #ff0000;
-  opacity: 0.7;
 }
 </style>
