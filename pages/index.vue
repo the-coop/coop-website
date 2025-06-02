@@ -52,7 +52,7 @@
     </div>
     
     <!-- Add weapon HUD when game is started and in sandbox mode -->
-    <div v-if="started && gameMode === 'sandbox' && weaponInfo" class="weapon-hud">
+    <div v-if="started && gameMode === 'sandbox' && weaponInfo && weaponInfo.weaponName" class="weapon-hud">
       <div class="weapon-name">{{ weaponInfo.weaponName }}</div>
       <div class="ammo-display" v-if="weaponInfo.maxAmmo > 0">
         <span class="current-ammo">{{ weaponInfo.currentAmmo }}</span>
@@ -580,6 +580,13 @@ const startGameWithMode = async (connectNetwork) => {
           weaponInfo.maxAmmo = info.maxAmmo;
           weaponInfo.isReloading = info.isReloading;
           weaponInfo.reloadProgress = info.reloadProgress;
+        } else {
+          // Clear weapon info when no weapon
+          weaponInfo.weaponName = '';
+          weaponInfo.currentAmmo = 0;
+          weaponInfo.maxAmmo = 0;
+          weaponInfo.isReloading = false;
+          weaponInfo.reloadProgress = 0;
         }
       };
       
