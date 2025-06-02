@@ -59,17 +59,16 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, reactive, shallowRef, markRaw, computed } from 'vue';
 import * as THREE from 'three';
-import RAPIER from '@dimforge/rapier3d-compat';
-import { PhysicsManager } from '../lib/physics.js';
-import { SceneManager } from '../lib/scene.js';
-import { FPSController } from '../lib/fpsController.js';
-import { WebSocketManager } from '../lib/network.js';
-import { PlayerManager } from '../lib/players.js';
-import { CampaignLoader } from '../lib/campaignLoader.js';
-import { WeaponSystem } from '../lib/weapons.js';
-import { Pyrotechnics } from '../lib/pyrotechnics.js';
-import FlightHUD from '../components/ui/flightHUD.vue';
-import Debug from '../components/ui/debug.vue';
+import { PhysicsManager } from '../lib/engine/physics.js';
+import { SceneManager } from '../lib/engine/scene.js';
+import { FPSController } from '../lib/control/fpsController.js';
+import { WebSocketManager } from '../lib/engine/network.js';
+import { PlayerManager } from '../lib/engine/players.js';
+import { CampaignLoader } from '../lib/campaign/campaignLoader.js';
+import { WeaponSystem } from '../lib/engine/weapons.js';
+import { Pyrotechnics } from '../lib/engine/pyrotechnics.js';
+import FlightHUD from '../components/flightHUD.vue';
+import Debug from '../components/debug.vue';
 
 // Get WebSocket URL from runtime config
 const config = useRuntimeConfig();
