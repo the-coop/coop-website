@@ -611,7 +611,7 @@ const startGameWithMode = async (connectNetwork) => {
 // Create local player helper
 const createLocalPlayer = (spawnPosition) => {
   if (!scene.value || !physics.value) {
-    console.error("Cannot create player: scene or physics not initialized");
+    console.error("Scene or physics not initialized");
     return;
   }
   
@@ -623,7 +623,17 @@ const createLocalPlayer = (spawnPosition) => {
   
   player.value = markRaw(fpsController);
   
+  // Create weapon system and make it available to vehicles
+  weaponSystem.value = markRaw(new WeaponSystem(scene.value, physics.value, player.value));
+  scene.value.weaponSystem = weaponSystem.value; // Make weapon system available to vehicles
+  
+  // Force creation of lock-on indicators
+  if (!weaponSystem.value.lockOnIndicator) {
+    weaponSystem.value.createLockOnIndicator();
+  }
+  
   console.log("Player created at:", spawnPosition);
+  console.log("Weapon system initialized with lock-on indicators");
 };
 
 // Send player state to server
