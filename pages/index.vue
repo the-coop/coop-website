@@ -900,6 +900,13 @@ const animate = () => {
     debugInfo.inVehicle = player.value.isInVehicle;
     debugInfo.isSwimming = player.value.isSwimming;
     
+    // Add slope angle to debug info
+    if (player.value.isGrounded) {
+      debugInfo.slopeAngle = player.value.getCurrentSlopeAngle();
+    } else {
+      debugInfo.slopeAngle = 0;
+    }
+    
     // Calculate speed and movement
     const velocity = player.value.getVelocity();
     debugInfo.currentSpeed = velocity.length();

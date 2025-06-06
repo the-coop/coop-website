@@ -6,6 +6,9 @@
     <div>Speed: {{ data.currentSpeed.toFixed(2) }} m/s</div>
     <div>Moving: {{ data.isMoving ? 'Yes' : 'No' }}</div>
     <div>Grounded: {{ data.isGrounded ? 'Yes' : 'No' }}</div>
+    <div v-if="data.isGrounded && data.slopeAngle !== undefined">
+      Slope: {{ data.slopeAngle.toFixed(1) }}°
+    </div>
     <div>Swimming: {{ data.isSwimming ? 'Yes' : 'No' }}</div>
     <div v-if="data.inVehicle" class="vehicle-info">In Vehicle</div>
     <div v-if="gameMode === 'multiplayer'">
@@ -36,7 +39,8 @@ const props = defineProps({
       isSwimming: false,
       inVehicle: false,
       connected: false,
-      playersOnline: 0
+      playersOnline: 0,
+      slopeAngle: 0
     })
   }
 });
