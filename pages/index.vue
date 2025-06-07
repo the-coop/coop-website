@@ -1181,8 +1181,48 @@ const onKeyDown = (event) => {
         player.value.currentVehicle.keys.up = true;
       }
       break;
-    case 'u':
+    case 'i':
       player.value.keys.activate = true;
+      break;
+    case 't':
+      player.value.keys.toggleDoors = true;
+      
+      // Toggle spaceship doors if near one
+      if (!player.value?.isInVehicle) {
+        const playerPos = player.value.getPosition();
+        let nearestSpaceship = null;
+        let nearestDistance = 10.0;
+        
+        // Check all vehicles for spaceships
+        scene.value.vehicles.forEach((vehicle, id) => {
+          if (vehicle.constructor.name === 'SpaceshipController') {
+            const distance = playerPos.distanceTo(vehicle.getPosition());
+            if (distance < nearestDistance) {
+              nearestDistance = distance;
+              nearestSpaceship = vehicle;
+            }
+          }
+        });
+        
+        // Also check dynamic objects
+        scene.value.dynamicObjects.forEach((obj, id) => {
+          if (obj.controller && obj.controller.constructor.name === 'SpaceshipController') {
+            const distance = playerPos.distanceTo(obj.controller.getPosition());
+            if (distance < nearestDistance) {
+              nearestDistance = distance;
+              nearestSpaceship = obj.controller;
+            }
+          }
+        });
+        
+        // Toggle doors on nearest spaceship if close enough
+        if (nearestSpaceship && nearestDistance < 8.0) {
+          nearestSpaceship.toggleDoors();
+        }
+      } else if (player.value?.currentVehicle?.constructor.name === 'SpaceshipController') {
+        // If inside spaceship, toggle doors from inside
+        player.value.currentVehicle.toggleDoors();
+      }
       break;
   }
   
@@ -1284,8 +1324,11 @@ const onKeyUp = (event) => {
         player.value.currentVehicle.keys.up = false;
       }
       break;
-    case 'u':
+    case 'i':
       player.value.keys.activate = false;
+      break;
+    case 't':
+      player.value.keys.toggleDoors = false;
       break;
   }
   
