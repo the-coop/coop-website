@@ -1121,7 +1121,11 @@ const onKeyDown = (event) => {
       player.value.keys.jump = true;
       break;
     case 'shift':
-      player.value.keys.run = true;
+      if (player.value) player.value.keys.run = true;
+      // Also use shift for spaceship boost
+      if (player.value?.currentVehicle?.keys) {
+        player.value.currentVehicle.keys.boost = true;
+      }
       break;
     case 'control':
       player.value.keys.crouch = true;  // Add Control key for crouch
@@ -1163,29 +1167,48 @@ const onKeyDown = (event) => {
       break;
     case 'f':
       player.value.keys.deployFlares = true; // Add F key for flares
+      // Spaceship down movement
+      if (player.value?.currentVehicle?.constructor.name === 'SpaceshipController') {
+        player.value.currentVehicle.keys.down = true;
+      }
       break;
     case 'p':
       player.value.keys.changePerspective = true; // Add P key for disassembly
       break;
+    case 'r':
+      // Spaceship up movement
+      if (player.value?.currentVehicle?.constructor.name === 'SpaceshipController') {
+        player.value.currentVehicle.keys.up = true;
+      }
+      break;
+    case 'u':
+      player.value.keys.activate = true;
+      break;
   }
   
-  // Weapon controls - only when not in vehicle
-  if (weaponSystem.value && !player.value?.isInVehicle) {
+  // Vehicle-specific controls
+  if (player.value?.isInVehicle && player.value.currentVehicle) {
+    const vehicle = player.value.currentVehicle;
+    
+    // Map WASD to vehicle controls
     switch(event.key.toLowerCase()) {
-      case '1':
-        weaponSystem.value.switchWeapon('hands');
+      case 'w':
+        vehicle.keys.forward = true;
         break;
-      case '2':
-        weaponSystem.value.switchWeapon('pistol');
+      case 's':
+        vehicle.keys.backward = true;
         break;
-      case '3':
-        weaponSystem.value.switchWeapon('rifle');
+      case 'a':
+        vehicle.keys.left = true;
         break;
-      case '4':
-        weaponSystem.value.switchWeapon('shotgun');
+      case 'd':
+        vehicle.keys.right = true;
         break;
-      case 'r':
-        weaponSystem.value.reload();
+      case 'q':
+        vehicle.keys.rollLeft = true;
+        break;
+      case 'e':
+        vehicle.keys.rollRight = true;
         break;
     }
   }
@@ -1212,7 +1235,11 @@ const onKeyUp = (event) => {
       player.value.keys.jump = false;
       break;
     case 'shift':
-      player.value.keys.run = false;
+      if (player.value) player.value.keys.run = false;
+      // Also release spaceship boost
+      if (player.value?.currentVehicle?.keys) {
+        player.value.currentVehicle.keys.boost = false;
+      }
       break;
     case 'control':
       player.value.keys.crouch = false;  // Add Control key release
@@ -1243,16 +1270,93 @@ const onKeyUp = (event) => {
       break;
     case 'f':
       player.value.keys.deployFlares = false; // Release F key
+      // Spaceship down movement
+      if (player.value?.currentVehicle?.constructor.name === 'SpaceshipController') {
+        player.value.currentVehicle.keys.down = false;
+      }
       break;
     case 'p':
       player.value.keys.changePerspective = false; // Release P key
       break;
+    case 'r':
+      // Spaceship up movement
+      if (player.value?.currentVehicle?.constructor.name === 'SpaceshipController') {
+        player.value.currentVehicle.keys.up = false;
+      }
+      break;
+    case 'u':
+      player.value.keys.activate = false;
+      break;
+  }
+  
+  // Vehicle-specific controls
+  if (player.value?.isInVehicle && player.value.currentVehicle) {
+    const vehicle = player.value.currentVehicle;
+    
+    // Release vehicle controls
+    switch(event.key.toLowerCase()) {
+      case 'w':
+        vehicle.keys.forward = false;
+        break;
+      case 's':
+        vehicle.keys.backward = false;
+        break;
+      case 'a':
+        vehicle.keys.left = false;
+        break;
+      case 'd':
+        vehicle.keys.right = false;
+        break;
+      case 'q':
+        vehicle.keys.rollLeft = false;
+        break;
+      case 'e':
+        vehicle.keys.rollRight = false;
+        break;
+    }
   }
 };
 
-// Modified mouse handler to check physics stepping
+// Modified mouse handler to support spaceship controls
 const onMouseMove = (event) => {
   if (!started.value || !document.pointerLockElement || isPhysicsStepping) return;
+  
+  // Handle spaceship mouse controls
+  if (player.value?.isInVehicle && player.value.currentVehicle?.constructor.name === 'SpaceshipController') {
+    const spaceship = player.value.currentVehicle;
+    const sensitivity = 0.001;
+    const deltaX = event.movementX * sensitivity;
+    const deltaY = event.movementY * sensitivity;
+    
+    // Apply rotation torque based on mouse movement
+    if (spaceship.body) {
+      const rotation = spaceship.body.rotation();
+      const quaternion = new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
+      
+      // Get local axes
+      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(quaternion);
+      const up = new THREE.Vector3(0, 1, 0).applyQuaternion(quaternion);
+      
+      // Apply torque for pitch and yaw
+      const torqueStrength = 30000;
+      
+      // Pitch (mouse Y)
+      spaceship.body.applyTorqueImpulse({
+        x: right.x * deltaY * torqueStrength,
+        y: right.y * deltaY * torqueStrength,
+        z: right.z * deltaY * torqueStrength
+      });
+      
+      // Yaw (mouse X)
+      spaceship.body.applyTorqueImpulse({
+        x: up.x * -deltaX * torqueStrength,
+        y: up.y * -deltaX * torqueStrength,
+        z: up.z * -deltaX * torqueStrength
+      });
+    }
+    
+    return;
+  }
   
   // Don't handle mouse movement for player if in vehicle
   if (!player.value?.isInVehicle) {
@@ -1352,15 +1456,24 @@ onMounted(async () => {
     
     // Key bindings
     const keyMap = {
-      'w': 'forward',
-      's': 'backward',
-      'a': 'left',
-      'd': 'right',
-      ' ': 'jump',
-      'shift': 'run',
-      'q': 'rollLeft',
-      'e': 'rollRight',
-      'u': 'interact'  // Add U key for vehicle interaction
+      'KeyW': 'forward',
+      'KeyS': 'backward',
+      'KeyA': 'left',
+      'KeyD': 'right',
+      'Space': 'jump',
+      'ShiftLeft': 'run',
+      'KeyQ': 'rollLeft',
+      'KeyE': 'rollRight',
+      'KeyU': 'interact',      // Changed from F to U for enter/exit vehicle
+      'KeyT': 'toggleCamera',
+      'KeyC': 'crouch',
+      'KeyG': 'landingGear',
+      'KeyZ': 'fireGun',
+      'KeyX': 'fireMissile',
+      'KeyL': 'toggleLights',
+      'KeyF': 'deployFlares',  // F is now for flares
+      'KeyP': 'changePerspective',
+      'KeyI': 'activate'       // Changed from U to I for spaceship autopilot
     };
     
     // Update setupMultiplayer to handle vehicles
