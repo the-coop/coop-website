@@ -349,6 +349,176 @@ const connectToServer = () => {
         interactionState.ownedObjects.delete(objectId);
       };
       
+      // Add weapon and explosion handlers
+      ws.onWeaponFire = (playerId, weaponType, origin, direction) => {
+        // Don't process our own weapon fire
+        if (playerId === ws.playerId) return;
+        
+        // Create visual effect for remote player's weapon
+        if (weaponSystem.value) {
+          weaponSystem.value.fireRemoteWeapon(playerId, weaponType, origin, direction);
+        }
+      };
+      
+      ws.onProjectileHit = (projectileId, hitPosition, hitType, hitEntityId) => {
+        // Handle projectile impact effects
+        console.log(`Projectile ${projectileId} hit ${hitType} at`, hitPosition);
+        
+        // Create impact effect
+        if (weaponSystem.value) {
+          weaponSystem.value.createImpactEffect(
+            new THREE.Vector3(hitPosition.x, hitPosition.y, hitPosition.z),
+            new THREE.Vector3(0, 1, 0), // Default normal
+            'bullet'
+          );
+        }
+      };
+      
+      ws.onExplosion = (position, radius, damage, type) => {
+        // Create explosion effect
+        if (weaponSystem.value) {
+          weaponSystem.value.createRemoteExplosion(
+            new THREE.Vector3(position.x, position.y, position.z),
+            radius,
+            type
+          );
+        }
+      };
+      
+      // Vehicle handlers
+      ws.onVehicleSpawn = (vehicleId, vehicleType, position, rotation) => {
+        if (scene.value) {
+          const pos = new THREE.Vector3(position.x, position.y, position.z);
+          const rot = new THREE.Quaternion(rotation.x, rotation.y, rotation.z, rotation.w);
+          
+          // Spawn the vehicle
+          let vehicle;
+          switch (vehicleType) {
+            case 'car':
+              vehicle = scene.value.spawnCar(pos, rot);
+              break;
+            case 'plane':
+              vehicle = scene.value.spawnPlane(pos, rot);
+              break;
+            case 'helicopter':
+              vehicle = scene.value.spawnHelicopter(pos, rot);
+              break;
+            case 'spaceship':
+              vehicle = scene.value.spawnSpaceship(pos, rot);
+              break;
+          }
+          
+          if (vehicle) {
+            vehicle.id = vehicleId;
+            vehicle.isMultiplayer = true;
+          }
+        }
+      };
+      
+      ws.onVehicleUpdate = (vehicleId, state) => {
+        const vehicle = scene.value.vehicles.get(vehicleId);
+        if (vehicle && vehicle.isMultiplayer && !vehicle.isOccupied) {
+          // Update vehicle state from server
+          if (state.position && vehicle.body) {
+            vehicle.body.setTranslation({
+              x: state.position.x,
+              y: state.position.y,
+              z: state.position.z
+            });
+          }
+          
+          if (state.rotation && vehicle.body) {
+            vehicle.body.setRotation({
+              x: state.rotation.x,
+              y: state.rotation.y,
+              z: state.rotation.z,
+              w: state.rotation.w
+            });
+          }
+          
+          if (state.velocity && vehicle.body) {
+            vehicle.body.setLinvel({
+              x: state.velocity.x,
+              y: state.velocity.y,
+              z: state.velocity.z
+            });
+          }
+        }
+      };
+      
+      ws.onPlayerEnteredVehicle = (playerId, vehicleId) => {
+        if (playerId === ws.playerId) {
+          // Local player entered vehicle (already handled locally)
+          return;
+        }
+        
+        // Remote player entered vehicle
+        const remotePlayer = playerManager.value.players.get(playerId);
+        if (remotePlayer) {
+          remotePlayer.isInVehicle = true;
+          remotePlayer.currentVehicleId = vehicleId;
+          
+          // Hide player mesh when in vehicle
+          if (remotePlayer.mesh) {
+            remotePlayer.mesh.visible = false;
+          }
+          
+          // Mark vehicle as occupied
+          const vehicle = scene.value.vehicles.get(vehicleId);
+          if (vehicle) {
+            vehicle.isOccupied = true;
+            vehicle.currentDriver = playerId;
+          }
+        }
+      };
+      
+      ws.onPlayerExitedVehicle = (playerId, vehicleId, exitPosition) => {
+        if (playerId === ws.playerId) {
+          // Local player (already handled)
+          return;
+        }
+        
+        // Remote player exited vehicle
+        const remotePlayer = playerManager.value.players.get(playerId);
+        if (remotePlayer) {
+          remotePlayer.isInVehicle = false;
+          remotePlayer.currentVehicleId = null;
+          
+          // Show player mesh
+          if (remotePlayer.mesh) {
+            remotePlayer.mesh.visible = true;
+          }
+          
+          // Update position
+          if (remotePlayer.body && exitPosition) {
+            remotePlayer.body.setTranslation({
+              x: exitPosition.x,
+              y: exitPosition.y,
+              z: exitPosition.z
+            });
+          }
+          
+          // Mark vehicle as unoccupied
+          const vehicle = scene.value.vehicles.get(vehicleId);
+          if (vehicle) {
+            vehicle.isOccupied = false;
+            vehicle.currentDriver = null;
+          }
+        }
+      };
+      
+      ws.onVehiclePlayerState = (playerId, vehicleId, relativePosition, relativeRotation, aimRotation, isGrounded) => {
+        // Update remote player's position within vehicle
+        const remotePlayer = playerManager.value.players.get(playerId);
+        if (remotePlayer && remotePlayer.isInVehicle) {
+          // Store relative state for rendering
+          remotePlayer.relativePosition = relativePosition;
+          remotePlayer.relativeRotation = relativeRotation;
+          remotePlayer.aimRotation = aimRotation;
+          remotePlayer.isGrounded = isGrounded;
+        }
+      };
+      
       // Connect to server
       ws.connect().catch(reject);
       
@@ -475,40 +645,24 @@ const startGameWithMode = async (connectNetwork) => {
       return;
     }
     
-    // Create weapon system for sandbox mode
+    // Create weapon system for sandbox mode AFTER player is created
     if (gameMode.value === 'sandbox') {
-      weaponSystem.value = markRaw(new WeaponSystem(scene.value, physics.value, player.value));
-      
-      // Set global reference for FPS controller
-      window.weaponSystem = weaponSystem.value;
+      // Only create if not already created
+      if (!weaponSystem.value) {
+        weaponSystem.value = markRaw(new WeaponSystem(scene.value, physics.value, player.value));
+        
+        // Set network manager on weapon system if in multiplayer
+        if (wsManager.value) {
+          weaponSystem.value.setNetworkManager(wsManager.value);
+        }
+        
+        // Set global reference for FPS controller
+        window.weaponSystem = weaponSystem.value;
+      }
       
       // Spawn weapons on the platform after weapon system is initialized
+      console.log('Spawning sandbox weapons...');
       scene.value.spawnSandboxWeapons(weaponSystem.value);
-      
-      // Update weapon HUD info
-      const updateWeaponHUD = () => {
-        const info = weaponSystem.value.getHUDInfo();
-        if (info) {
-          weaponInfo.weaponName = info.weaponName;
-          weaponInfo.currentAmmo = info.currentAmmo;
-          weaponInfo.maxAmmo = info.maxAmmo;
-          weaponInfo.isReloading = info.isReloading;
-          weaponInfo.reloadProgress = info.reloadProgress;
-        } else {
-          // Clear weapon info when no weapon
-          weaponInfo.weaponName = '';
-          weaponInfo.currentAmmo = 0;
-          weaponInfo.maxAmmo = 0;
-          weaponInfo.isReloading = false;
-          weaponInfo.reloadProgress = 0;
-        }
-      };
-      
-      // Initial HUD update
-      updateWeaponHUD();
-      
-      // Update HUD periodically
-      setInterval(updateWeaponHUD, 100);
     }
     
     started.value = true;
@@ -544,17 +698,13 @@ const createLocalPlayer = (spawnPosition) => {
   
   player.value = markRaw(fpsController);
   
-  // Create weapon system and make it available to vehicles
-  weaponSystem.value = markRaw(new WeaponSystem(scene.value, physics.value, player.value));
-  scene.value.weaponSystem = weaponSystem.value; // Make weapon system available to vehicles
-  
-  // Force creation of lock-on indicators
-  if (!weaponSystem.value.lockOnIndicator) {
-    weaponSystem.value.createLockOnIndicator();
+  // Set network manager on player
+  if (wsManager.value) {
+    player.value.setNetworkManager(wsManager.value);
   }
   
   console.log("Player created at:", spawnPosition);
-  console.log("Weapon system initialized with lock-on indicators");
+  // Remove weapon system creation from here - it's created in startGameWithMode
 };
 
 // Send player state to server
@@ -924,9 +1074,12 @@ const animate = () => {
   }
   
   // Send player or vehicle state to server
-  if (gameMode.value === 'multiplayer' && wsManager?.connected) {
+  if (gameMode.value === 'multiplayer' && wsManager.value?.connected) {
     if (player.value.isInVehicle && player.value.currentVehicle) {
-      // Send vehicle controls
+      // Handle vehicle-specific updates
+      const vehicle = player.value.currentVehicle;
+      
+      // Send vehicle controls every frame for responsiveness
       wsManager.value.sendVehicleControl({
         forward: player.value.keys.forward,
         backward: player.value.keys.backward,
@@ -934,18 +1087,44 @@ const animate = () => {
         right: player.value.keys.right,
         brake: player.value.keys.jump
       });
-    } else {
-      // Send regular player state
-      const state = player.value.getNetworkState();
-      if (state) {
-        wsManager.value.sendPlayerState(
-          state.position,
-          state.rotation,
-          state.velocity,
-          state.isGrounded,
-          state.isSwimming
+      
+      // For spaceships, also send player state within vehicle
+      if (vehicle.constructor.name === 'SpaceshipController' && player.value.relativePosition) {
+        // Send player's position/rotation relative to vehicle
+        wsManager.value.sendVehiclePlayerUpdate(
+          player.value.relativePosition,
+          player.value.relativeRotation || new THREE.Quaternion(),
+          player.value.getAimQuaternion(), // Player's aim direction (where they're looking)
+          player.value.isOnVehicleFloor || false
         );
       }
+      
+      // Send vehicle state periodically
+      if (frameCount.value % 2 === 0 && vehicle.id) { // Every 2 frames (~30Hz)
+        const state = {
+          position: vehicle.body ? {
+            x: vehicle.body.translation().x,
+            y: vehicle.body.translation().y,
+            z: vehicle.body.translation().z
+          } : vehicle.getPosition(),
+          rotation: vehicle.body ? {
+            x: vehicle.body.rotation().x,
+            y: vehicle.body.rotation().y,
+            z: vehicle.body.rotation().z,
+            w: vehicle.body.rotation().w
+          } : vehicle.mesh.quaternion,
+          velocity: vehicle.body ? {
+            x: vehicle.body.linvel().x,
+            y: vehicle.body.linvel().y,
+            z: vehicle.body.linvel().z
+          } : new THREE.Vector3()
+        };
+        
+        wsManager.value.sendVehicleUpdate(vehicle.id, state);
+      }
+    } else {
+      // Regular player state - call the function we defined!
+      sendPlayerState();
     }
   }
   
@@ -966,9 +1145,22 @@ const animate = () => {
   if (weaponSystem.value && !isPhysicsStepping) {
     weaponSystem.value.update(deltaTime);
     
-    // Update weapon HUD
-    if (frameCount.value % 3 === 0) // Update HUD less frequently
-      weaponInfo.value = weaponSystem.value.getHUDInfo();
+    // Update weapon HUD info
+    const info = weaponSystem.value.getHUDInfo();
+    if (info) {
+      weaponInfo.weaponName = info.weaponName;
+      weaponInfo.currentAmmo = info.currentAmmo;
+      weaponInfo.maxAmmo = info.maxAmmo;
+      weaponInfo.isReloading = info.isReloading;
+      weaponInfo.reloadProgress = info.reloadProgress;
+    } else {
+      // Clear weapon info when no weapon
+      weaponInfo.weaponName = '';
+      weaponInfo.currentAmmo = 0;
+      weaponInfo.maxAmmo = 0;
+      weaponInfo.isReloading = false;
+      weaponInfo.reloadProgress = 0;
+    }
   }
   
   // Update flight HUD if in vehicle
@@ -1602,29 +1794,32 @@ onMounted(async () => {
     const animate = (currentTime) => {
       // ...existing code...
       
-      // Send player or vehicle state to server
-      if (gameMode.value === 'multiplayer' && webSocketManager?.connected) {
-        if (player.isInVehicle && player.currentVehicle) {
-          // Send vehicle controls
-          webSocketManager.sendVehicleControl({
-            forward: player.keys.forward,
-            backward: player.keys.backward,
-            left: player.keys.left,
-            right: player.keys.right,
-            brake: player.keys.jump
-          });
-        } else {
-          // Send regular player state
-          const state = player.getNetworkState();
-          if (state) {
-            webSocketManager.sendPlayerState(
-              state.position,
-              state.rotation,
-              state.velocity,
-              state.isGrounded,
-              state.isSwimming
-            );
-          }
+      // Send vehicle updates if driving
+      if (player.value?.isInVehicle && player.value.currentVehicle && wsManager.value?.connected) {
+        const vehicle = player.value.currentVehicle;
+        
+        // Send vehicle state periodically
+        if (frameCount.value % 2 === 0) { // Every 2 frames (~30Hz)
+          const state = {
+            position: vehicle.body ? {
+              x: vehicle.body.translation().x,
+              y: vehicle.body.translation().y,
+              z: vehicle.body.translation().z
+            } : vehicle.getPosition(),
+            rotation: vehicle.body ? {
+              x: vehicle.body.rotation().x,
+              y: vehicle.body.rotation().y,
+              z: vehicle.body.rotation().z,
+              w: vehicle.body.rotation().w
+            } : vehicle.mesh.quaternion,
+            velocity: vehicle.body ? {
+              x: vehicle.body.linvel().x,
+              y: vehicle.body.linvel().y,
+              z: vehicle.body.linvel().z
+            } : new THREE.Vector3()
+          };
+          
+          wsManager.value.sendVehicleUpdate(vehicle.id, state);
         }
       }
       
