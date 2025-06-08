@@ -662,7 +662,16 @@ const startGameWithMode = async (connectNetwork) => {
       
       // Spawn weapons on the platform after weapon system is initialized
       console.log('Spawning sandbox weapons...');
-      scene.value.spawnSandboxWeapons(weaponSystem.value);
+      
+      // Spawn all weapon types as pickups
+      const weaponTypes = ['pistol', 'rifle', 'shotgun', 'rocketLauncher', 'grenadeLauncher', 'sniper'];
+      const spacing = 5;
+      
+      weaponTypes.forEach((type, index) => {
+        const x = -15 + (index * spacing);
+        const position = new THREE.Vector3(x, 32, -10);
+        weaponSystem.value.spawnWeaponPickup(type, position);
+      });
     }
     
     started.value = true;
@@ -1368,8 +1377,10 @@ const onKeyDown = (event) => {
       player.value.keys.changePerspective = true; // Add P key for disassembly
       break;
     case 'r':
-      // Spaceship up movement
-      if (player.value?.currentVehicle?.constructor.name === 'SpaceshipController') {
+      // Reload weapon or spaceship up movement
+      if (gameMode.value === 'sandbox' && weaponSystem.value && !player.value?.isInVehicle) {
+        weaponSystem.value.reload();
+      } else if (player.value?.currentVehicle?.constructor.name === 'SpaceshipController') {
         player.value.currentVehicle.keys.up = true;
       }
       break;
@@ -1414,6 +1425,25 @@ const onKeyDown = (event) => {
       } else if (player.value?.currentVehicle?.constructor.name === 'SpaceshipController') {
         // If inside spaceship, toggle doors from inside
         player.value.currentVehicle.toggleDoors();
+      }
+      break;
+    // Weapon switching (sandbox mode only)
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+      if (gameMode.value === 'sandbox' && weaponSystem.value && !player.value?.isInVehicle) {
+        const weaponMap = {
+          '1': 'pistol',
+          '2': 'rifle',
+          '3': 'shotgun',
+          '4': 'rocketLauncher',
+          '5': 'grenadeLauncher',
+          '6': 'sniper'
+        };
+        weaponSystem.value.equipWeapon(weaponMap[event.key]);
       }
       break;
   }
