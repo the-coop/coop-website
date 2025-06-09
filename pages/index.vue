@@ -1144,8 +1144,8 @@ const animate = () => {
     }
   }
   
-  // Update remote players
-  if (playerManager.value && !isPhysicsStepping) {
+  // Update player manager (this will update all network players with physics)
+  if (playerManager.value) {
     playerManager.value.update(deltaTime);
   }
   
