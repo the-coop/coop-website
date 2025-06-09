@@ -285,12 +285,19 @@ const connectToServer = () => {
             return;
           }
           
+          // Ensure position is a Vector3
+          const position = new THREE.Vector3(
+            data.position?.x || 0,
+            data.position?.y || 0,
+            data.position?.z || 0
+          );
+          
           if (data.type === 'rock') {
-            scene.value.spawnMultiplayerRock(objectId, data.position, data.scale);
+            scene.value.spawnMultiplayerRock(objectId, position, data.scale);
           } else if (data.type === 'dynamic_platform') {
-            scene.value.spawnMultiplayerDynamicPlatform(objectId, data.position, data.scale);
+            scene.value.spawnMultiplayerDynamicPlatform(objectId, position, data.scale);
           } else if (data.type === 'vehicle') {
-            scene.value.spawnMultiplayerVehicle(objectId, data.position, data.scale);
+            scene.value.spawnMultiplayerVehicle(objectId, position, data.scale);
           }
         }
       };
