@@ -1824,6 +1824,30 @@ onMounted(async () => {
         player.setNetworkManager(webSocketManager);
       }
       
+      // After player is created and weapon system initialized
+      player.weaponSystem.setNetworkManager(wsManager.value);
+      
+      // Process any pending weapon and vehicle spawns from level data
+      if (scene.value) {
+        scene.value.processPendingSpawns(player.weaponSystem);
+      }
+      
+      // Setup network handlers for weapons
+      wsManager.value.onWeaponSpawned = (pickupId, weaponType, position) => {
+        console.log(`Weapon spawned: ${weaponType} at`, position);
+        scene.spawnMultiplayerWeaponPickup(pickupId, weaponType, position);
+      };
+      
+      wsManager.value.onWeaponPickedUp = (pickupId, playerId, weaponType) => {
+        console.log(`Weapon picked up: ${weaponType} by player ${playerId}`);
+        scene.handleMultiplayerWeaponPickup(pickupId, playerId);
+      };
+      
+      wsManager.value.onWeaponRespawned = (pickupId) => {
+        console.log(`Weapon respawned: ${pickupId}`);
+        scene.respawnMultiplayerWeaponPickup(pickupId);
+      };
+      
       // ...existing code...
     };
     
