@@ -17,10 +17,25 @@
         <div>Mouse - Look around</div>
         <div>Click - Shoot</div>
         <div>F - Enter/Exit vehicle</div>
+        <div>O - Toggle third person</div>
+        <div>` - Toggle debug info</div>
       </div>
       <div class="crosshair">+</div>
       <div v-if="nearbyVehicle && !currentVehicle" class="interaction-prompt">
         Press F to enter vehicle
+      </div>
+    </div>
+    <div v-if="showDebugInfo" class="debug-info">
+      <h3>Debug Info</h3>
+      <div v-if="currentPlayer">
+        <div>Position: {{ formatVector(currentPlayer.position) }}</div>
+        <div>Velocity: {{ formatVector(currentPlayer.velocity) }}</div>
+        <div>Speed: {{ getSpeed(currentPlayer.velocity).toFixed(2) }} m/s</div>
+        <div>Grounded: {{ currentPlayer.isGrounded ? 'Yes' : 'No' }}</div>
+        <div v-if="currentPlayer.groundDistance !== null">Ground Distance: {{ currentPlayer.groundDistance?.toFixed(3) }}</div>
+        <div v-if="currentPlayer.groundNormal">Ground Normal: {{ formatVector(currentPlayer.groundNormal) }}</div>
+        <div>Camera Mode: {{ thirdPerson ? 'Third Person' : 'First Person' }}</div>
+        <div>FPS: {{ fps }}</div>
       </div>
     </div>
     <div ref="gameContainer" class="game-container" />
@@ -30,7 +45,7 @@
 <script setup>
 import * as THREE from 'three'
 import { MessageTypes, VehicleConstants, PlayerConstants } from '@game/shared'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, computed } from 'vue'
 
 const gameContainer = ref(null)
 const connected = ref(false)
@@ -39,6 +54,9 @@ const playerId = ref(null)
 const playerHealth = ref(null)
 const currentVehicle = ref(null)
 const nearbyVehicle = ref(null)
+const thirdPerson = ref(false)
+const showDebugInfo = ref(false)
+const fps = ref(0)
 
 let scene, camera, renderer, ws
 let players = new Map()
@@ -52,6 +70,23 @@ let animationId = null
 let mouse = { x: 0, y: 0 }
 let cameraRotation = { x: 0, y: 0 }
 let levelObjects = [] // Store level objects
+let debugRayHelper = null
+let lastTime = performance.now()
+let frameCount = 0
+
+const currentPlayer = computed(() => {
+  return playerId.value ? players.get(playerId.value) : null
+})
+
+function formatVector(vec) {
+  if (!vec) return 'N/A'
+  return `(${vec.x.toFixed(2)}, ${vec.y.toFixed(2)}, ${vec.z.toFixed(2)})`
+}
+
+function getSpeed(velocity) {
+  if (!velocity) return 0
+  return Math.sqrt(velocity.x ** 2 + velocity.z ** 2)
+}
 
 onMounted(() => {
   initGame()
@@ -124,19 +159,49 @@ async function initGame() {
 }
 
 function setupControls() {
-  // Keyboard controls
-  window.addEventListener('keydown', (e) => {
+  // Store event listeners for cleanup
+  const keydownHandler = (e) => {
+    // Prevent key repeat
+    if (keys[e.code]) return;
+    
     keys[e.code] = true
     
     // Handle vehicle enter/exit
     if (e.code === 'KeyF') {
       handleVehicleInteraction()
     }
-  })
+    
+    // Toggle third person camera
+    if (e.code === 'KeyO') {
+      thirdPerson.value = !thirdPerson.value
+    }
+    
+    // Toggle debug info
+    if (e.code === 'Backquote') {
+      showDebugInfo.value = !showDebugInfo.value
+      updateDebugVisualization()
+    }
+  }
   
-  window.addEventListener('keyup', (e) => {
+  const keyupHandler = (e) => {
     keys[e.code] = false
-  })
+  }
+  
+  const blurHandler = () => {
+    // Clear all keys
+    Object.keys(keys).forEach(key => {
+      keys[key] = false
+    })
+  }
+  
+  window.addEventListener('keydown', keydownHandler)
+  window.addEventListener('keyup', keyupHandler)
+  window.addEventListener('blur', blurHandler)
+  
+  // Store handlers for cleanup
+  window._keydownHandler = keydownHandler
+  window._keyupHandler = keyupHandler
+  window._blurHandler = blurHandler
 
   // Mouse controls for camera
   let isPointerLocked = false
@@ -147,17 +212,30 @@ function setupControls() {
     }
   })
   
-  document.addEventListener('pointerlockchange', () => {
+  const pointerlockchangeHandler = () => {
     isPointerLocked = document.pointerLockElement === gameContainer.value
-  })
+    // Reset keys when pointer lock is lost
+    if (!isPointerLocked) {
+      Object.keys(keys).forEach(key => {
+        keys[key] = false
+      })
+    }
+  }
   
-  document.addEventListener('mousemove', (e) => {
+  const mousemoveHandler = (e) => {
     if (isPointerLocked) {
-      cameraRotation.y -= e.movementX * 0.002
-      cameraRotation.x -= e.movementY * 0.002
+      cameraRotation.y -= e.movementX * PlayerConstants.MOUSE_SENSITIVITY
+      cameraRotation.x -= e.movementY * PlayerConstants.MOUSE_SENSITIVITY
       cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x))
     }
-  })
+  }
+  
+  document.addEventListener('pointerlockchange', pointerlockchangeHandler)
+  document.addEventListener('mousemove', mousemoveHandler)
+  
+  // Store handlers
+  document._pointerlockchangeHandler = pointerlockchangeHandler
+  document._mousemoveHandler = mousemoveHandler
 }
 
 function handleVehicleInteraction() {
@@ -301,10 +379,10 @@ function updateGameState(state) {
   playerCount.value = state.players.length
   
   // Update player health and vehicle state
-  const currentPlayer = state.players.find(p => p.id === playerId.value)
-  if (currentPlayer) {
-    playerHealth.value = currentPlayer.health
-    currentVehicle.value = currentPlayer.vehicle || null
+  const currentPlayerData = state.players.find(p => p.id === playerId.value)
+  if (currentPlayerData) {
+    playerHealth.value = currentPlayerData.health
+    currentVehicle.value = currentPlayerData.vehicle || null
   }
   
   for (const playerData of state.players) {
@@ -316,11 +394,8 @@ function updateGameState(state) {
     const mesh = playerMeshes.get(playerData.id)
     
     if (player && mesh) {
-      // Update player data
-      player.position = playerData.position
-      player.rotation = playerData.rotation
-      player.velocity = playerData.velocity
-      player.vehicle = playerData.vehicle
+      // Update all player data including debug info
+      Object.assign(player, playerData)
       
       // Hide player mesh if they're in a vehicle
       if (player.vehicle) {
@@ -404,10 +479,13 @@ function addPlayer(playerData) {
   // Create player mesh - capsule-like shape
   const group = new THREE.Group()
   
-  // Body - adjust positioning to match physics capsule
+  // Body - proper capsule geometry matching server physics
+  const capsuleRadius = PlayerConstants.RADIUS
+  const capsuleHeight = PlayerConstants.HEIGHT - PlayerConstants.RADIUS * 2
+  
   const bodyGeometry = new THREE.CapsuleGeometry(
-    PlayerConstants.RADIUS, 
-    PlayerConstants.HEIGHT - PlayerConstants.RADIUS * 2, // Height without the radius caps
+    capsuleRadius,
+    capsuleHeight,
     4, 
     8
   )
@@ -415,7 +493,6 @@ function addPlayer(playerData) {
     color: playerData.id === playerId.value ? 0x0088ff : 0xff8800 
   })
   const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial)
-  bodyMesh.position.y = 0 // Capsule is centered in the group
   bodyMesh.castShadow = true
   bodyMesh.receiveShadow = true
   
@@ -437,7 +514,7 @@ function addPlayer(playerData) {
     const texture = new THREE.CanvasTexture(canvas)
     const spriteMaterial = new THREE.SpriteMaterial({ map: texture })
     const sprite = new THREE.Sprite(spriteMaterial)
-    sprite.position.y = PlayerConstants.HEIGHT / 2 + 0.5 // Above the capsule
+    sprite.position.y = PlayerConstants.HEIGHT / 2 + 0.5
     sprite.scale.set(2, 0.5, 1)
     group.add(sprite)
   }
@@ -607,11 +684,14 @@ function sendInput() {
     moveLeft: keys['KeyA'] || false,
     moveRight: keys['KeyD'] || false,
     jump: keys['Space'] || false,
-    lookDirection: currentVehicle.value ? null : getLookDirection() // Don't send look direction when in vehicle
+    lookDirection: currentVehicle.value ? null : getLookDirection()
   }
   
-  // Only send if input changed
-  if (JSON.stringify(input) !== JSON.stringify(lastInputSent)) {
+  // Always send input when there's movement or look changes
+  const hasMovement = input.moveForward || input.moveBackward || input.moveLeft || input.moveRight || input.jump;
+  const lookChanged = JSON.stringify(input.lookDirection) !== JSON.stringify(lastInputSent.lookDirection);
+  
+  if (hasMovement || lookChanged || JSON.stringify(input) !== JSON.stringify(lastInputSent)) {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({
         type: MessageTypes.INPUT,
@@ -626,6 +706,88 @@ function getLookDirection() {
   const direction = new THREE.Vector3(0, 0, -1)
   direction.applyQuaternion(camera.quaternion)
   return { x: direction.x, y: direction.y, z: direction.z }
+}
+
+function updateDebugVisualization() {
+  // Remove existing debug helpers
+  if (debugRayHelper) {
+    scene.remove(debugRayHelper)
+    debugRayHelper.geometry.dispose()
+    debugRayHelper.material.dispose()
+    debugRayHelper = null
+  }
+  
+  if (showDebugInfo.value && playerId.value) {
+    // Create ground detection rays visualization (multiple rays)
+    const rayCount = 5 // Center + 4 corners
+    const positions = new Float32Array(rayCount * 6) // 2 vertices per ray, 3 coordinates each
+    const colors = new Float32Array(rayCount * 6) // 2 colors per ray, 3 components each
+    
+    const rayGeometry = new THREE.BufferGeometry()
+    rayGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    rayGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+    
+    const rayMaterial = new THREE.LineBasicMaterial({ 
+      vertexColors: true,
+      linewidth: 2
+    })
+    
+    debugRayHelper = new THREE.LineSegments(rayGeometry, rayMaterial)
+    scene.add(debugRayHelper)
+  }
+}
+
+function updateDebugRay() {
+  if (!debugRayHelper || !playerId.value) return
+  
+  const player = players.get(playerId.value)
+  if (!player) return
+  
+  // Update ray positions
+  const positions = debugRayHelper.geometry.attributes.position.array
+  const colors = debugRayHelper.geometry.attributes.color.array
+  
+  // Ray offsets matching server
+  const rayOffsets = [
+    { x: 0, z: 0 }, // Center
+    { x: PlayerConstants.RADIUS * 0.7, z: 0 }, // Right
+    { x: -PlayerConstants.RADIUS * 0.7, z: 0 }, // Left
+    { x: 0, z: PlayerConstants.RADIUS * 0.7 }, // Front
+    { x: 0, z: -PlayerConstants.RADIUS * 0.7 }, // Back
+  ]
+  
+  const rayLength = PlayerConstants.HEIGHT / 2 + 0.5 // Match server ray length
+  const groundedColor = { r: 0, g: 1, b: 0 }
+  const airborneColor = { r: 1, g: 0, b: 0 }
+  const color = player.isGrounded ? groundedColor : airborneColor
+  
+  for (let i = 0; i < rayOffsets.length; i++) {
+    const offset = rayOffsets[i]
+    const idx = i * 6 // Each ray has 2 vertices * 3 coordinates
+    
+    // Ray start (from capsule center)
+    positions[idx] = player.position.x + offset.x
+    positions[idx + 1] = player.position.y
+    positions[idx + 2] = player.position.z + offset.z
+    
+    // Ray end
+    const actualLength = player.groundDistance !== null && player.groundDistance < rayLength ? 
+      player.groundDistance : rayLength
+    positions[idx + 3] = player.position.x + offset.x
+    positions[idx + 4] = player.position.y - actualLength
+    positions[idx + 5] = player.position.z + offset.z
+    
+    // Colors for both vertices
+    colors[idx] = color.r
+    colors[idx + 1] = color.g
+    colors[idx + 2] = color.b
+    colors[idx + 3] = color.r
+    colors[idx + 4] = color.g
+    colors[idx + 5] = color.b
+  }
+  
+  debugRayHelper.geometry.attributes.position.needsUpdate = true
+  debugRayHelper.geometry.attributes.color.needsUpdate = true
 }
 
 function updateCamera() {
@@ -665,9 +827,33 @@ function updateCamera() {
           vehicle.position.z
         )
       }
+    } else if (thirdPerson.value) {
+      // Third-person player camera
+      const distance = 5
+      const height = 3
+      
+      // Calculate camera offset based on look direction
+      const offset = new THREE.Vector3(
+        Math.sin(cameraRotation.y) * distance,
+        height,
+        Math.cos(cameraRotation.y) * distance
+      )
+      
+      camera.position.set(
+        player.position.x + offset.x,
+        player.position.y + offset.y,
+        player.position.z + offset.z
+      )
+      
+      // Look at player center
+      camera.lookAt(
+        player.position.x,
+        player.position.y,
+        player.position.z
+      )
     } else {
-      // First-person camera - adjust eye height
-      const eyeHeight = PlayerConstants.HEIGHT / 2 - 0.2 // Slightly below top of capsule
+      // First-person camera - at eye level
+      const eyeHeight = PlayerConstants.HEIGHT / 2 - 0.1
       camera.position.set(
         player.position.x,
         player.position.y + eyeHeight,
@@ -685,8 +871,18 @@ function updateCamera() {
 function animate() {
   animationId = requestAnimationFrame(animate)
   
+  // Calculate FPS
+  const currentTime = performance.now()
+  frameCount++
+  if (currentTime - lastTime >= 1000) {
+    fps.value = frameCount
+    frameCount = 0
+    lastTime = currentTime
+  }
+  
   sendInput()
   updateCamera()
+  updateDebugRay()
   
   renderer.render(scene, camera)
 }
@@ -706,14 +902,22 @@ function cleanup() {
     ws.close()
   }
   
-  window.removeEventListener('resize', onWindowResize)
+  // Reset keys state
+  keys = {}
   
-  if (renderer) {
-    renderer.dispose()
-    if (gameContainer.value && renderer.domElement) {
-      gameContainer.value.removeChild(renderer.domElement)
-    }
+  // Remove event listeners with stored references
+  if (window._keydownHandler) {
+    window.removeEventListener('keydown', window._keydownHandler)
+    window.removeEventListener('keyup', window._keyupHandler)
+    window.removeEventListener('blur', window._blurHandler)
   }
+  
+  if (document._pointerlockchangeHandler) {
+    document.removeEventListener('pointerlockchange', document._pointerlockchangeHandler)
+    document.removeEventListener('mousemove', document._mousemoveHandler)
+  }
+  
+  window.removeEventListener('resize', onWindowResize)
   
   // Clean up all player meshes
   for (const mesh of playerMeshes.values()) {
@@ -854,5 +1058,30 @@ function cleanup() {
   border-radius: 5px;
   font-size: 16px;
   z-index: 100;
+}
+
+.debug-info {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: white;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 15px;
+  border-radius: 8px;
+  z-index: 100;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  min-width: 250px;
+}
+
+.debug-info h3 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #00ff00;
+}
+
+.debug-info div {
+  margin: 2px 0;
 }
 </style>
