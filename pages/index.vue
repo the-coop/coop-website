@@ -40,6 +40,7 @@ let lastInputSent = {}
 let animationId = null
 let mouse = { x: 0, y: 0 }
 let cameraRotation = { x: 0, y: 0 }
+let levelObjects = [] // Store level objects
 
 onMounted(() => {
   initGame()
@@ -89,23 +90,8 @@ async function initGame() {
   ground.receiveShadow = true
   scene.add(ground)
 
-  // Add some decorative cubes
-  for (let i = 0; i < 10; i++) {
-    const cubeGeometry = new THREE.BoxGeometry(2, 2, 2)
-    const cubeMaterial = new THREE.MeshLambertMaterial({ 
-      color: new THREE.Color().setHSL(Math.random(), 0.7, 0.6) 
-    })
-    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial)
-    cube.position.set(
-      (Math.random() - 0.5) * 80,
-      1,
-      (Math.random() - 0.5) * 80
-    )
-    cube.castShadow = true
-    cube.receiveShadow = true
-    scene.add(cube)
-  }
-
+  // Don't create random cubes here - wait for server level data
+  
   // Setup camera
   camera.position.set(0, 15, 20)
   camera.lookAt(0, 0, 0)
@@ -212,6 +198,9 @@ function handleServerMessage(message) {
   switch (message.type) {
     case MessageTypes.INIT:
       playerId.value = message.playerId
+      if (message.level) {
+        createLevel(message.level) // Create level from server data
+      }
       ws.send(JSON.stringify({ type: MessageTypes.JOIN }))
       break
       
@@ -238,6 +227,36 @@ function handleServerMessage(message) {
     case MessageTypes.HIT:
       handleHit(message)
       break
+  }
+}
+
+function createLevel(levelData) {
+  // Remove any existing level objects
+  for (const obj of levelObjects) {
+    scene.remove(obj)
+    obj.geometry.dispose()
+    obj.material.dispose()
+  }
+  levelObjects = []
+  
+  // Create objects from server data
+  for (const objData of levelData) {
+    if (objData.type === 'cube') {
+      const geometry = new THREE.BoxGeometry(objData.size.x, objData.size.y, objData.size.z)
+      const material = new THREE.MeshLambertMaterial({ 
+        color: objData.color 
+      })
+      const cube = new THREE.Mesh(geometry, material)
+      cube.position.set(
+        objData.position.x,
+        objData.position.y,
+        objData.position.z
+      )
+      cube.castShadow = true
+      cube.receiveShadow = true
+      scene.add(cube)
+      levelObjects.push(cube)
+    }
   }
 }
 
@@ -374,7 +393,7 @@ function removePlayer(playerId) {
 
 function addProjectile(projectileData) {
   const geometry = new THREE.SphereGeometry(0.05, 8, 6)
-  const material = new THREE.MeshBasicMaterial({ 
+  const material = new THREE.MeshStandardMaterial({ 
     color: 0xffff00,
     emissive: 0xffff00,
     emissiveIntensity: 0.5
@@ -523,6 +542,14 @@ function cleanup() {
     mesh.material.dispose()
   }
   projectileMeshes.clear()
+
+  // Clean up level objects
+  for (const obj of levelObjects) {
+    scene.remove(obj)
+    obj.geometry.dispose()
+    obj.material.dispose()
+  }
+  levelObjects = []
 }
 </script>
 
