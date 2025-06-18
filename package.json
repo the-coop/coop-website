@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.11.2",
+    "@game/shared": "github:lmf-git/conquestv4-shared#e5b241cd9ac509b335fcec904957b1d8711ef204",
     "three": "^0.157.0",
     "nuxt": "^3.8.0"
   },
