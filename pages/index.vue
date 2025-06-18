@@ -58,10 +58,10 @@
 
 <script setup>
 import * as THREE from 'three'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { MessageTypes, VehicleConstants, PlayerConstants, VehicleTypes, GhostConstants, GhostTypes, ModelPaths } from '@game/shared'
+import { MessageTypes, VehicleConstants, PlayerConstants, VehicleTypes, GhostConstants, GhostTypes } from '@game/shared'
+import { ModelPaths, ModelLoader } from '@game/shared/core/models.js'
 import { onMounted, onUnmounted, ref, computed } from 'vue'
-import { useModelLoader } from '~/composables/useModelLoader'
+import { Models } from '~/lib/models'
 
 const gameContainer = ref(null)
 const connected = ref(false)
@@ -135,7 +135,6 @@ function getVehicleTypeName(vehicleId) {
   return vehicle.type
 }
 
-const { loadModel, preloadModels } = useModelLoader()
 let modelsLoaded = false
 
 onMounted(() => {
@@ -196,13 +195,13 @@ async function initGame() {
   // Setup shooting
   setupShooting()
   
-  // Preload models before connecting
+  // Load models before connecting
   try {
-    await preloadModels()
+    await ModelLoader.loadModels(false, true)
     modelsLoaded = true
-    console.log('All models preloaded successfully')
+    console.log('All models loaded successfully')
   } catch (error) {
-    console.error('Failed to preload models:', error)
+    console.error('Failed to load models:', error)
   }
   
   // Connect to server
@@ -441,6 +440,169 @@ function handleServerMessage(message) {
   }
 }
 
+function updateGameState(state) {
+  // Update player count
+  playerCount.value = state.players.length
+  
+  // Update players
+  for (const playerData of state.players) {
+    const existingPlayer = players.get(playerData.id)
+    
+    if (!existingPlayer) {
+      // New player
+      addPlayer(playerData)
+    } else {
+      // Update existing player
+      players.set(playerData.id, playerData)
+      
+      // Update mesh position and rotation
+      const mesh = playerMeshes.get(playerData.id)
+      if (mesh) {
+        mesh.position.set(
+          playerData.position.x,
+          playerData.position.y,
+          playerData.position.z
+        )
+        
+        // Update rotation based on look direction
+        if (playerData.lookDirection) {
+          const angle = Math.atan2(playerData.lookDirection.x, playerData.lookDirection.z)
+          mesh.rotation.y = angle
+        }
+      }
+      
+      // Update own player data
+      if (playerData.id === playerId.value) {
+        playerHealth.value = playerData.health
+        carryingGhost.value = playerData.carryingGhost
+      }
+    }
+  }
+  
+  // Remove players that are no longer in state
+  for (const [id, player] of players) {
+    if (!state.players.find(p => p.id === id)) {
+      removePlayer(id)
+    }
+  }
+  
+  // Update projectiles
+  for (const projectileData of state.projectiles) {
+    const mesh = projectileMeshes.get(projectileData.id)
+    if (mesh) {
+      mesh.position.set(
+        projectileData.position.x,
+        projectileData.position.y,
+        projectileData.position.z
+      )
+    } else {
+      addProjectile(projectileData)
+    }
+  }
+  
+  // Remove projectiles that are no longer in state
+  for (const [id, mesh] of projectileMeshes) {
+    if (!state.projectiles.find(p => p.id === id)) {
+      removeProjectile(id)
+    }
+  }
+  
+  // Update vehicles
+  for (const vehicleData of state.vehicles) {
+    updateVehicle(vehicleData)
+  }
+  
+  // Update ghosts
+  for (const ghostData of state.ghosts) {
+    updateGhost(ghostData)
+  }
+  
+  // Check nearby vehicles and ghosts
+  checkNearbyVehicles()
+  checkNearbyGhosts()
+}
+
+async function updateVehicle(vehicleData) {
+  const existingVehicle = vehicles.get(vehicleData.id)
+  
+  if (!existingVehicle) {
+    // New vehicle
+    vehicles.set(vehicleData.id, vehicleData)
+    await createVehicleMesh(vehicleData)
+  } else {
+    // Update existing vehicle
+    vehicles.set(vehicleData.id, vehicleData)
+    
+    // Update mesh position and rotation
+    const mesh = vehicleMeshes.get(vehicleData.id)
+    if (mesh) {
+      mesh.position.set(
+        vehicleData.position.x,
+        vehicleData.position.y,
+        vehicleData.position.z
+      )
+      
+      if (vehicleData.rotation && vehicleData.rotation.w !== undefined) {
+        mesh.quaternion.set(
+          vehicleData.rotation.x,
+          vehicleData.rotation.y,
+          vehicleData.rotation.z,
+          vehicleData.rotation.w
+        )
+      }
+    }
+    
+    // Update current vehicle reference
+    if (vehicleData.driver === playerId.value) {
+      currentVehicle.value = vehicleData.id
+    } else if (currentVehicle.value === vehicleData.id && vehicleData.driver !== playerId.value) {
+      currentVehicle.value = null
+    }
+  }
+}
+
+async function updateGhost(ghostData) {
+  const existingGhost = ghosts.get(ghostData.id)
+  
+  if (!existingGhost) {
+    // New ghost
+    ghosts.set(ghostData.id, ghostData)
+    await createGhostMesh(ghostData)
+  } else {
+    // Update existing ghost
+    ghosts.set(ghostData.id, ghostData)
+    
+    // Update mesh
+    const mesh = ghostMeshes.get(ghostData.id)
+    if (mesh) {
+      // Update position only if not being carried by the local player
+      if (ghostData.carrier !== playerId.value) {
+        mesh.position.set(
+          ghostData.position.x,
+          ghostData.position.y,
+          ghostData.position.z
+        )
+        
+        if (ghostData.rotation) {
+          mesh.quaternion.set(
+            ghostData.rotation.x,
+            ghostData.rotation.y,
+            ghostData.rotation.z,
+            ghostData.rotation.w
+          )
+        }
+      }
+      
+      // Update opacity based on carried state
+      mesh.traverse((child) => {
+        if (child.isMesh && child.material) {
+          child.material.opacity = ghostData.carrier ? 0.8 : 1.0
+        }
+      })
+    }
+  }
+}
+
 function createLevel(levelData) {
   // Remove any existing level objects
   for (const obj of levelObjects) {
@@ -471,166 +633,51 @@ function createLevel(levelData) {
   }
 }
 
-function updateGameState(state) {
-  playerCount.value = state.players.length
+async function addPlayer(playerData) {
+  // Try to load player model first
+  let group
+  const model = modelsLoaded ? await Models.loadModel(ModelPaths.PLAYER) : null
   
-  // Update player health and vehicle state
-  const currentPlayerData = state.players.find(p => p.id === playerId.value)
-  if (currentPlayerData) {
-    playerHealth.value = currentPlayerData.health
-    currentVehicle.value = currentPlayerData.vehicle || null
-    carryingGhost.value = currentPlayerData.carryingGhost || null
-  }
-  
-  for (const playerData of state.players) {
-    if (!players.has(playerData.id)) {
-      addPlayer(playerData)
-    }
+  if (model) {
+    group = model
+    // Scale and position the model appropriately
+    const box = new THREE.Box3().setFromObject(model)
+    const size = box.getSize(new THREE.Vector3())
+    const scale = PlayerConstants.HEIGHT / size.y
+    group.scale.setScalar(scale)
     
-    const player = players.get(playerData.id)
-    const mesh = playerMeshes.get(playerData.id)
-    
-    if (player && mesh) {
-      // Update all player data including debug info
-      Object.assign(player, playerData)
-      
-      // Hide player mesh if they're in a vehicle
-      if (player.vehicle) {
-        mesh.visible = false
-      } else {
-        mesh.visible = true
-        mesh.position.set(player.position.x, player.position.y, player.position.z)
-      }
-      
-      // Remove the scaling effect that was causing issues
-      // mesh.scale.setScalar(1 + speed * 0.02) // REMOVED - this was causing the glitch
-    }
-  }
-  
-  // Update projectiles
-  const activeProjectileIds = new Set(state.projectiles.map(p => p.id))
-  
-  // Remove old projectiles
-  for (const [id, mesh] of projectileMeshes) {
-    if (!activeProjectileIds.has(id)) {
-      removeProjectile(id)
-    }
-  }
-  
-  // Update or add projectiles
-  for (const projectileData of state.projectiles) {
-    if (!projectileMeshes.has(projectileData.id)) {
-      addProjectile(projectileData)
-    } else {
-      const mesh = projectileMeshes.get(projectileData.id)
-      mesh.position.set(
-        projectileData.position.x,
-        projectileData.position.y,
-        projectileData.position.z
-      )
-    }
-  }
-  
-  // Update vehicles
-  if (state.vehicles) {
-    for (const vehicleData of state.vehicles) {
-      updateVehicle(vehicleData)
-    }
-  }
-  
-  // Update ghosts
-  if (state.ghosts) {
-    for (const ghostData of state.ghosts) {
-      updateGhost(ghostData)
-    }
-  }
-  
-  // Check for nearby vehicles
-  checkNearbyVehicles()
-  // Check for nearby ghosts
-  checkNearbyGhosts()
-}
-
-function updateVehicle(vehicleData) {
-  vehicles.set(vehicleData.id, vehicleData)
-  
-  if (!vehicleMeshes.has(vehicleData.id)) {
-    createVehicleMesh(vehicleData)
-  }
-  
-  const mesh = vehicleMeshes.get(vehicleData.id)
-  if (mesh) {
-    mesh.position.set(
-      vehicleData.position.x,
-      vehicleData.position.y,
-      vehicleData.position.z
-    )
-    
-    if (vehicleData.rotation.w !== undefined) {
-      mesh.quaternion.set(
-        vehicleData.rotation.x,
-        vehicleData.rotation.y,
-        vehicleData.rotation.z,
-        vehicleData.rotation.w
-      )
-    }
-  }
-}
-
-function updateGhost(ghostData) {
-  ghosts.set(ghostData.id, ghostData)
-  
-  if (!ghostMeshes.has(ghostData.id)) {
-    createGhostMesh(ghostData)
-  }
-  
-  const mesh = ghostMeshes.get(ghostData.id)
-  if (mesh) {
-    // If this is the carried ghost and we're the carrier, use client physics
-    if (ghostData.carrier === playerId.value) {
-      updateCarriedGhostPhysics(ghostData)
-    } else {
-      // Use server position
-      mesh.position.set(
-        ghostData.position.x,
-        ghostData.position.y,
-        ghostData.position.z
-      )
-      
-      if (ghostData.rotation.w !== undefined) {
-        mesh.quaternion.set(
-          ghostData.rotation.x,
-          ghostData.rotation.y,
-          ghostData.rotation.z,
-          ghostData.rotation.w
+    // Update material color for player identification
+    group.traverse((child) => {
+      if (child.isMesh) {
+        child.material = child.material.clone()
+        child.material.color = new THREE.Color(
+          playerData.id === playerId.value ? 0x0088ff : 0xff8800
         )
       }
-    }
+    })
+  } else {
+    // Fallback to basic capsule mesh
+    group = new THREE.Group()
+    
+    // Body - proper capsule geometry matching server physics
+    const capsuleRadius = PlayerConstants.RADIUS
+    const capsuleHeight = PlayerConstants.HEIGHT - PlayerConstants.RADIUS * 2
+    
+    const bodyGeometry = new THREE.CapsuleGeometry(
+      capsuleRadius,
+      capsuleHeight,
+      4, 
+      8
+    )
+    const bodyMaterial = new THREE.MeshLambertMaterial({ 
+      color: playerData.id === playerId.value ? 0x0088ff : 0xff8800 
+    })
+    const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial)
+    bodyMesh.castShadow = true
+    bodyMesh.receiveShadow = true
+    
+    group.add(bodyMesh)
   }
-}
-
-function addPlayer(playerData) {
-  // Create player mesh - capsule-like shape
-  const group = new THREE.Group()
-  
-  // Body - proper capsule geometry matching server physics
-  const capsuleRadius = PlayerConstants.RADIUS
-  const capsuleHeight = PlayerConstants.HEIGHT - PlayerConstants.RADIUS * 2
-  
-  const bodyGeometry = new THREE.CapsuleGeometry(
-    capsuleRadius,
-    capsuleHeight,
-    4, 
-    8
-  )
-  const bodyMaterial = new THREE.MeshLambertMaterial({ 
-    color: playerData.id === playerId.value ? 0x0088ff : 0xff8800 
-  })
-  const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial)
-  bodyMesh.castShadow = true
-  bodyMesh.receiveShadow = true
-  
-  group.add(bodyMesh)
   
   // Add name tag
   if (playerData.id !== playerId.value) {
@@ -675,7 +722,7 @@ async function createVehicleMesh(vehicleData) {
   }
   
   // Try to load model
-  const model = modelsLoaded ? await loadModel(modelPath) : null
+  const model = modelsLoaded ? await Models.loadModel(modelPath) : null
   
   if (model) {
     group = model
@@ -885,7 +932,7 @@ async function createGhostMesh(ghostData) {
   }
   
   // Try to load model
-  const model = modelsLoaded ? await loadModel(modelPath) : null
+  const model = modelsLoaded ? await Models.loadModel(modelPath) : null
   
   if (model) {
     mesh = model
