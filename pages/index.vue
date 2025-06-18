@@ -7,14 +7,21 @@
         Connected - Players: {{ playerCount }}
         <div v-if="playerId">Your ID: {{ playerId.substring(0, 6) }}</div>
         <div v-if="playerHealth !== null">Health: {{ playerHealth }}/100</div>
+        <div v-if="currentVehicle" class="vehicle-info">
+          Driving: Car | Press F to exit
+        </div>
       </div>
       <div class="controls">
         <div>W/A/S/D - Move</div>
         <div>Space - Jump</div>
         <div>Mouse - Look around</div>
         <div>Click - Shoot</div>
+        <div>F - Enter/Exit vehicle</div>
       </div>
       <div class="crosshair">+</div>
+      <div v-if="nearbyVehicle && !currentVehicle" class="interaction-prompt">
+        Press F to enter vehicle
+      </div>
     </div>
     <div ref="gameContainer" class="game-container" />
   </div>
@@ -22,7 +29,7 @@
 
 <script setup>
 import * as THREE from 'three'
-import { MessageTypes } from '@game/shared'
+import { MessageTypes, VehicleConstants } from '@game/shared'
 import { onMounted, onUnmounted, ref } from 'vue'
 
 const gameContainer = ref(null)
@@ -30,11 +37,15 @@ const connected = ref(false)
 const playerCount = ref(0)
 const playerId = ref(null)
 const playerHealth = ref(null)
+const currentVehicle = ref(null)
+const nearbyVehicle = ref(null)
 
 let scene, camera, renderer, ws
 let players = new Map()
 let playerMeshes = new Map()
 let projectileMeshes = new Map()
+let vehicles = new Map()
+let vehicleMeshes = new Map()
 let keys = {}
 let lastInputSent = {}
 let animationId = null
@@ -116,6 +127,11 @@ function setupControls() {
   // Keyboard controls
   window.addEventListener('keydown', (e) => {
     keys[e.code] = true
+    
+    // Handle vehicle enter/exit
+    if (e.code === 'KeyF') {
+      handleVehicleInteraction()
+    }
   })
   
   window.addEventListener('keyup', (e) => {
@@ -142,6 +158,23 @@ function setupControls() {
       cameraRotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, cameraRotation.x))
     }
   })
+}
+
+function handleVehicleInteraction() {
+  if (!playerId.value || !connected.value) return
+  
+  if (currentVehicle.value) {
+    // Exit vehicle
+    ws.send(JSON.stringify({
+      type: MessageTypes.EXIT_VEHICLE
+    }))
+  } else if (nearbyVehicle.value) {
+    // Enter vehicle
+    ws.send(JSON.stringify({
+      type: MessageTypes.ENTER_VEHICLE,
+      vehicleId: nearbyVehicle.value
+    }))
+  }
 }
 
 function setupShooting() {
@@ -227,6 +260,10 @@ function handleServerMessage(message) {
     case MessageTypes.HIT:
       handleHit(message)
       break
+    
+    case MessageTypes.VEHICLE_UPDATE:
+      updateVehicle(message.vehicle)
+      break
   }
 }
 
@@ -263,10 +300,11 @@ function createLevel(levelData) {
 function updateGameState(state) {
   playerCount.value = state.players.length
   
-  // Update player health
+  // Update player health and vehicle state
   const currentPlayer = state.players.find(p => p.id === playerId.value)
   if (currentPlayer) {
     playerHealth.value = currentPlayer.health
+    currentVehicle.value = currentPlayer.vehicle || null
   }
   
   for (const playerData of state.players) {
@@ -317,6 +355,42 @@ function updateGameState(state) {
       )
     }
   }
+  
+  // Update vehicles
+  if (state.vehicles) {
+    for (const vehicleData of state.vehicles) {
+      updateVehicle(vehicleData)
+    }
+  }
+  
+  // Check for nearby vehicles
+  checkNearbyVehicles()
+}
+
+function updateVehicle(vehicleData) {
+  vehicles.set(vehicleData.id, vehicleData)
+  
+  if (!vehicleMeshes.has(vehicleData.id)) {
+    createVehicleMesh(vehicleData)
+  }
+  
+  const mesh = vehicleMeshes.get(vehicleData.id)
+  if (mesh) {
+    mesh.position.set(
+      vehicleData.position.x,
+      vehicleData.position.y,
+      vehicleData.position.z
+    )
+    
+    if (vehicleData.rotation.w !== undefined) {
+      mesh.quaternion.set(
+        vehicleData.rotation.x,
+        vehicleData.rotation.y,
+        vehicleData.rotation.z,
+        vehicleData.rotation.w
+      )
+    }
+  }
 }
 
 function addPlayer(playerData) {
@@ -332,17 +406,7 @@ function addPlayer(playerData) {
   bodyMesh.castShadow = true
   bodyMesh.receiveShadow = true
   
-  // Add a small cube as "head" indicator
-  const headGeometry = new THREE.BoxGeometry(0.3, 0.3, 0.3)
-  const headMaterial = new THREE.MeshLambertMaterial({ 
-    color: playerData.id === playerId.value ? 0x004488 : 0xcc4400 
-  })
-  const headMesh = new THREE.Mesh(headGeometry, headMaterial)
-  headMesh.position.y = 1.2
-  headMesh.castShadow = true
-  
   group.add(bodyMesh)
-  group.add(headMesh)
   
   // Add name tag
   if (playerData.id !== playerId.value) {
@@ -368,6 +432,58 @@ function addPlayer(playerData) {
   scene.add(group)
   playerMeshes.set(playerData.id, group)
   players.set(playerData.id, playerData)
+}
+
+function createVehicleMesh(vehicleData) {
+  const group = new THREE.Group()
+  
+  // Car body
+  const bodyGeometry = new THREE.BoxGeometry(
+    VehicleConstants.CAR_SIZE.width,
+    VehicleConstants.CAR_SIZE.height,
+    VehicleConstants.CAR_SIZE.length
+  )
+  const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x4444ff })
+  const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial)
+  bodyMesh.position.y = 0.2
+  bodyMesh.castShadow = true
+  bodyMesh.receiveShadow = true
+  
+  // Car roof
+  const roofGeometry = new THREE.BoxGeometry(
+    VehicleConstants.CAR_SIZE.width * 0.8,
+    VehicleConstants.CAR_SIZE.height * 0.6,
+    VehicleConstants.CAR_SIZE.length * 0.5
+  )
+  const roofMaterial = new THREE.MeshLambertMaterial({ color: 0x3333cc })
+  const roofMesh = new THREE.Mesh(roofGeometry, roofMaterial)
+  roofMesh.position.y = VehicleConstants.CAR_SIZE.height * 0.8
+  roofMesh.castShadow = true
+  
+  // Wheels
+  const wheelGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 8)
+  const wheelMaterial = new THREE.MeshLambertMaterial({ color: 0x222222 })
+  
+  const wheelPositions = [
+    { x: -0.8, z: -1.5 },
+    { x: 0.8, z: -1.5 },
+    { x: -0.8, z: 1.5 },
+    { x: 0.8, z: 1.5 }
+  ]
+  
+  for (const pos of wheelPositions) {
+    const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial)
+    wheel.rotation.z = Math.PI / 2
+    wheel.position.set(pos.x, -0.3, pos.z)
+    wheel.castShadow = true
+    group.add(wheel)
+  }
+  
+  group.add(bodyMesh)
+  group.add(roofMesh)
+  
+  scene.add(group)
+  vehicleMeshes.set(vehicleData.id, group)
 }
 
 function removePlayer(playerId) {
@@ -473,17 +589,38 @@ function updateCamera() {
   if (playerId.value && players.has(playerId.value)) {
     const player = players.get(playerId.value)
     
-    // First-person camera
-    camera.position.set(
-      player.position.x,
-      player.position.y + 1.5,
-      player.position.z
-    )
-    
-    // Apply rotation
-    camera.rotation.order = 'YXZ'
-    camera.rotation.y = cameraRotation.y
-    camera.rotation.x = cameraRotation.x
+    if (currentVehicle.value) {
+      // Third-person vehicle camera
+      const vehicle = vehicles.get(currentVehicle.value)
+      if (vehicle) {
+        const offset = new THREE.Vector3(0, 5, 10)
+        offset.applyQuaternion(camera.quaternion)
+        
+        camera.position.set(
+          vehicle.position.x + offset.x,
+          vehicle.position.y + offset.y,
+          vehicle.position.z + offset.z
+        )
+        
+        camera.lookAt(
+          vehicle.position.x,
+          vehicle.position.y + 2,
+          vehicle.position.z
+        )
+      }
+    } else {
+      // First-person camera
+      camera.position.set(
+        player.position.x,
+        player.position.y + 1.5,
+        player.position.z
+      )
+      
+      // Apply rotation
+      camera.rotation.order = 'YXZ'
+      camera.rotation.y = cameraRotation.y
+      camera.rotation.x = cameraRotation.x
+    }
   }
 }
 
@@ -550,6 +687,22 @@ function cleanup() {
     obj.material.dispose()
   }
   levelObjects = []
+  
+  // Clean up vehicle meshes
+  for (const mesh of vehicleMeshes.values()) {
+    scene.remove(mesh)
+    mesh.traverse((child) => {
+      if (child.geometry) child.geometry.dispose()
+      if (child.material) {
+        if (Array.isArray(child.material)) {
+          child.material.forEach(material => material.dispose())
+        } else {
+          child.material.dispose()
+        }
+      }
+    })
+  }
+  vehicleMeshes.clear()
 }
 </script>
 
@@ -624,5 +777,24 @@ function cleanup() {
   text-shadow: 0 0 3px black;
   pointer-events: none;
   z-index: 1000;
+}
+
+.vehicle-info {
+  margin-top: 5px;
+  color: #88ff88;
+  font-weight: bold;
+}
+
+.interaction-prompt {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 16px;
+  z-index: 100;
 }
 </style>
