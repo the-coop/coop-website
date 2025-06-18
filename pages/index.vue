@@ -12,19 +12,26 @@
           <div v-if="isHelicopter">Space - Up | Shift/Z - Down | WASD - Move/Turn</div>
           <div v-else-if="isPlane">W - Throttle Up | S - Throttle Down | Space/Shift - Pitch | A/D - Roll</div>
         </div>
+        <div v-if="carryingGhost" class="carrying-info">
+          Carrying object | G - Drop | Click - Throw
+        </div>
       </div>
       <div class="controls">
         <div>W/A/S/D - Move</div>
         <div>Space - Jump</div>
         <div>Mouse - Look around</div>
-        <div>Click - Shoot</div>
+        <div>Click - Shoot/Throw</div>
         <div>F - Enter/Exit vehicle</div>
+        <div>G - Grab/Drop object</div>
         <div>O - Toggle third person</div>
         <div>` - Toggle debug info</div>
       </div>
       <div class="crosshair">+</div>
       <div v-if="nearbyVehicle && !currentVehicle" class="interaction-prompt">
         Press F to enter {{ getVehicleTypeName(nearbyVehicle) }}
+      </div>
+      <div v-if="nearbyGhost && !carryingGhost && !currentVehicle" class="interaction-prompt">
+        Press G to grab object
       </div>
     </div>
     <div v-if="showDebugInfo" class="debug-info">
@@ -51,7 +58,7 @@
 
 <script setup>
 import * as THREE from 'three'
-import { MessageTypes, VehicleConstants, PlayerConstants, VehicleTypes } from '@game/shared'
+import { MessageTypes, VehicleConstants, PlayerConstants, VehicleTypes, GhostConstants, GhostTypes } from '@game/shared'
 import { onMounted, onUnmounted, ref, computed } from 'vue'
 
 const gameContainer = ref(null)
@@ -64,6 +71,8 @@ const nearbyVehicle = ref(null)
 const thirdPerson = ref(false)
 const showDebugInfo = ref(false)
 const fps = ref(0)
+const carryingGhost = ref(null)
+const nearbyGhost = ref(null)
 
 let scene, camera, renderer, ws
 let players = new Map()
@@ -71,6 +80,9 @@ let playerMeshes = new Map()
 let projectileMeshes = new Map()
 let vehicles = new Map()
 let vehicleMeshes = new Map()
+let ghosts = new Map()
+let ghostMeshes = new Map()
+let ghostPhysics = new Map() // Client-side physics simulation
 let keys = {}
 let lastInputSent = {}
 let animationId = null
@@ -204,6 +216,11 @@ function setupControls() {
       handleVehicleInteraction()
     }
     
+    // Handle ghost grab/drop
+    if (e.code === 'KeyG') {
+      handleGhostInteraction()
+    }
+    
     // Toggle third person camera
     if (e.code === 'KeyO') {
       thirdPerson.value = !thirdPerson.value
@@ -288,12 +305,42 @@ function handleVehicleInteraction() {
   }
 }
 
+function handleGhostInteraction() {
+  if (!playerId.value || !connected.value || currentVehicle.value) return
+  
+  if (carryingGhost.value) {
+    // Drop ghost
+    ws.send(JSON.stringify({
+      type: MessageTypes.DROP_GHOST
+    }))
+  } else if (nearbyGhost.value) {
+    // Grab ghost
+    ws.send(JSON.stringify({
+      type: MessageTypes.GRAB_GHOST,
+      ghostId: nearbyGhost.value
+    }))
+  }
+}
+
 function setupShooting() {
   gameContainer.value.addEventListener('click', () => {
     if (!playerId.value || !connected.value) return
     
     const player = players.get(playerId.value)
     if (!player) return
+    
+    // If carrying a ghost, throw it instead of shooting
+    if (carryingGhost.value) {
+      const direction = new THREE.Vector3(0, 0, -1)
+      direction.applyQuaternion(camera.quaternion)
+      direction.normalize()
+      
+      ws.send(JSON.stringify({
+        type: MessageTypes.THROW_GHOST,
+        direction: { x: direction.x, y: direction.y, z: direction.z }
+      }))
+      return
+    }
     
     // Calculate shooting direction from camera
     const direction = new THREE.Vector3(0, 0, -1)
@@ -375,6 +422,10 @@ function handleServerMessage(message) {
     case MessageTypes.VEHICLE_UPDATE:
       updateVehicle(message.vehicle)
       break
+    
+    case MessageTypes.GHOST_UPDATE:
+      updateGhost(message.ghost)
+      break
   }
 }
 
@@ -416,6 +467,7 @@ function updateGameState(state) {
   if (currentPlayerData) {
     playerHealth.value = currentPlayerData.health
     currentVehicle.value = currentPlayerData.vehicle || null
+    carryingGhost.value = currentPlayerData.carryingGhost || null
   }
   
   for (const playerData of state.players) {
@@ -474,8 +526,17 @@ function updateGameState(state) {
     }
   }
   
+  // Update ghosts
+  if (state.ghosts) {
+    for (const ghostData of state.ghosts) {
+      updateGhost(ghostData)
+    }
+  }
+  
   // Check for nearby vehicles
   checkNearbyVehicles()
+  // Check for nearby ghosts
+  checkNearbyGhosts()
 }
 
 function updateVehicle(vehicleData) {
@@ -500,6 +561,38 @@ function updateVehicle(vehicleData) {
         vehicleData.rotation.z,
         vehicleData.rotation.w
       )
+    }
+  }
+}
+
+function updateGhost(ghostData) {
+  ghosts.set(ghostData.id, ghostData)
+  
+  if (!ghostMeshes.has(ghostData.id)) {
+    createGhostMesh(ghostData)
+  }
+  
+  const mesh = ghostMeshes.get(ghostData.id)
+  if (mesh) {
+    // If this is the carried ghost and we're the carrier, use client physics
+    if (ghostData.carrier === playerId.value) {
+      updateCarriedGhostPhysics(ghostData)
+    } else {
+      // Use server position
+      mesh.position.set(
+        ghostData.position.x,
+        ghostData.position.y,
+        ghostData.position.z
+      )
+      
+      if (ghostData.rotation.w !== undefined) {
+        mesh.quaternion.set(
+          ghostData.rotation.x,
+          ghostData.rotation.y,
+          ghostData.rotation.z,
+          ghostData.rotation.w
+        )
+      }
     }
   }
 }
@@ -708,6 +801,91 @@ function createVehicleMesh(vehicleData) {
   vehicleMeshes.set(vehicleData.id, group)
 }
 
+function createGhostMesh(ghostData) {
+  let geometry
+  const material = new THREE.MeshLambertMaterial({ 
+    color: ghostData.color,
+    transparent: true,
+    opacity: ghostData.carrier ? 0.8 : 1.0
+  })
+  
+  switch (ghostData.type) {
+    case GhostTypes.BOX:
+      geometry = new THREE.BoxGeometry(
+        ghostData.size.width,
+        ghostData.size.height,
+        ghostData.size.depth
+      )
+      break
+    case GhostTypes.SPHERE:
+      geometry = new THREE.SphereGeometry(ghostData.size.radius, 16, 12)
+      break
+    case GhostTypes.CYLINDER:
+      geometry = new THREE.CylinderGeometry(
+        ghostData.size.radius,
+        ghostData.size.radius,
+        ghostData.size.height,
+        16
+      )
+      break
+  }
+  
+  const mesh = new THREE.Mesh(geometry, material)
+  mesh.castShadow = true
+  mesh.receiveShadow = true
+  
+  scene.add(mesh)
+  ghostMeshes.set(ghostData.id, mesh)
+  
+  // Initialize client physics for this ghost
+  ghostPhysics.set(ghostData.id, {
+    velocity: { x: 0, y: 0, z: 0 },
+    angularVelocity: { x: 0, y: 0, z: 0 }
+  })
+}
+
+function updateCarriedGhostPhysics(ghostData) {
+  const mesh = ghostMeshes.get(ghostData.id)
+  const physics = ghostPhysics.get(ghostData.id)
+  const player = players.get(playerId.value)
+  
+  if (!mesh || !physics || !player) return
+  
+  // Calculate target position (in front of player)
+  const targetPos = new THREE.Vector3(
+    player.position.x + player.lookDirection.x * GhostConstants.CARRY_DISTANCE,
+    player.position.y + 0.5 + player.lookDirection.y * GhostConstants.CARRY_DISTANCE,
+    player.position.z + player.lookDirection.z * GhostConstants.CARRY_DISTANCE
+  )
+  
+  // Spring physics for smooth movement
+  const springStrength = 0.2
+  const damping = 0.8
+  
+  // Calculate spring force
+  const dx = targetPos.x - mesh.position.x
+  const dy = targetPos.y - mesh.position.y
+  const dz = targetPos.z - mesh.position.z
+  
+  physics.velocity.x = physics.velocity.x * damping + dx * springStrength
+  physics.velocity.y = physics.velocity.y * damping + dy * springStrength
+  physics.velocity.z = physics.velocity.z * damping + dz * springStrength
+  
+  // Apply velocity
+  mesh.position.x += physics.velocity.x
+  mesh.position.y += physics.velocity.y
+  mesh.position.z += physics.velocity.z
+  
+  // Rotate based on movement
+  physics.angularVelocity.x *= 0.9
+  physics.angularVelocity.y *= 0.9
+  physics.angularVelocity.z = physics.velocity.x * 0.1
+  
+  mesh.rotation.x += physics.angularVelocity.x
+  mesh.rotation.y += physics.angularVelocity.y
+  mesh.rotation.z += physics.angularVelocity.z
+}
+
 function checkNearbyVehicles() {
   if (!playerId.value || currentVehicle.value) {
     nearbyVehicle.value = null
@@ -736,6 +914,36 @@ function checkNearbyVehicles() {
   }
   
   nearbyVehicle.value = closestVehicle
+}
+
+function checkNearbyGhosts() {
+  if (!playerId.value || carryingGhost.value || currentVehicle.value) {
+    nearbyGhost.value = null
+    return
+  }
+  
+  const player = players.get(playerId.value)
+  if (!player) return
+  
+  let closestGhost = null
+  let closestDistance = GhostConstants.INTERACTION_RANGE
+  
+  for (const [ghostId, ghost] of ghosts) {
+    if (ghost.carrier) continue // Skip carried ghosts
+    
+    const distance = Math.sqrt(
+      (player.position.x - ghost.position.x) ** 2 +
+      (player.position.y - ghost.position.y) ** 2 +
+      (player.position.z - ghost.position.z) ** 2
+    )
+    
+    if (distance < closestDistance) {
+      closestDistance = distance
+      closestGhost = ghostId
+    }
+  }
+  
+  nearbyGhost.value = closestGhost
 }
 
 function removePlayer(playerId) {
@@ -1031,6 +1239,14 @@ function animate() {
     }
   }
   
+  // Update carried ghost physics
+  if (carryingGhost.value) {
+    const ghost = ghosts.get(carryingGhost.value)
+    if (ghost && ghost.carrier === playerId.value) {
+      updateCarriedGhostPhysics(ghost)
+    }
+  }
+  
   sendInput()
   updateCamera()
   updateDebugRay()
@@ -1116,6 +1332,16 @@ function cleanup() {
     })
   }
   vehicleMeshes.clear()
+
+  // Clean up ghost meshes
+  for (const mesh of ghostMeshes.values()) {
+    scene.remove(mesh)
+    mesh.geometry.dispose()
+    mesh.material.dispose()
+  }
+  ghostMeshes.clear()
+  ghosts.clear()
+  ghostPhysics.clear()
 }
 </script>
 
@@ -1193,6 +1419,12 @@ function cleanup() {
 }
 
 .vehicle-info {
+  margin-top: 5px;
+  color: #88ff88;
+  font-weight: bold;
+}
+
+.carrying-info {
   margin-top: 5px;
   color: #88ff88;
   font-weight: bold;
