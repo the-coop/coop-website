@@ -1,0 +1,15 @@
+{
+  "name": "@game/client",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.11.2",
+    "three": "^0.157.0",
+    "nuxt": "^3.8.0"
+  }
+}
