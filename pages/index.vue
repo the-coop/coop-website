@@ -527,6 +527,19 @@ function cleanup() {
 </script>
 
 <style scoped>
+/* Global styles */
+:global(body) {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+:global(*) {
+  box-sizing: border-box;
+}
+
+/* Component styles */
 .game-container {
   width: 100vw;
   height: 100vh;
