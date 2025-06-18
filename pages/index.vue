@@ -29,7 +29,7 @@
 
 <script setup>
 import * as THREE from 'three'
-import { MessageTypes, VehicleConstants } from '@game/shared'
+import { MessageTypes, VehicleConstants, PlayerConstants } from '@game/shared'
 import { onMounted, onUnmounted, ref } from 'vue'
 
 const gameContainer = ref(null)
@@ -320,8 +320,15 @@ function updateGameState(state) {
       player.position = playerData.position
       player.rotation = playerData.rotation
       player.velocity = playerData.velocity
+      player.vehicle = playerData.vehicle
       
-      mesh.position.set(player.position.x, player.position.y, player.position.z)
+      // Hide player mesh if they're in a vehicle
+      if (player.vehicle) {
+        mesh.visible = false
+      } else {
+        mesh.visible = true
+        mesh.position.set(player.position.x, player.position.y, player.position.z)
+      }
       
       // Add some visual feedback for velocity
       const speed = Math.sqrt(
@@ -397,12 +404,18 @@ function addPlayer(playerData) {
   // Create player mesh - capsule-like shape
   const group = new THREE.Group()
   
-  // Body
-  const bodyGeometry = new THREE.CapsuleGeometry(0.5, 1.4, 4, 8)
+  // Body - adjust positioning to match physics capsule
+  const bodyGeometry = new THREE.CapsuleGeometry(
+    PlayerConstants.RADIUS, 
+    PlayerConstants.HEIGHT - PlayerConstants.RADIUS * 2, // Height without the radius caps
+    4, 
+    8
+  )
   const bodyMaterial = new THREE.MeshLambertMaterial({ 
     color: playerData.id === playerId.value ? 0x0088ff : 0xff8800 
   })
   const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial)
+  bodyMesh.position.y = 0 // Capsule is centered in the group
   bodyMesh.castShadow = true
   bodyMesh.receiveShadow = true
   
@@ -424,7 +437,7 @@ function addPlayer(playerData) {
     const texture = new THREE.CanvasTexture(canvas)
     const spriteMaterial = new THREE.SpriteMaterial({ map: texture })
     const sprite = new THREE.Sprite(spriteMaterial)
-    sprite.position.y = 2.5
+    sprite.position.y = PlayerConstants.HEIGHT / 2 + 0.5 // Above the capsule
     sprite.scale.set(2, 0.5, 1)
     group.add(sprite)
   }
@@ -484,6 +497,36 @@ function createVehicleMesh(vehicleData) {
   
   scene.add(group)
   vehicleMeshes.set(vehicleData.id, group)
+}
+
+function checkNearbyVehicles() {
+  if (!playerId.value || currentVehicle.value) {
+    nearbyVehicle.value = null
+    return
+  }
+  
+  const player = players.get(playerId.value)
+  if (!player) return
+  
+  let closestVehicle = null
+  let closestDistance = VehicleConstants.INTERACTION_RANGE
+  
+  for (const [vehicleId, vehicle] of vehicles) {
+    if (vehicle.driver) continue // Skip occupied vehicles
+    
+    const distance = Math.sqrt(
+      (player.position.x - vehicle.position.x) ** 2 +
+      (player.position.y - vehicle.position.y) ** 2 +
+      (player.position.z - vehicle.position.z) ** 2
+    )
+    
+    if (distance < closestDistance) {
+      closestDistance = distance
+      closestVehicle = vehicleId
+    }
+  }
+  
+  nearbyVehicle.value = closestVehicle
 }
 
 function removePlayer(playerId) {
@@ -564,7 +607,7 @@ function sendInput() {
     moveLeft: keys['KeyA'] || false,
     moveRight: keys['KeyD'] || false,
     jump: keys['Space'] || false,
-    lookDirection: getLookDirection()
+    lookDirection: currentVehicle.value ? null : getLookDirection() // Don't send look direction when in vehicle
   }
   
   // Only send if input changed
@@ -593,15 +636,29 @@ function updateCamera() {
       // Third-person vehicle camera
       const vehicle = vehicles.get(currentVehicle.value)
       if (vehicle) {
-        const offset = new THREE.Vector3(0, 5, 10)
-        offset.applyQuaternion(camera.quaternion)
+        // Calculate camera position behind vehicle
+        const vehicleRotation = new THREE.Quaternion()
+        if (vehicle.rotation.w !== undefined) {
+          vehicleRotation.set(
+            vehicle.rotation.x,
+            vehicle.rotation.y,
+            vehicle.rotation.z,
+            vehicle.rotation.w
+          )
+        }
         
+        // Create offset vector behind and above vehicle
+        const offset = new THREE.Vector3(0, 5, 10)
+        offset.applyQuaternion(vehicleRotation)
+        
+        // Set camera position
         camera.position.set(
           vehicle.position.x + offset.x,
           vehicle.position.y + offset.y,
           vehicle.position.z + offset.z
         )
         
+        // Look at vehicle
         camera.lookAt(
           vehicle.position.x,
           vehicle.position.y + 2,
@@ -609,10 +666,11 @@ function updateCamera() {
         )
       }
     } else {
-      // First-person camera
+      // First-person camera - adjust eye height
+      const eyeHeight = PlayerConstants.HEIGHT / 2 - 0.2 // Slightly below top of capsule
       camera.position.set(
         player.position.x,
-        player.position.y + 1.5,
+        player.position.y + eyeHeight,
         player.position.z
       )
       
