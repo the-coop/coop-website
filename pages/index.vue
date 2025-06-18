@@ -8,7 +8,9 @@
         <div v-if="playerId">Your ID: {{ playerId.substring(0, 6) }}</div>
         <div v-if="playerHealth !== null">Health: {{ playerHealth }}/100</div>
         <div v-if="currentVehicle" class="vehicle-info">
-          Driving: Car | Press F to exit
+          Driving: {{ getVehicleType() }} | Press F to exit
+          <div v-if="isHelicopter">Space - Up | Shift/Z - Down | WASD - Move/Turn</div>
+          <div v-else-if="isPlane">W - Throttle Up | S - Throttle Down | Space/Shift - Pitch | A/D - Roll</div>
         </div>
       </div>
       <div class="controls">
@@ -22,7 +24,7 @@
       </div>
       <div class="crosshair">+</div>
       <div v-if="nearbyVehicle && !currentVehicle" class="interaction-prompt">
-        Press F to enter vehicle
+        Press F to enter {{ getVehicleTypeName(nearbyVehicle) }}
       </div>
     </div>
     <div v-if="showDebugInfo" class="debug-info">
@@ -36,6 +38,11 @@
         <div v-if="currentPlayer.groundNormal">Ground Normal: {{ formatVector(currentPlayer.groundNormal) }}</div>
         <div>Camera Mode: {{ thirdPerson ? 'Third Person' : 'First Person' }}</div>
         <div>FPS: {{ fps }}</div>
+        <div v-if="currentVehicle && getCurrentVehicle()">
+          <div>Vehicle: {{ getCurrentVehicle().type }}</div>
+          <div v-if="getCurrentVehicle().type === 'plane'">Throttle: {{ (getCurrentVehicle().throttle * 100).toFixed(0) }}%</div>
+          <div v-if="getCurrentVehicle().type === 'helicopter'">Altitude: {{ getCurrentVehicle().position.y.toFixed(1) }}m</div>
+        </div>
       </div>
     </div>
     <div ref="gameContainer" class="game-container" />
@@ -44,7 +51,7 @@
 
 <script setup>
 import * as THREE from 'three'
-import { MessageTypes, VehicleConstants, PlayerConstants } from '@game/shared'
+import { MessageTypes, VehicleConstants, PlayerConstants, VehicleTypes } from '@game/shared'
 import { onMounted, onUnmounted, ref, computed } from 'vue'
 
 const gameContainer = ref(null)
@@ -78,6 +85,16 @@ const currentPlayer = computed(() => {
   return playerId.value ? players.get(playerId.value) : null
 })
 
+const isHelicopter = computed(() => {
+  const vehicle = getCurrentVehicle()
+  return vehicle && vehicle.type === VehicleTypes.HELICOPTER
+})
+
+const isPlane = computed(() => {
+  const vehicle = getCurrentVehicle()
+  return vehicle && vehicle.type === VehicleTypes.PLANE
+})
+
 function formatVector(vec) {
   if (!vec) return 'N/A'
   return `(${vec.x.toFixed(2)}, ${vec.y.toFixed(2)}, ${vec.z.toFixed(2)})`
@@ -86,6 +103,22 @@ function formatVector(vec) {
 function getSpeed(velocity) {
   if (!velocity) return 0
   return Math.sqrt(velocity.x ** 2 + velocity.z ** 2)
+}
+
+function getCurrentVehicle() {
+  return currentVehicle.value ? vehicles.get(currentVehicle.value) : null
+}
+
+function getVehicleType() {
+  const vehicle = getCurrentVehicle()
+  if (!vehicle) return 'Unknown'
+  return vehicle.type.charAt(0).toUpperCase() + vehicle.type.slice(1)
+}
+
+function getVehicleTypeName(vehicleId) {
+  const vehicle = vehicles.get(vehicleId)
+  if (!vehicle) return 'vehicle'
+  return vehicle.type
 }
 
 onMounted(() => {
@@ -523,50 +556,153 @@ function addPlayer(playerData) {
 function createVehicleMesh(vehicleData) {
   const group = new THREE.Group()
   
-  // Car body
-  const bodyGeometry = new THREE.BoxGeometry(
-    VehicleConstants.CAR_SIZE.width,
-    VehicleConstants.CAR_SIZE.height,
-    VehicleConstants.CAR_SIZE.length
-  )
-  const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x4444ff })
-  const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial)
-  bodyMesh.position.y = 0.2
-  bodyMesh.castShadow = true
-  bodyMesh.receiveShadow = true
-  
-  // Car roof
-  const roofGeometry = new THREE.BoxGeometry(
-    VehicleConstants.CAR_SIZE.width * 0.8,
-    VehicleConstants.CAR_SIZE.height * 0.6,
-    VehicleConstants.CAR_SIZE.length * 0.5
-  )
-  const roofMaterial = new THREE.MeshLambertMaterial({ color: 0x3333cc })
-  const roofMesh = new THREE.Mesh(roofGeometry, roofMaterial)
-  roofMesh.position.y = VehicleConstants.CAR_SIZE.height * 0.8
-  roofMesh.castShadow = true
-  
-  // Wheels
-  const wheelGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 8)
-  const wheelMaterial = new THREE.MeshLambertMaterial({ color: 0x222222 })
-  
-  const wheelPositions = [
-    { x: -0.8, z: -1.5 },
-    { x: 0.8, z: -1.5 },
-    { x: -0.8, z: 1.5 },
-    { x: 0.8, z: 1.5 }
-  ]
-  
-  for (const pos of wheelPositions) {
-    const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial)
-    wheel.rotation.z = Math.PI / 2
-    wheel.position.set(pos.x, -0.3, pos.z)
-    wheel.castShadow = true
-    group.add(wheel)
+  if (vehicleData.type === VehicleTypes.HELICOPTER) {
+    // Helicopter body
+    const bodyGeometry = new THREE.BoxGeometry(
+      VehicleConstants.HELICOPTER_SIZE.width,
+      VehicleConstants.HELICOPTER_SIZE.height * 0.6,
+      VehicleConstants.HELICOPTER_SIZE.length
+    )
+    const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x445566 })
+    const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial)
+    bodyMesh.castShadow = true
+    bodyMesh.receiveShadow = true
+    
+    // Cockpit
+    const cockpitGeometry = new THREE.SphereGeometry(1.2, 8, 6)
+    const cockpitMaterial = new THREE.MeshLambertMaterial({ color: 0x222233 })
+    const cockpitMesh = new THREE.Mesh(cockpitGeometry, cockpitMaterial)
+    cockpitMesh.position.z = -1.5
+    cockpitMesh.scale.z = 1.5
+    cockpitMesh.castShadow = true
+    
+    // Main rotor (simplified)
+    const rotorGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.1, 8)
+    const rotorMaterial = new THREE.MeshLambertMaterial({ color: 0x333333 })
+    const rotorHub = new THREE.Mesh(rotorGeometry, rotorMaterial)
+    rotorHub.position.y = 1
+    
+    // Rotor blades
+    const bladeGeometry = new THREE.BoxGeometry(8, 0.05, 0.3)
+    const bladeMaterial = new THREE.MeshLambertMaterial({ color: 0x222222 })
+    const rotorBlades = new THREE.Mesh(bladeGeometry, bladeMaterial)
+    rotorBlades.position.y = 1.1
+    
+    // Tail
+    const tailGeometry = new THREE.CylinderGeometry(0.3, 0.5, 3, 8)
+    const tailMaterial = new THREE.MeshLambertMaterial({ color: 0x445566 })
+    const tailMesh = new THREE.Mesh(tailGeometry, tailMaterial)
+    tailMesh.rotation.z = Math.PI / 2
+    tailMesh.position.z = 3
+    tailMesh.castShadow = true
+    
+    group.add(bodyMesh)
+    group.add(cockpitMesh)
+    group.add(rotorHub)
+    group.add(rotorBlades)
+    group.add(tailMesh)
+    
+    // Store rotor reference for animation
+    group.userData.rotor = rotorBlades
+    
+  } else if (vehicleData.type === VehicleTypes.PLANE) {
+    // Plane fuselage
+    const fuselageGeometry = new THREE.CylinderGeometry(0.8, 0.8, VehicleConstants.PLANE_SIZE.length, 8)
+    const fuselageMaterial = new THREE.MeshLambertMaterial({ color: 0xcccccc })
+    const fuselageMesh = new THREE.Mesh(fuselageGeometry, fuselageMaterial)
+    fuselageMesh.rotation.z = Math.PI / 2
+    fuselageMesh.castShadow = true
+    fuselageMesh.receiveShadow = true
+    
+    // Wings
+    const wingGeometry = new THREE.BoxGeometry(VehicleConstants.PLANE_SIZE.width, 0.2, 1.5)
+    const wingMaterial = new THREE.MeshLambertMaterial({ color: 0xaaaaaa })
+    const wingMesh = new THREE.Mesh(wingGeometry, wingMaterial)
+    wingMesh.castShadow = true
+    
+    // Tail wing
+    const tailWingGeometry = new THREE.BoxGeometry(2, 0.2, 0.8)
+    const tailWingMesh = new THREE.Mesh(tailWingGeometry, wingMaterial)
+    tailWingMesh.position.z = 2
+    tailWingMesh.castShadow = true
+    
+    // Vertical stabilizer
+    const stabilizerGeometry = new THREE.BoxGeometry(0.2, 1.5, 0.8)
+    const stabilizerMesh = new THREE.Mesh(stabilizerGeometry, wingMaterial)
+    stabilizerMesh.position.z = 2
+    stabilizerMesh.position.y = 0.5
+    stabilizerMesh.castShadow = true
+    
+    // Cockpit
+    const cockpitGeometry = new THREE.SphereGeometry(0.6, 8, 6)
+    const cockpitMaterial = new THREE.MeshLambertMaterial({ color: 0x333344 })
+    const cockpitMesh = new THREE.Mesh(cockpitGeometry, cockpitMaterial)
+    cockpitMesh.position.z = -2
+    cockpitMesh.position.y = 0.3
+    cockpitMesh.scale.z = 1.5
+    
+    // Propeller
+    const propGeometry = new THREE.BoxGeometry(0.1, 2, 0.2)
+    const propMaterial = new THREE.MeshLambertMaterial({ color: 0x444444 })
+    const propeller = new THREE.Mesh(propGeometry, propMaterial)
+    propeller.position.z = -2.5
+    
+    group.add(fuselageMesh)
+    group.add(wingMesh)
+    group.add(tailWingMesh)
+    group.add(stabilizerMesh)
+    group.add(cockpitMesh)
+    group.add(propeller)
+    
+    // Store propeller reference for animation
+    group.userData.propeller
+    
+  } else {
+    // Existing car creation code
+    const bodyGeometry = new THREE.BoxGeometry(
+      VehicleConstants.CAR_SIZE.width,
+      VehicleConstants.CAR_SIZE.height,
+      VehicleConstants.CAR_SIZE.length
+    )
+    const bodyMaterial = new THREE.MeshLambertMaterial({ color: 0x4444ff })
+    const bodyMesh = new THREE.Mesh(bodyGeometry, bodyMaterial)
+    bodyMesh.position.y = 0.2
+    bodyMesh.castShadow = true
+    bodyMesh.receiveShadow = true
+    
+    // Car roof
+    const roofGeometry = new THREE.BoxGeometry(
+      VehicleConstants.CAR_SIZE.width * 0.8,
+      VehicleConstants.CAR_SIZE.height * 0.6,
+      VehicleConstants.CAR_SIZE.length * 0.5
+    )
+    const roofMaterial = new THREE.MeshLambertMaterial({ color: 0x3333cc })
+    const roofMesh = new THREE.Mesh(roofGeometry, roofMaterial)
+    roofMesh.position.y = VehicleConstants.CAR_SIZE.height * 0.8
+    roofMesh.castShadow = true
+    
+    // Wheels
+    const wheelGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 8)
+    const wheelMaterial = new THREE.MeshLambertMaterial({ color: 0x222222 })
+    
+    const wheelPositions = [
+      { x: -0.8, z: -1.5 },
+      { x: 0.8, z: -1.5 },
+      { x: -0.8, z: 1.5 },
+      { x: 0.8, z: 1.5 }
+    ]
+    
+    for (const pos of wheelPositions) {
+      const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial)
+      wheel.rotation.z = Math.PI / 2
+      wheel.position.set(pos.x, -0.3, pos.z)
+      wheel.castShadow = true
+      group.add(wheel)
+    }
+    
+    group.add(bodyMesh)
+    group.add(roofMesh)
   }
-  
-  group.add(bodyMesh)
-  group.add(roofMesh)
   
   scene.add(group)
   vehicleMeshes.set(vehicleData.id, group)
@@ -680,11 +816,13 @@ function sendInput() {
     moveLeft: keys['KeyA'] || false,
     moveRight: keys['KeyD'] || false,
     jump: keys['Space'] || false,
+    shift: keys['ShiftLeft'] || keys['ShiftRight'] || false,
+    descend: keys['KeyZ'] || false,
     lookDirection: currentVehicle.value ? null : getLookDirection()
   }
   
   // Always send input when there's movement or look changes
-  const hasMovement = input.moveForward || input.moveBackward || input.moveLeft || input.moveRight || input.jump;
+  const hasMovement = input.moveForward || input.moveBackward || input.moveLeft || input.moveRight || input.jump || input.shift || input.descend;
   const lookChanged = JSON.stringify(input.lookDirection) !== JSON.stringify(lastInputSent.lookDirection);
   
   if (hasMovement || lookChanged || JSON.stringify(input) !== JSON.stringify(lastInputSent)) {
@@ -874,6 +1012,23 @@ function animate() {
     fps.value = frameCount
     frameCount = 0
     lastTime = currentTime
+  }
+  
+  // Animate vehicle parts
+  for (const [vehicleId, mesh] of vehicleMeshes) {
+    const vehicle = vehicles.get(vehicleId)
+    if (!vehicle) continue
+    
+    // Animate helicopter rotor
+    if (vehicle.type === VehicleTypes.HELICOPTER && mesh.userData.rotor) {
+      mesh.userData.rotor.rotation.y += 0.5
+    }
+    
+    // Animate plane propeller
+    if (vehicle.type === VehicleTypes.PLANE && mesh.userData.propeller) {
+      const throttle = vehicle.throttle || 0
+      mesh.userData.propeller.rotation.z += 0.3 + throttle * 0.5
+    }
   }
   
   sendInput()
