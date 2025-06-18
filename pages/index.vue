@@ -405,12 +405,8 @@ function updateGameState(state) {
         mesh.position.set(player.position.x, player.position.y, player.position.z)
       }
       
-      // Add some visual feedback for velocity
-      const speed = Math.sqrt(
-        player.velocity.x ** 2 + 
-        player.velocity.z ** 2
-      )
-      mesh.scale.setScalar(1 + speed * 0.02)
+      // Remove the scaling effect that was causing issues
+      // mesh.scale.setScalar(1 + speed * 0.02) // REMOVED - this was causing the glitch
     }
   }
   
