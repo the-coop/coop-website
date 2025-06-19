@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.11.2",
-    "@game/shared": "github:the-coop/coop-shared#main",
+    "@game/shared": "https://github.com/the-coop/coop-shared#main",
     "three": "^0.157.0",
     "nuxt": "^3.8.0"
   },
