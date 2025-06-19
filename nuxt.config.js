@@ -1,5 +1,5 @@
 export default defineNuxtConfig({
-  ssr: false, // Disable server-side rendering for client-only app
+  ssr: true,
   nitro: {
     preset: 'static' // Use static preset for Netlify
   },
