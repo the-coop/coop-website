@@ -376,7 +376,7 @@ function setupShooting() {
 function connectToServer() {
   // Use standard NODE_ENV check
   const dev = process.env.NODE_ENV === 'development'
-  const wsUrl = dev ? 'ws://localhost:8080' : 'wss://thecoop.herokuapp.com'
+  const wsUrl = dev ? 'ws://localhost:8080' : 'ws://thecoop.herokuapp.com'
   
   ws = new WebSocket(wsUrl)
   
