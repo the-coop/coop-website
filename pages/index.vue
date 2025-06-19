@@ -522,6 +522,7 @@ function updateGameState(state) {
   checkNearbyGhosts()
 }
 
+
 async function updateVehicle(vehicleData) {
   const existingVehicle = vehicles.get(vehicleData.id)
   
