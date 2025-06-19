@@ -749,12 +749,46 @@ async function createVehicleMesh(vehicleData) {
     const scale = Math.min(scaleX, scaleY, scaleZ)
     group.scale.setScalar(scale)
     
-    // Find animated parts
+    // Adjust position to match server physics collider
     if (vehicleData.type === VehicleTypes.HELICOPTER) {
-      const rotor = group.getObjectByName('rotor') || group.getObjectByName('main_rotor')
-      if (rotor) group.userData.rotor = rotor
+      // The server creates the collider with its center at the vehicle position
+      // We need to ensure the visual model aligns with this
+      const scaledBox = new THREE.Box3().setFromObject(group)
+      const modelBottom = scaledBox.min.y
+      
+      // Create a wrapper group to handle the offset
+      const wrapper = new THREE.Group()
+      wrapper.add(group)
+      
+      // The physics collider is centered at the spawn position
+      // Move the model up so its bottom aligns with the bottom of the physics collider
+      // Physics collider bottom = position.y - (height/2)
+      // We want model bottom to match this, so offset the model up
+      const physicsHeight = targetSize.height
+      const offsetY = -modelBottom - physicsHeight / 2
+      group.position.y = offsetY
+      
+      group = wrapper
+    }
+    
+    // Find animated parts
+    const actualModel = group.children[0] || group
+    if (vehicleData.type === VehicleTypes.HELICOPTER) {
+      const mainRotor = Models.getNamedMesh(actualModel, 'MainRotor')
+      if (mainRotor) {
+        // Store the original rotation to preserve any tilt
+        group.userData.mainRotor = mainRotor
+        group.userData.mainRotorOriginalRotation = mainRotor.rotation.clone()
+      }
+      
+      const tailRotor = Models.getNamedMesh(actualModel, 'TailRotor')
+      if (tailRotor) {
+        group.userData.tailRotor = tailRotor
+        group.userData.tailRotorOriginalRotation = tailRotor.rotation.clone()
+      }
     } else if (vehicleData.type === VehicleTypes.PLANE) {
-      const propeller = group.getObjectByName('propeller') || group.getObjectByName('prop')
+      const propeller = actualModel.getObjectByName('propeller') || 
+                       actualModel.getObjectByName('prop')
       if (propeller) group.userData.propeller = propeller
     }
   } else {
@@ -1399,9 +1433,37 @@ function animate() {
     const vehicle = vehicles.get(vehicleId)
     if (!vehicle) continue
     
-    // Animate helicopter rotor
-    if (vehicle.type === VehicleTypes.HELICOPTER && mesh.userData.rotor) {
-      mesh.userData.rotor.rotation.y += 0.5
+    // Animate helicopter rotors
+    if (vehicle.type === VehicleTypes.HELICOPTER) {
+      // Animate main rotor while preserving its tilt
+      if (mesh.userData.mainRotor && mesh.userData.mainRotorOriginalRotation) {
+        const rotor = mesh.userData.mainRotor
+        const originalRotation = mesh.userData.mainRotorOriginalRotation
+        
+        // Create a rotation around local Y-axis
+        const rotationSpeed = 0.5
+        const time = Date.now() * 0.001
+        
+        // Reset to original rotation then apply spin
+        rotor.rotation.copy(originalRotation)
+        rotor.rotateY(time * rotationSpeed * Math.PI * 2)
+      }
+      
+      // Animate tail rotor
+      if (mesh.userData.tailRotor && mesh.userData.tailRotorOriginalRotation) {
+        const tailRotor = mesh.userData.tailRotor
+        const originalRotation = mesh.userData.tailRotorOriginalRotation
+        
+        // Tail rotor typically spins around Z axis (forward/back)
+        const rotationSpeed = 0.8
+        const time = Date.now() * 0.001
+        
+        // Reset to original rotation
+        tailRotor.rotation.copy(originalRotation)
+        
+        // Tail rotors rotate around their local Z axis
+        tailRotor.rotateZ(time * rotationSpeed * Math.PI * 2)
+      }
     }
     
     // Animate plane propeller
