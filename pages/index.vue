@@ -528,7 +528,7 @@ async function updateVehicle(vehicleData) {
   if (!existingVehicle) {
     // New vehicle
     vehicles.set(vehicleData.id, vehicleData)
-    await createVehicleMesh(vehicleData)
+    createVehicleMesh(vehicleData)
   } else {
     // Update existing vehicle
     vehicles.set(vehicleData.id, vehicleData)
@@ -549,6 +549,11 @@ async function updateVehicle(vehicleData) {
           vehicleData.rotation.z,
           vehicleData.rotation.w
         )
+      }
+      
+      // Store altitude for landing gear animation
+      if (vehicleData.type === VehicleTypes.HELICOPTER) {
+        mesh.userData.altitude = vehicleData.position.y
       }
     }
     
@@ -786,6 +791,45 @@ async function createVehicleMesh(vehicleData) {
         group.userData.tailRotor = tailRotor
         group.userData.tailRotorOriginalRotation = tailRotor.rotation.clone()
       }
+      
+      // Find landing gear parts
+      const leftGear = Models.getNamedMesh(actualModel, 'LeftGear') || 
+                      Models.getNamedMesh(actualModel, 'LeftLandingGear') ||
+                      Models.getNamedMesh(actualModel, 'LGear')
+      const rightGear = Models.getNamedMesh(actualModel, 'RightGear') || 
+                       Models.getNamedMesh(actualModel, 'RightLandingGear') ||
+                       Models.getNamedMesh(actualModel, 'RGear')
+      const frontGear = Models.getNamedMesh(actualModel, 'FrontGear') || 
+                       Models.getNamedMesh(actualModel, 'NoseGear') ||
+                       Models.getNamedMesh(actualModel, 'FGear')
+      const rearGear = Models.getNamedMesh(actualModel, 'RearGear') || 
+                      Models.getNamedMesh(actualModel, 'TailGear')
+      
+      // Store gear references and original rotations
+      if (leftGear) {
+        group.userData.leftGear = leftGear
+        group.userData.leftGearOriginalRotation = leftGear.rotation.clone()
+        group.userData.leftGearOriginalPosition = leftGear.position.clone()
+      }
+      if (rightGear) {
+        group.userData.rightGear = rightGear
+        group.userData.rightGearOriginalRotation = rightGear.rotation.clone()
+        group.userData.rightGearOriginalPosition = rightGear.position.clone()
+      }
+      if (frontGear) {
+        group.userData.frontGear = frontGear
+        group.userData.frontGearOriginalRotation = frontGear.rotation.clone()
+        group.userData.frontGearOriginalPosition = frontGear.position.clone()
+      }
+      if (rearGear) {
+        group.userData.rearGear = rearGear
+        group.userData.rearGearOriginalRotation = rearGear.rotation.clone()
+        group.userData.rearGearOriginalPosition = rearGear.position.clone()
+      }
+      
+      // Initialize gear state
+      group.userData.gearExtended = true
+      group.userData.gearTransition = 0 // 0 = extended, 1 = retracted
     } else if (vehicleData.type === VehicleTypes.PLANE) {
       const propeller = actualModel.getObjectByName('propeller') || 
                        actualModel.getObjectByName('prop')
@@ -1433,7 +1477,7 @@ function animate() {
     const vehicle = vehicles.get(vehicleId)
     if (!vehicle) continue
     
-    // Animate helicopter rotors
+    // Animate helicopter rotors and landing gear
     if (vehicle.type === VehicleTypes.HELICOPTER) {
       // Animate main rotor while preserving its tilt
       if (mesh.userData.mainRotor && mesh.userData.mainRotorOriginalRotation) {
@@ -1463,6 +1507,63 @@ function animate() {
         
         // Tail rotors rotate around their local Z axis
         tailRotor.rotateZ(time * rotationSpeed * Math.PI * 2)
+      }
+      
+      // Animate landing gear retraction/extension
+      const targetGearState = vehicle.altitude > 5 ? 1 : 0 // Retract when above 5 meters
+      const gearSpeed = 0.02 // Speed of gear animation
+      
+      if (mesh.userData.gearTransition !== undefined) {
+        // Smoothly transition gear state
+        if (targetGearState > mesh.userData.gearTransition) {
+          mesh.userData.gearTransition = Math.min(mesh.userData.gearTransition + gearSpeed, 1)
+        } else if (targetGearState < mesh.userData.gearTransition) {
+          mesh.userData.gearTransition = Math.max(mesh.userData.gearTransition - gearSpeed, 0)
+        }
+        
+        const t = mesh.userData.gearTransition
+        
+        // Animate left gear
+        if (mesh.userData.leftGear && mesh.userData.leftGearOriginalRotation) {
+          const gear = mesh.userData.leftGear
+          const originalRot = mesh.userData.leftGearOriginalRotation
+          
+          // Rotate forward and up when retracting
+          gear.rotation.copy(originalRot)
+          gear.rotateX(t * Math.PI * 0.5) // 90 degrees rotation
+        }
+        
+        // Animate right gear
+        if (mesh.userData.rightGear && mesh.userData.rightGearOriginalRotation) {
+          const gear = mesh.userData.rightGear
+          const originalRot = mesh.userData.rightGearOriginalRotation
+          
+          // Rotate forward and up when retracting
+          gear.rotation.copy(originalRot)
+          gear.rotateX(t * Math.PI * 0.5) // 90 degrees rotation
+        }
+        
+        // Animate front gear (if exists)
+        if (mesh.userData.frontGear && mesh.userData.frontGearOriginalRotation) {
+          const gear = mesh.userData.frontGear
+          const originalRot = mesh.userData.frontGearOriginalRotation
+          
+          // Rotate backward and up when retracting
+          gear.rotation.copy(originalRot)
+          gear.rotateX(-t * Math.PI * 0.5) // -90 degrees rotation
+        }
+        
+        // Animate rear gear (if exists)
+        if (mesh.userData.rearGear && mesh.userData.rearGearOriginalRotation) {
+          const gear = mesh.userData.rearGear
+          const originalRot = mesh.userData.rearGearOriginalRotation
+          
+          // Rotate up when retracting
+          gear.rotation.copy(originalRot)
+          gear.rotateX(t * Math.PI * 0.4) // 72 degrees rotation
+        }
+        
+        mesh.userData.gearExtended = t < 0.5
       }
     }
     
